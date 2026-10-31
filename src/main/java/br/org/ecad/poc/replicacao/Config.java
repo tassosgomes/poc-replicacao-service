@@ -9,13 +9,18 @@ import java.util.function.Function;
 /**
  * Process configuration. Every key is read from a {@code -D} system property first and from the
  * environment second (the lookup is injected so tests stay hermetic); anything unset falls back
- * to the documented default. A key set to a blank or malformed value is invalid and fails fast
+ * to the documented default. The PoC databases are throwaway: their users default to the
+ * documented {@code bdad}/{@code replica} and the password keys exist to override them. A key set to a blank or malformed value is invalid and fails fast
  * with a one-line {@link ConfigException}.
  */
 public final class Config {
 
     private final String legadoUrl;
+    private final String legadoUsuario;
+    private final String legadoSenha;
     private final String novoUrl;
+    private final String novoUsuario;
+    private final String novoSenha;
     private final String workerId;
     private final int loteMax;
     private final int pollMs;
@@ -25,7 +30,11 @@ public final class Config {
 
     private Config(
             String legadoUrl,
+            String legadoUsuario,
+            String legadoSenha,
             String novoUrl,
+            String novoUsuario,
+            String novoSenha,
             String workerId,
             int loteMax,
             int pollMs,
@@ -33,7 +42,11 @@ public final class Config {
             boolean virtualThreads,
             String resultadosDir) {
         this.legadoUrl = legadoUrl;
+        this.legadoUsuario = legadoUsuario;
+        this.legadoSenha = legadoSenha;
         this.novoUrl = novoUrl;
+        this.novoUsuario = novoUsuario;
+        this.novoSenha = novoSenha;
         this.workerId = workerId;
         this.loteMax = loteMax;
         this.pollMs = pollMs;
@@ -47,7 +60,11 @@ public final class Config {
         Objects.requireNonNull(clock, "clock");
         return new Config(
                 text(lookup, "LEGADO_URL", "jdbc:oracle:thin:@//localhost:1521/FREEPDB1"),
+                text(lookup, "LEGADO_USUARIO", "bdad"),
+                text(lookup, "LEGADO_SENHA", "bdad"),
                 text(lookup, "NOVO_URL", "jdbc:oracle:thin:@//localhost:1522/FREEPDB1"),
+                text(lookup, "NOVO_USUARIO", "replica"),
+                text(lookup, "NOVO_SENHA", "replica"),
                 text(lookup, "WORKER_ID", defaultWorkerId(clock)),
                 positiveInt(lookup, "LOTE_MAX", 500),
                 nonNegativeInt(lookup, "POLL_MS", 200),
@@ -60,8 +77,24 @@ public final class Config {
         return legadoUrl;
     }
 
+    public String legadoUsuario() {
+        return legadoUsuario;
+    }
+
+    public String legadoSenha() {
+        return legadoSenha;
+    }
+
     public String novoUrl() {
         return novoUrl;
+    }
+
+    public String novoUsuario() {
+        return novoUsuario;
+    }
+
+    public String novoSenha() {
+        return novoSenha;
     }
 
     public String workerId() {

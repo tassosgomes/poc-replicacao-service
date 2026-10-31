@@ -1,5 +1,6 @@
 package br.org.ecad.poc.replicacao;
 
+import br.org.ecad.poc.replicacao.worker.Worker;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +10,9 @@ import java.util.function.Function;
  * Single executable entry point. Dispatches the {@code worker}, {@code carga-inicial},
  * {@code reconciliacao} and {@code gerador} subcommands.
  *
- * <p>EN-01 carries no replication behavior yet: a known subcommand with valid configuration
- * prints usage and exits non-zero. An unknown subcommand or an invalid {@link Config} prints a
- * clear one-line message and exits non-zero, never a bare stack trace.
+ * <p>{@code worker} runs the replication (V-03); the other subcommands are still stubs: with valid
+ * configuration they print usage and exit non-zero. An unknown subcommand or an invalid
+ * {@link Config} prints a clear one-line message and exits non-zero, never a bare stack trace.
  */
 public final class Main {
 
@@ -22,13 +23,37 @@ public final class Main {
     private Main() {}
 
     public static void main(String[] args) {
-        Result result = dispatch(args == null ? new String[0] : args, System.getenv(), Clock.systemUTC());
+        Clock clock = Clock.systemUTC();
+        Result result = dispatch(args == null ? new String[0] : args, System.getenv(), clock);
+        if (result.config() != null) {
+            System.exit(runWorker(result.config(), clock));
+        }
         LOG.log(result.exitCode() == 0 ? System.Logger.Level.INFO : System.Logger.Level.ERROR, result.message());
         System.exit(result.exitCode());
     }
 
     /** Outcome of a dispatch: process exit code plus the single message to log. */
-    record Result(int exitCode, String message) {}
+    record Result(int exitCode, String message, Config config) {
+
+        Result(int exitCode, String message) {
+            this(exitCode, message, null);
+        }
+    }
+
+    /** Runs the worker until the process is terminated; the shutdown hook stops it in order. */
+    private static int runWorker(Config config, Clock clock) {
+        try (Worker worker = Worker.iniciar(config, clock)) {
+            Runtime.getRuntime().addShutdownHook(new Thread(worker::close));
+            worker.aguardar();
+            return 0;
+        } catch (RuntimeException e) {
+            LOG.log(System.Logger.Level.ERROR, "worker failed: " + e.getMessage(), e);
+            return 1;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return 1;
+        }
+    }
 
     static Result dispatch(String[] args, Map<String, String> env, Clock clock) {
         return dispatch(args, key -> firstNonBlank(System.getProperty(key), env.get(key)), clock);
@@ -42,10 +67,14 @@ public final class Main {
         if (!COMMANDS.contains(command)) {
             return new Result(2, "unknown subcommand '" + command + "'. " + usage());
         }
+        Config config;
         try {
-            Config.load(lookup, clock);
+            config = Config.load(lookup, clock);
         } catch (ConfigException e) {
             return new Result(1, e.getMessage());
+        }
+        if (command.equals("worker")) {
+            return new Result(0, "starting worker " + config.workerId(), config);
         }
         return new Result(2, "'" + command + "' not implemented yet. " + usage());
     }

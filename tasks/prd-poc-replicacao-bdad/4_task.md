@@ -1,9 +1,9 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["1.0", "3.0"]
 gate: "./mvnw -B -q test -Dtest='V03*Test,V03*IT'"
-gate_expect: "14 testes passam (8 unitários sem banco e 6 de integração)"
+gate_expect: "15 testes passam (8 unitários sem banco e 7 de integração)"
 ---
 
 # 4.0 Uma alteração no legado aparece no banco novo em menos de 1 s
@@ -16,7 +16,7 @@ O worker (um processo, as 48 partições atribuídas estaticamente, sem lease di
 
 **Unitários (sem banco), 8:** UUIDv7 com versão 7 e variante RFC 9562; 1.000.000 valores estritamente crescentes; o mesmo com várias threads; coalesce; SQL gerado por `TableSpec` para as três tabelas (3 testes); `ChangeSource` em memória alimenta o destino sem alterar o destino.
 
-**Integração com bancos reais da PoC, 6:** `UPDATE` + commit → linha na réplica em < 1 s e evento removido; dois UPDATEs seguidos → réplica com o segundo e `id` igual; reaplicar manualmente o mesmo lote → `id` idêntico; `excluido = 1` → linha presente com `excluido = 1`; estado com `origem_updated_at` menor forçado → réplica mantém o mais novo; lote de 500 eventos → 500 apagados.
+**Integração com bancos reais da PoC, 7:** `UPDATE` + commit → linha na réplica em < 1 s e evento removido; dois UPDATEs seguidos → réplica com o segundo e `id` igual; reaplicar manualmente o mesmo lote → `id` idêntico; `excluido = 1` → linha presente com `excluido = 1`; estado com `origem_updated_at` menor forçado → réplica mantém o mais novo; lote de 500 eventos → 500 apagados; dois donos disputando o mesmo código → o perdedor falha por duplicidade e sua limpeza não toca linha, réplica nem eventos do vencedor.
 
 ## Fora do escopo desta task
 
@@ -45,7 +45,7 @@ Falhas do pipeline, anomalia e retry (V-04); métricas e CSV (V-05); lease dinâ
 
 ## Pronto quando
 
-- [ ] Gate focalizado passa (exit 0): `./mvnw -B -q test -Dtest='V03*Test,V03*IT'`
-- [ ] Os 8 testes unitários passam sem nenhum banco acessível.
-- [ ] Com o worker rodando e réplica em dia, um `UPDATE` no legado aparece no banco novo em < 1 s.
-- [ ] Estado mais antigo nunca sobrescreve o mais novo; `id` nunca muda nos reprocessamentos.
+- [x] Gate focalizado passa (exit 0): `./mvnw -B -q test -Dtest='V03*Test,V03*IT'`
+- [x] Os 8 testes unitários passam sem nenhum banco acessível.
+- [x] Com o worker rodando e réplica em dia, um `UPDATE` no legado aparece no banco novo em < 1 s.
+- [x] Estado mais antigo nunca sobrescreve o mais novo; `id` nunca muda nos reprocessamentos.

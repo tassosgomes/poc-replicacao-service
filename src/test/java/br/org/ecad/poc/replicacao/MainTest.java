@@ -40,12 +40,21 @@ class MainTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"worker", "carga-inicial", "reconciliacao", "gerador"})
+    @ValueSource(strings = {"carga-inicial", "reconciliacao", "gerador"})
     void dispatch_knownStub_returnsNonZeroWithUsage(String command) {
         Main.Result result = Main.dispatch(new String[] {command}, lookupOf(Map.of()), CLOCK);
 
         assertThat(result.exitCode()).isNotZero();
         assertThat(result.message()).contains(command).contains("usage");
+    }
+
+    @Test
+    void dispatch_workerWithValidConfig_returnsConfigToRun() {
+        Main.Result result = Main.dispatch(new String[] {"worker"}, lookupOf(Map.of()), CLOCK);
+
+        assertThat(result.exitCode()).isZero();
+        assertThat(result.config()).isNotNull();
+        assertThat(result.config().loteMax()).isEqualTo(500);
     }
 
     @Test
