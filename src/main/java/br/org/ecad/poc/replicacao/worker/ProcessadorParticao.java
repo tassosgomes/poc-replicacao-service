@@ -8,6 +8,8 @@ import br.org.ecad.poc.replicacao.core.Linha;
 import br.org.ecad.poc.replicacao.core.ReplicaSink;
 import br.org.ecad.poc.replicacao.core.StateProvider;
 import br.org.ecad.poc.replicacao.core.TableSpec;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,6 +34,8 @@ public final class ProcessadorParticao {
     private final StateProvider state;
     private final ReplicaSink sink;
     private final Runnable afterCommit;
+    private Metricas metricas;
+    private Clock clock;
 
     public ProcessadorParticao(
             TableSpec spec, int particao, int loteMax, ChangeSource source, StateProvider state, ReplicaSink sink) {
@@ -56,12 +60,19 @@ public final class ProcessadorParticao {
         this.afterCommit = afterCommit;
     }
 
+    public void instrumentar(Metricas metricas, Clock clock) {
+        this.metricas = metricas;
+        this.clock = clock;
+    }
+
     /** Processes at most one batch; returns {@link ResultadoLote#VAZIO} when the partition is empty. */
     public ResultadoLote processarLote() {
+        long inicio = System.nanoTime();
         List<ChangeEvent> eventos = source.poll(spec.nome(), particao, loteMax);
         if (eventos.isEmpty()) {
             return ResultadoLote.VAZIO;
         }
+        long fimPoll = System.nanoTime();
         List<Coalescer.Grupo> grupos = Coalescer.coalesce(eventos);
 
         List<Linha> linhas = new ArrayList<>(grupos.size());
@@ -85,12 +96,21 @@ public final class ProcessadorParticao {
                         "anomaly: " + anomalias + " key(s) of " + spec.nome() + " not found in the origin");
             }
         }
+        long fimBusca = System.nanoTime();
         if (!linhas.isEmpty()) {
             sink.upsert(spec, linhas);
         }
         sink.commit();
+        Instant commit = metricas == null ? null : clock.instant();
+        long fimUpsert = System.nanoTime();
         afterCommit.run();
         source.ack(eventos);
+        long fimAck = System.nanoTime();
+        if (metricas != null) {
+            metricas.registrar(eventos, commit, linhas.size(), anomalias, new long[] {
+                fimPoll - inicio, fimBusca - fimPoll, fimUpsert - fimBusca, fimAck - fimUpsert
+            });
+        }
         return new ResultadoLote(eventos.size(), linhas.size(), anomalias);
     }
 

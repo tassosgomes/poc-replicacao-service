@@ -8,12 +8,14 @@ import br.org.ecad.poc.replicacao.oracle.Conexoes;
 import br.org.ecad.poc.replicacao.oracle.OracleOutboxSource;
 import br.org.ecad.poc.replicacao.oracle.OracleReplicaSink;
 import br.org.ecad.poc.replicacao.oracle.OracleStateProvider;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 /** One independent, recoverable loop per static partition. */
@@ -22,7 +24,11 @@ public final class Worker implements AutoCloseable {
     private static final long RETRY_MS = 2_000;
     private final List<Thread> threads = new ArrayList<>();
     private final LongAdder anomalias = new LongAdder();
+    private final AtomicInteger ativas = new AtomicInteger();
     private volatile boolean parar;
+    private Metricas metricas;
+    private Clock clock;
+    private Thread monitor;
 
     private Worker() {}
 
@@ -38,6 +44,8 @@ public final class Worker implements AutoCloseable {
     }
 
     private void abrir(Config config, Clock clock, TableSpec faultTable, int faultPartition, Runnable fault) {
+        this.clock = clock;
+        metricas = new Metricas(Path.of(config.resultadosDir()), config.workerId(), clock);
         Uuid7 ids = new Uuid7(clock);
         ThreadFactory fabrica = config.virtualThreads()
                 ? Thread.ofVirtual().name("particao-", 0).factory()
@@ -51,6 +59,7 @@ public final class Worker implements AutoCloseable {
                 thread.start();
             }
         }
+        monitor = Thread.ofPlatform().name("metricas").start(new MonitorMetricas(config, clock, metricas, ativas::get));
         LOG.log(System.Logger.Level.INFO, "worker " + config.workerId() + " running " + threads.size() + " partitions");
     }
 
@@ -63,12 +72,18 @@ public final class Worker implements AutoCloseable {
                     OracleReplicaSink sink = new OracleReplicaSink(novo, ids)) {
                 ProcessadorParticao processador =
                         new ProcessadorParticao(spec, particao, config.loteMax(), source, estado, sink, hook);
-                while (!parar && !Thread.currentThread().isInterrupted()) {
-                    ResultadoLote resultado = processador.processarLote();
-                    anomalias.add(resultado.anomalias());
-                    if (resultado.eventos() == 0) {
-                        Thread.sleep(config.pollMs());
+                processador.instrumentar(metricas, clock);
+                ativas.incrementAndGet();
+                try {
+                    while (!parar && !Thread.currentThread().isInterrupted()) {
+                        ResultadoLote resultado = processador.processarLote();
+                        anomalias.add(resultado.anomalias());
+                        if (resultado.eventos() == 0) {
+                            Thread.sleep(config.pollMs());
+                        }
                     }
+                } finally {
+                    ativas.decrementAndGet();
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -101,7 +116,7 @@ public final class Worker implements AutoCloseable {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         parar = true;
         threads.forEach(Thread::interrupt);
         for (Thread thread : threads) {
@@ -110,6 +125,14 @@ public final class Worker implements AutoCloseable {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
+            }
+        }
+        if (monitor != null) {
+            monitor.interrupt();
+            try {
+                monitor.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
     }

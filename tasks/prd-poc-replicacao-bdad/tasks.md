@@ -64,7 +64,7 @@ Cenários C1–C10 automatizados com veredito calculado e relatório final com r
 - [x] 3.0 Toda alteração no legado gera um evento com a partição certa (V-02)
 - [x] 4.0 Uma alteração no legado aparece no banco novo em menos de 1 s (V-03)
 - [x] 5.0 O worker sobrevive às falhas do pipeline sem perder nem duplicar (V-04)
-- [ ] 6.0 Cada worker registra métricas, a diferença de relógio e o uso dos bancos (V-05)
+- [x] 6.0 Cada worker registra métricas, a diferença de relógio e o uso dos bancos (V-05)
 - [ ] 7.0 O gerador entrega a taxa pedida e os padrões de carga dos cenários (V-06)
 - [ ] 8.0 Partições são divididas entre réplicas e reassumidas após queda (V-07)
 - [ ] 9.0 Dois snapshots dizem se algum UUID mudou (V-08)

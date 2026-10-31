@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["4.0"]
 gate: "./mvnw -B -q test -Dtest='V05*Test,V05*IT'"
@@ -44,6 +44,6 @@ Valor de `particoes` por lease (V-07); exportação ao Kibana (V-14); critérios
 
 ## Pronto quando
 
-- [ ] Gate focalizado passa (exit 0): `./mvnw -B -q test -Dtest='V05*Test,V05*IT'`
-- [ ] Os 7 testes passam.
-- [ ] O coletor de recursos gera CSV com os dois containers e as sessões dos dois bancos durante 1 minuto de carga.
+- [x] Gate focalizado passa (exit 0): `./mvnw -B -q test -Dtest='V05*Test,V05*IT'`
+- [x] Os 7 testes passam.
+- [x] O coletor de recursos gera CSV com os dois containers e as sessões dos dois bancos durante 1 minuto de carga.
