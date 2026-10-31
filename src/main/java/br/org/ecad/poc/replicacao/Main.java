@@ -1,5 +1,7 @@
 package br.org.ecad.poc.replicacao;
 
+import br.org.ecad.poc.replicacao.gerador.ConfigGerador;
+import br.org.ecad.poc.replicacao.gerador.Gerador;
 import br.org.ecad.poc.replicacao.worker.Worker;
 import java.time.Clock;
 import java.util.List;
@@ -10,7 +12,7 @@ import java.util.function.Function;
  * Single executable entry point. Dispatches the {@code worker}, {@code carga-inicial},
  * {@code reconciliacao} and {@code gerador} subcommands.
  *
- * <p>{@code worker} runs the replication (V-03); the other subcommands are still stubs: with valid
+ * <p>{@code worker} runs the replication (V-03); carga-inicial and reconciliacao are still stubs: with valid
  * configuration they print usage and exit non-zero. An unknown subcommand or an invalid
  * {@link Config} prints a clear one-line message and exits non-zero, never a bare stack trace.
  */
@@ -26,6 +28,20 @@ public final class Main {
         Clock clock = Clock.systemUTC();
         Result result = dispatch(args == null ? new String[0] : args, System.getenv(), clock);
         if (result.config() != null) {
+            if (args[0].equals("gerador")) {
+                try {
+                    new Gerador(
+                                    result.config(),
+                                    ConfigGerador.load(
+                                            key -> firstNonBlank(System.getProperty(key), System.getenv(key))),
+                                    clock)
+                            .executar();
+                    System.exit(0);
+                } catch (Exception e) {
+                    LOG.log(System.Logger.Level.ERROR, "gerador failed: " + e.getMessage(), e);
+                    System.exit(1);
+                }
+            }
             System.exit(runWorker(result.config(), clock));
         }
         LOG.log(result.exitCode() == 0 ? System.Logger.Level.INFO : System.Logger.Level.ERROR, result.message());
@@ -72,6 +88,14 @@ public final class Main {
             config = Config.load(lookup, clock);
         } catch (ConfigException e) {
             return new Result(1, e.getMessage());
+        }
+        if (command.equals("gerador")) {
+            try {
+                ConfigGerador.load(lookup);
+            } catch (ConfigException e) {
+                return new Result(1, e.getMessage());
+            }
+            return new Result(0, "starting gerador", config);
         }
         if (command.equals("worker")) {
             return new Result(0, "starting worker " + config.workerId(), config);

@@ -1,9 +1,9 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["1.0", "3.0"]
 gate: "./mvnw -B -q test -Dtest='V06*Test,V06*IT'"
-gate_expect: "7 testes passam"
+gate_expect: "11 testes passam"
 ---
 
 # 7.0 O gerador entrega a taxa pedida e os padrões de carga dos cenários
@@ -40,6 +40,6 @@ Cenários que usam o gerador (V-11..V-13); decisão de `GERADOR_SATURADO` por de
 
 ## Pronto quando
 
-- [ ] Gate focalizado passa (exit 0): `./mvnw -B -q test -Dtest='V06*Test,V06*IT'`
-- [ ] Os 7 testes passam contra o legado real.
-- [ ] Resumo `INVALIDO` aparece sempre que a taxa média fica < 98%.
+- [x] Gate focalizado passa (exit 0): `./mvnw -B -q test -Dtest='V06*Test,V06*IT'`
+- [x] Os 11 testes (7 originais + validade, conexão indisponível, log por execução, execuções simultâneas) passam contra o legado real.
+- [x] Resumo `INVALIDO` aparece sempre que a taxa média fica < 98%.
