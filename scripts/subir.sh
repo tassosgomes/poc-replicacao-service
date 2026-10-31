@@ -50,7 +50,7 @@ for pair in desenv-server:legado infra-server:novo; do
   [[ $healthy == true ]] || fail "$host: Oracle não ficou saudável"
 done
 "$ROOT/scripts/aplicar-esquema.sh"
-printf 'set heading off feedback off pages 0\nselect '\''titular='\''||(select count(*) from titular)||'\'' obra_musical='\''||(select count(*) from obra_musical)||'\'' fonograma='\''||(select count(*) from fonograma) from dual;\nexit\n' | sql desenv-server poc-legado bdad
+printf 'set heading off feedback off pages 0\nselect '\''titular='\''||(select count(*) from titular)||'\'' obra_musical='\''||(select count(*) from obra_musical)||'\'' fonograma='\''||(select count(*) from fonograma)||'\'' eventos_pendentes='\''||(select count(*) from evento_replicacao) from dual;\nexit\n' | sql desenv-server poc-legado bdad
 for pair in desenv-server:legado infra-server:novo; do
   host=${pair%:*}; role=${pair#*:}
   ssh_poc "$host" "docker inspect --format 'poc-$role NanoCpus={{.HostConfig.NanoCpus}} Memory={{.HostConfig.Memory}}' poc-$role"

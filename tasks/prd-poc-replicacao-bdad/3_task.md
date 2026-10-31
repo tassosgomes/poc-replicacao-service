@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["2.0"]
 gate: "bash scripts/testes/test-v02-captura.sh"
@@ -41,6 +41,6 @@ Leitura dos eventos e replicação (V-03); métrica de overhead do trigger (V-13
 
 ## Pronto quando
 
-- [ ] Gate focalizado passa (exit 0): `bash scripts/testes/test-v02-captura.sh`
-- [ ] Os 6 comportamentos acima observados contra o legado real da PoC.
-- [ ] Reexecutar `subir.sh` com massa completa mantém `COUNT(*)` de `evento_replicacao` = 0.
+- [x] Gate focalizado passa (exit 0): `bash scripts/testes/test-v02-captura.sh`
+- [x] Os 6 comportamentos acima observados contra o legado real da PoC.
+- [x] Reexecutar `subir.sh` com massa completa mantém `COUNT(*)` de `evento_replicacao` = 0.

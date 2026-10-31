@@ -61,7 +61,7 @@ Cenários C1–C10 automatizados com veredito calculado e relatório final com r
 
 - [x] 1.0 Esqueleto do projeto Java com subcomandos e gates de build (EN-01)
 - [x] 2.0 Um comando sobe, verifica e remove o ambiente nos dois servidores (V-01)
-- [ ] 3.0 Toda alteração no legado gera um evento com a partição certa (V-02)
+- [x] 3.0 Toda alteração no legado gera um evento com a partição certa (V-02)
 - [ ] 4.0 Uma alteração no legado aparece no banco novo em menos de 1 s (V-03)
 - [ ] 5.0 O worker sobrevive às falhas do pipeline sem perder nem duplicar (V-04)
 - [ ] 6.0 Cada worker registra métricas, a diferença de relógio e o uso dos bancos (V-05)
