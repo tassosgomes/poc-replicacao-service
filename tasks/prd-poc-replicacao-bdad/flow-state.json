@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "branch": "feature/poc-replicacao-bdad",
+  "original_base_ref": "88b61d35cddfa1d45b670d284d23885d3046948e",
+  "base_ref": "88b61d35cddfa1d45b670d284d23885d3046948e",
+  "target_ref": null,
+  "last_checkpoint": null,
+  "phase": "validate",
+  "active_task": "1.0",
+  "attempt": 1,
+  "max_attempts": 3,
+  "full_attempt": 0,
+  "transport_retries": 0,
+  "specs": [
+    "techspec.md"
+  ],
+  "delivery": "pr",
+  "transport": "herdr",
+  "validated_commit": null,
+  "validated_tree": null,
+  "last_result": "implementation_complete 1.0 (run.RLa0o56p)",
+  "history": [
+    {
+      "event": "prepare-prd-branch",
+      "note": "2 falhas de transporte (opencode nao iniciou); usuario ajustou configuracao; 3a chamada ok"
+    }
+  ]
+}
