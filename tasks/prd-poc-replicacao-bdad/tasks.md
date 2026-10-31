@@ -59,7 +59,7 @@ Cenários C1–C10 automatizados com veredito calculado e relatório final com r
 
 ## Tasks
 
-- [ ] 1.0 Esqueleto do projeto Java com subcomandos e gates de build (EN-01)
+- [x] 1.0 Esqueleto do projeto Java com subcomandos e gates de build (EN-01)
 - [ ] 2.0 Um comando sobe, verifica e remove o ambiente nos dois servidores (V-01)
 - [ ] 3.0 Toda alteração no legado gera um evento com a partição certa (V-02)
 - [ ] 4.0 Uma alteração no legado aparece no banco novo em menos de 1 s (V-03)
