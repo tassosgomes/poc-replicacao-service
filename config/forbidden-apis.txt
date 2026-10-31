@@ -1,0 +1,17 @@
+# Project signatures for de.thetaphi:forbiddenapis, on top of the bundled jdk-unsafe,
+# jdk-deprecated, jdk-non-portable and jdk-system-out.
+# EN-01 (DT-02, no Spring): the monotonic UUIDv7 lives in core.Uuid7 (V-03);
+# instants come from an injected java.time.Clock. Console output goes through
+# System.Logger (jdk-system-out bans System.out).
+# ignoreSignaturesOfMissingClasses is on: add an entry only after proving it fails a build.
+
+@defaultMessage Identifiers are UUIDv7 from core.Uuid7 (V-03): never UUID.randomUUID()
+java.util.UUID#randomUUID()
+
+@defaultMessage Time comes from the injected java.time.Clock: use clock.instant() / Instant.now(clock)
+java.time.Instant#now()
+java.time.LocalDateTime#now()
+java.time.LocalDate#now()
+java.time.OffsetDateTime#now()
+java.time.ZonedDateTime#now()
+java.util.Date#<init>()

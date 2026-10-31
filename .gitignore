@@ -1,0 +1,6 @@
+.env
+target/
+*.tmp
+*.log
+.tsg-flow/
+# resultados/ é versionado (entregável da PoC) e nunca deve ser ignorado.
