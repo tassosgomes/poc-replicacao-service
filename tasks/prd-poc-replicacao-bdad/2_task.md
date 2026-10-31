@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: []
 gate: "bash scripts/testes/test-v01-ambiente.sh"
@@ -44,7 +44,7 @@ Triggers de captura e `evento_replicacao` (V-02), o jar Java (EN-01/V-03), vigil
 
 ## Pronto quando
 
-- [ ] Gate focalizado passa (exit 0): `bash scripts/testes/test-v01-ambiente.sh`
-- [ ] Ambiente limpo → `subir.sh` imprime `titular=200000 obra_musical=500000 fonograma=1000000` e os limites de recursos registrados.
-- [ ] Porta ocupada → aborta antes de subir qualquer container, com mensagem citando a porta.
-- [ ] `derrubar.sh` → inventário final igual ao inicial; containers e volumes `poc-` removidos; nenhum serviço existente alterado.
+- [x] Gate focalizado passa (exit 0): `bash scripts/testes/test-v01-ambiente.sh`
+- [x] Ambiente limpo → `subir.sh` imprime `titular=200000 obra_musical=500000 fonograma=1000000` e os limites de recursos registrados.
+- [x] Porta ocupada → aborta antes de subir qualquer container, com mensagem citando a porta.
+- [x] `derrubar.sh` → inventário final igual ao inicial; containers e volumes `poc-` removidos; nenhum serviço existente alterado.
