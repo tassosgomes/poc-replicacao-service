@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["4.0"]
 gate: "./mvnw -B -q test -Dtest='V04*IT'"
@@ -41,6 +41,6 @@ CSV de métricas (V-05); lease (V-07); carga inicial concorrente com o worker em
 
 ## Pronto quando
 
-- [ ] Gate focalizado passa (exit 0): `./mvnw -B -q test -Dtest='V04*IT'`
-- [ ] Os 5 cenários de falha mantêm zero perda e zero linha duplicada.
-- [ ] Nenhum serviço existente é tocado pelos testes (só `poc-novo`).
+- [x] Gate focalizado passa (exit 0): `./mvnw -B -q test -Dtest='V04*IT'`
+- [x] Os 5 cenários de falha mantêm zero perda e zero linha duplicada.
+- [x] Nenhum serviço existente é tocado pelos testes (só `poc-novo`).

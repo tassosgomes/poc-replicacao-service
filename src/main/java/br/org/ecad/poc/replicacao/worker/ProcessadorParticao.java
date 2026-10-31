@@ -19,8 +19,7 @@ import java.util.function.BooleanSupplier;
  * and commit in the destination, and only then acknowledge (delete) the events in the origin.
  * The two transactions are separate: a crash between them only reprocesses idempotently.
  *
- * <p>Failure recovery, anomaly alerting and retry belong to V-04; here a missing origin row is
- * counted and its events are discarded so the partition never stalls on it.
+ * A missing origin row is counted and its events are discarded so the partition never stalls on it.
  */
 public final class ProcessadorParticao {
 
@@ -32,15 +31,29 @@ public final class ProcessadorParticao {
     private final ChangeSource source;
     private final StateProvider state;
     private final ReplicaSink sink;
+    private final Runnable afterCommit;
 
     public ProcessadorParticao(
             TableSpec spec, int particao, int loteMax, ChangeSource source, StateProvider state, ReplicaSink sink) {
+        this(spec, particao, loteMax, source, state, sink, () -> {});
+    }
+
+    /** The hook permits fault injection in tests; production uses the no-op constructor. */
+    public ProcessadorParticao(
+            TableSpec spec,
+            int particao,
+            int loteMax,
+            ChangeSource source,
+            StateProvider state,
+            ReplicaSink sink,
+            Runnable afterCommit) {
         this.spec = spec;
         this.particao = particao;
         this.loteMax = loteMax;
         this.source = source;
         this.state = state;
         this.sink = sink;
+        this.afterCommit = afterCommit;
     }
 
     /** Processes at most one batch; returns {@link ResultadoLote#VAZIO} when the partition is empty. */
@@ -76,6 +89,7 @@ public final class ProcessadorParticao {
             sink.upsert(spec, linhas);
         }
         sink.commit();
+        afterCommit.run();
         source.ack(eventos);
         return new ResultadoLote(eventos.size(), linhas.size(), anomalias);
     }
