@@ -63,12 +63,17 @@ public final class Metricas {
         }
     }
 
-    public synchronized String gravar(int particoes, long pendentes, long lag, Skew skew) {
+    public String gravar(int particoes, long pendentes, long lag, Skew skew) {
+        return gravar(clock.instant(), particoes, pendentes, lag, skew);
+    }
+
+    /** Writes the window ending at {@code ts} and starts the next one. */
+    public synchronized String gravar(Instant ts, int particoes, long pendentes, long lag, Skew skew) {
         Collections.sort(latencias);
         String linha = String.format(
                 Locale.ROOT,
                 "%s,%d,%.2f,%.2f,%.2f,%d,%d,%d,%d,%d,%d,%d,%.2f,%.2f,%.2f,%.2f,%d,%d,%d,%s",
-                clock.instant(),
+                ts,
                 particoes,
                 eventos / 5.0,
                 linhas / 5.0,

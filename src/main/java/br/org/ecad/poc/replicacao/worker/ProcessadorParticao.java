@@ -36,6 +36,7 @@ public final class ProcessadorParticao {
     private final Runnable afterCommit;
     private Metricas metricas;
     private Clock clock;
+    private Cerca cerca = Cerca.LIVRE;
 
     public ProcessadorParticao(
             TableSpec spec, int particao, int loteMax, ChangeSource source, StateProvider state, ReplicaSink sink) {
@@ -65,7 +66,15 @@ public final class ProcessadorParticao {
         this.clock = clock;
     }
 
-    /** Processes at most one batch; returns {@link ResultadoLote#VAZIO} when the partition is empty. */
+    /** Guards the destination commit and the origin ack of every batch by the partition lease. */
+    public void cercar(Cerca cerca) {
+        this.cerca = cerca;
+    }
+
+    /**
+     * Processes at most one batch; returns {@link ResultadoLote#VAZIO} when the partition is empty.
+     * Throws {@link LeasePerdidoException} when the lease refuses the commit or the ack.
+     */
     public ResultadoLote processarLote() {
         long inicio = System.nanoTime();
         List<ChangeEvent> eventos = source.poll(spec.nome(), particao, loteMax);
@@ -100,10 +109,21 @@ public final class ProcessadorParticao {
         if (!linhas.isEmpty()) {
             sink.upsert(spec, linhas);
         }
-        sink.commit();
+        if (!cerca.podeConfirmarDestino()) {
+            throw new LeasePerdidoException(
+                    "lease of " + spec.nome() + "/" + particao + " refused the commit; batch rolled back");
+        }
+        if (!cerca.confirmarDestino(sink)) {
+            throw new LeasePerdidoException(
+                    "lease of " + spec.nome() + "/" + particao + " expired before the commit; batch rolled back");
+        }
         Instant commit = metricas == null ? null : clock.instant();
         long fimUpsert = System.nanoTime();
         afterCommit.run();
+        if (!cerca.podeConfirmarOrigem()) {
+            throw new LeasePerdidoException(
+                    "lease of " + spec.nome() + "/" + particao + " refused the ack; events left for the next owner");
+        }
         source.ack(eventos);
         long fimAck = System.nanoTime();
         if (metricas != null) {

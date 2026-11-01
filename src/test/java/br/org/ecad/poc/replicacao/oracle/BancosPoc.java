@@ -16,7 +16,7 @@ import java.util.function.Function;
  * resolution as {@code scripts/testes/env-v03.sh}); credentials default to the throwaway PoC ones.
  * Nothing is read from {@code .env}.
  */
-final class BancosPoc {
+public final class BancosPoc {
 
     private static final Clock CLOCK = Clock.systemUTC();
     private static final String LEGADO_HOST = "desenv-server";
@@ -25,15 +25,15 @@ final class BancosPoc {
 
     private BancosPoc() {}
 
-    static Config config() {
+    public static Config config() {
         return CONFIG;
     }
 
-    static Connection legado() {
+    public static Connection legado() {
         return Conexoes.abrir(CONFIG.legadoUrl(), CONFIG.legadoUsuario(), CONFIG.legadoSenha());
     }
 
-    static Connection novo() {
+    public static Connection novo() {
         return Conexoes.abrir(CONFIG.novoUrl(), CONFIG.novoUsuario(), CONFIG.novoSenha());
     }
 

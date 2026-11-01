@@ -19,6 +19,7 @@ final class MonitorMetricas implements Runnable {
     private final Clock clock;
     private final Metricas metricas;
     private final IntSupplier particoes;
+    static final long JANELA_MS = 5_000;
     private Metricas.Skew skew = new Metricas.Skew(0, 0, false);
     private long proximaMedida;
 
@@ -29,26 +30,44 @@ final class MonitorMetricas implements Runnable {
         this.particoes = particoes;
     }
 
+    /**
+     * Windows end on multiples of {@link #JANELA_MS} of the wall clock and {@code ts} is that boundary,
+     * with {@code particoes} read at it (before any query), so the rows of workers on the same clock
+     * describe the same instant and can be paired by {@code ts}. The row written at shutdown carries
+     * the instant it was taken instead.
+     */
     @Override
     public void run() {
         medirSkew();
-        long proximaJanela = System.nanoTime() + Duration.ofSeconds(5).toNanos();
+        long fronteira = proximaFronteira(clock.millis());
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                long espera = proximaJanela - System.nanoTime();
-                if (espera > 0) java.util.concurrent.TimeUnit.NANOSECONDS.sleep(espera);
-                proximaJanela += Duration.ofSeconds(5).toNanos();
+                // Sleep is monotonic but the boundary is wall clock: re-check after waking, so a backward
+                // step of the wall clock (NTP/hypervisor time sync) delays the sample instead of labelling
+                // it with a boundary the clock has not reached yet.
+                for (long espera = fronteira - clock.millis(); espera > 0; espera = fronteira - clock.millis()) {
+                    java.util.concurrent.TimeUnit.MILLISECONDS.sleep(Math.min(JANELA_MS, espera));
+                }
+                int ativas = particoes.getAsInt();
+                Instant ts = Instant.ofEpochMilli(fronteira);
+                fronteira = Math.max(fronteira + JANELA_MS, proximaFronteira(clock.millis()));
                 if (System.nanoTime() >= proximaMedida) medirSkew();
-                amostrar();
+                amostrar(ts, ativas);
             }
         } catch (InterruptedException e) {
             // Clear interruption before the final JDBC measurement, then restore it.
         } finally {
             boolean interrupted = Thread.interrupted();
+            int ativas = particoes.getAsInt();
+            Instant ts = clock.instant();
             medirSkew();
-            amostrar();
+            amostrar(ts, ativas);
             if (interrupted) Thread.currentThread().interrupt();
         }
+    }
+
+    static long proximaFronteira(long agoraMs) {
+        return Math.floorDiv(agoraMs, JANELA_MS) * JANELA_MS + JANELA_MS;
     }
 
     private Connection conectar() throws SQLException {
@@ -72,7 +91,7 @@ final class MonitorMetricas implements Runnable {
         proximaMedida = System.nanoTime() + Duration.ofMinutes(1).toNanos();
     }
 
-    private void amostrar() {
+    private void amostrar(Instant ts, int ativas) {
         try (Connection c = conectar();
                 Statement s = c.createStatement();
                 ResultSet rs = s.executeQuery("SELECT COUNT(*), MIN(criado_em) FROM evento_replicacao")) {
@@ -85,7 +104,7 @@ final class MonitorMetricas implements Runnable {
                             0,
                             Duration.between(antigo.toInstant(), clock.instant())
                                     .toMillis());
-            metricas.gravar(particoes.getAsInt(), pendentes, lag, skew);
+            metricas.gravar(ts, ativas, pendentes, lag, skew);
         } catch (SQLException | ReplicacaoException e) {
             LOG.log(System.Logger.Level.WARNING, "backlog measurement failed", e);
         }

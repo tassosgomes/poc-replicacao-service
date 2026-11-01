@@ -66,7 +66,7 @@ Cenários C1–C10 automatizados com veredito calculado e relatório final com r
 - [x] 5.0 O worker sobrevive às falhas do pipeline sem perder nem duplicar (V-04)
 - [x] 6.0 Cada worker registra métricas, a diferença de relógio e o uso dos bancos (V-05)
 - [x] 7.0 O gerador entrega a taxa pedida e os padrões de carga dos cenários (V-06)
-- [ ] 8.0 Partições são divididas entre réplicas e reassumidas após queda (V-07)
+- [x] 8.0 Partições são divididas entre réplicas e reassumidas após queda (V-07)
 - [ ] 9.0 Dois snapshots dizem se algum UUID mudou (V-08)
 - [ ] 10.0 A reconciliação encontra e reenfileira toda divergência (V-09)
 - [ ] 11.0 A carga inicial copia 1,7 milhão de linhas sem regerar UUID (V-10)
