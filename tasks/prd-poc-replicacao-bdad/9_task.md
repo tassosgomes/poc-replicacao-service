@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["4.0"]
 gate: "bash scripts/testes/test-v08-snapshots.sh"
