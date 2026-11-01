@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["4.0", "7.0", "9.0", "10.0"]
 gate: "./mvnw -B -q test -Dtest='V10*IT'"
@@ -42,6 +42,6 @@ Cenário C1 automatizado com `meta.json` (V-13).
 
 ## Pronto quando
 
-- [ ] Gate focalizado passa (exit 0): `./mvnw -B -q test -Dtest='V10*IT'`
-- [ ] Os 4 testes passam.
-- [ ] Resumo mostra linhas/s por tabela e tempo total.
+- [x] Gate focalizado passa (exit 0): `./mvnw -B -q test -Dtest='V10*IT'`
+- [x] Os 4 testes passam.
+- [x] Resumo mostra linhas/s por tabela e tempo total.

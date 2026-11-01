@@ -1,5 +1,7 @@
 package br.org.ecad.poc.replicacao;
 
+import br.org.ecad.poc.replicacao.carga.CargaInicial;
+import br.org.ecad.poc.replicacao.carga.ConfigCarga;
 import br.org.ecad.poc.replicacao.gerador.ConfigGerador;
 import br.org.ecad.poc.replicacao.gerador.Gerador;
 import br.org.ecad.poc.replicacao.reconciliacao.ConfigReconciliacao;
@@ -18,8 +20,7 @@ import java.util.function.Function;
  * Single executable entry point. Dispatches the {@code worker}, {@code carga-inicial},
  * {@code reconciliacao} and {@code gerador} subcommands.
  *
- * <p>{@code worker} runs the replication (V-03); carga-inicial is still a stub: with valid
- * configuration they print usage and exit non-zero. An unknown subcommand or an invalid
+ * <p>An unknown subcommand or an invalid
  * {@link Config} prints a clear one-line message and exits non-zero, never a bare stack trace.
  */
 public final class Main {
@@ -34,6 +35,21 @@ public final class Main {
         Clock clock = Clock.systemUTC();
         Result result = dispatch(args == null ? new String[0] : args, System.getenv(), clock);
         if (result.config() != null) {
+            if (args[0].equals("carga-inicial")) {
+                try {
+                    new CargaInicial(
+                                    result.config(),
+                                    ConfigCarga.load(key -> firstNonBlank(System.getProperty(key), System.getenv(key))),
+                                    clock,
+                                    new PrintStream(
+                                            new FileOutputStream(FileDescriptor.out), true, StandardCharsets.UTF_8))
+                            .executar();
+                    System.exit(0);
+                } catch (Exception e) {
+                    LOG.log(System.Logger.Level.ERROR, "carga-inicial failed: " + e.getMessage(), e);
+                    System.exit(1);
+                }
+            }
             if (args[0].equals("gerador")) {
                 try {
                     new Gerador(
@@ -106,6 +122,14 @@ public final class Main {
             config = Config.load(lookup, clock);
         } catch (ConfigException e) {
             return new Result(1, e.getMessage());
+        }
+        if (command.equals("carga-inicial")) {
+            try {
+                ConfigCarga.load(lookup);
+            } catch (ConfigException e) {
+                return new Result(1, e.getMessage());
+            }
+            return new Result(0, "starting carga-inicial", config);
         }
         if (command.equals("gerador")) {
             try {

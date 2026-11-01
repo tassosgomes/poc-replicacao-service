@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class MainTest {
 
@@ -39,13 +37,11 @@ class MainTest {
         assertThat(result.message()).doesNotContain("\n");
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"carga-inicial"})
-    void dispatch_knownStub_returnsNonZeroWithUsage(String command) {
-        Main.Result result = Main.dispatch(new String[] {command}, lookupOf(Map.of()), CLOCK);
-
-        assertThat(result.exitCode()).isNotZero();
-        assertThat(result.message()).contains(command).contains("usage");
+    @Test
+    void dispatch_cargaInicial_returnsConfig() {
+        Main.Result result = Main.dispatch(new String[] {"carga-inicial"}, lookupOf(Map.of()), CLOCK);
+        assertThat(result.exitCode()).isZero();
+        assertThat(result.config()).isNotNull();
     }
 
     @Test
