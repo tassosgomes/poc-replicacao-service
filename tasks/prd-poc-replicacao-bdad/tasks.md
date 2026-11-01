@@ -73,7 +73,7 @@ Cenários C1–C10 automatizados com veredito calculado e relatório final com r
 - [x] 12.0 Um cenário de carga roda sozinho, é validado e arquiva seus resultados (V-11)
 - [x] 13.0 Cenários de falha e recuperação provam integridade (V-12)
 - [x] 14.0 C1, C10 e a medição de custo no legado (V-13)
-- [ ] 15.0 Os resultados aparecem ao vivo no Kibana (V-14)
+- [x] 15.0 Os resultados aparecem ao vivo no Kibana (V-14)
 - [ ] 16.0 O relatório consolida os números contra os critérios e recomenda (V-15)
 
 ## Verificação herdada

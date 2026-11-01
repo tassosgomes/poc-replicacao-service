@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 source "$(dirname "$0")/comum.sh"
+if [[ ${1:-} == --limpar-elastic ]]; then
+  # Independent, repeatable cleanup, entirely on the laptop; no Oracle teardown implied.
+  exec bash "$ROOT/scripts/exportar.sh" limpar "${2:?informe a execucao a limpar}"
+fi
+[[ $# == 0 ]] || { echo 'Uso: derrubar.sh [--limpar-elastic EXECUCAO]' >&2; exit 2; }
 [[ -f $STATE ]] || { echo 'Inventário inicial ausente; remoção cancelada.' >&2; exit 1; }
 for pair in desenv-server:legado infra-server:novo; do
   host=${pair%:*}; role=${pair#*:}

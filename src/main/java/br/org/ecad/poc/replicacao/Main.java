@@ -2,6 +2,7 @@ package br.org.ecad.poc.replicacao;
 
 import br.org.ecad.poc.replicacao.carga.CargaInicial;
 import br.org.ecad.poc.replicacao.carga.ConfigCarga;
+import br.org.ecad.poc.replicacao.exportador.Exportador;
 import br.org.ecad.poc.replicacao.gerador.ConfigGerador;
 import br.org.ecad.poc.replicacao.gerador.Gerador;
 import br.org.ecad.poc.replicacao.reconciliacao.ConfigReconciliacao;
@@ -27,11 +28,15 @@ public final class Main {
 
     private static final System.Logger LOG = System.getLogger(Main.class.getName());
 
-    static final List<String> COMMANDS = List.of("worker", "carga-inicial", "reconciliacao", "gerador");
+    static final List<String> COMMANDS = List.of("worker", "carga-inicial", "reconciliacao", "gerador", "exportador");
 
     private Main() {}
 
     public static void main(String[] args) {
+        if (args != null && args.length == 1 && args[0].equals("exportador")) {
+            System.exit(Exportador.run(System::getenv));
+            return;
+        }
         Clock clock = Clock.systemUTC();
         Result result = dispatch(args == null ? new String[0] : args, System.getenv(), clock);
         if (result.config() != null) {
@@ -117,6 +122,9 @@ public final class Main {
         if (!COMMANDS.contains(command)) {
             return new Result(2, "unknown subcommand '" + command + "'. " + usage());
         }
+        if (command.equals("exportador")) {
+            return new Result(args.length == 1 ? 0 : 2, usage());
+        }
         Config config;
         try {
             config = Config.load(lookup, clock);
@@ -154,7 +162,7 @@ public final class Main {
     }
 
     static String usage() {
-        return "usage: poc-replicacao-service <worker|carga-inicial|reconciliacao|gerador>";
+        return "usage: poc-replicacao-service <worker|carga-inicial|reconciliacao|gerador|exportador>";
     }
 
     private static String firstNonBlank(String first, String second) {
