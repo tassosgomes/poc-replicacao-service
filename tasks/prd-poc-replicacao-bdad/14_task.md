@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["11.0", "12.0"]
 gate: "bash scripts/testes/test-v13-c1-c10.sh"
@@ -39,6 +39,6 @@ Execução completa dos dois cenários e consolidação (V-15). Confirmação do
 
 ## Pronto quando
 
-- [ ] Gate focalizado passa (exit 0): `bash scripts/testes/test-v13-c1-c10.sh`
-- [ ] As 3 verificações passam.
-- [ ] O resultado de C10 traz percentual, valor absoluto, dispersão e veredito.
+- [x] Gate focalizado passa (exit 0): `bash scripts/testes/test-v13-c1-c10.sh`
+- [x] As 3 verificações passam.
+- [x] O resultado de C10 traz percentual, valor absoluto, dispersão e veredito.

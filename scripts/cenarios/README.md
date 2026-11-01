@@ -3,6 +3,7 @@ os dois bancos da PoC carregados e nenhum outro worker/gerador ativo. O `.env` n
 Gere o jar com `./mvnw -B -q package` antes de executar:
 
 ```bash
+bash scripts/cenarios/c1-carga-inicial.sh
 bash scripts/cenarios/c2-regime.sh
 bash scripts/cenarios/c3-teto.sh
 bash scripts/cenarios/c4-rajada.sh
@@ -11,6 +12,7 @@ bash scripts/cenarios/c6-queda-worker.sh
 bash scripts/cenarios/c7-duas-replicas.sh
 bash scripts/cenarios/c8-trigger-desligado.sh
 bash scripts/cenarios/c9-threads.sh
+bash scripts/cenarios/c10-custo-legado.sh
 ```
 
 Cada chamada cria apenas containers próprios `poc-*`, limitados a 2 CPUs/1 GiB (gerador no
@@ -130,3 +132,48 @@ ou injetar qualquer falha. Exige aprovação de C6, C7 e C8; depois repete C8 co
 evidências ficam em `.tsg-flow/v12-gate-*/`. Esse último caso deixa divergências deliberadas na
 réplica, com captura habilitada e sem workers ativos; o preparo inicial da próxima execução
 permite repetir o gate. Nenhum reparo posterior é usado para alterar o veredito desse caso.
+
+C1 trunca somente as três tabelas de negócio do banco novo (preserva as 48 partições), executa
+`carga-inicial` com captura habilitada e então inicia o worker, drena e compara contagens e dados
+por reconciliação completa em `DRY_RUN`. `medidas.carga_inicial` guarda linhas/s por tabela e tempo
+total extraídos do log. Os snapshots para conferir UUIDs começam após a carga, pois o cenário
+recria os IDs ao truncar. O padrão cobre todos os códigos; `C1_CODIGO_MAX` permite uma execução
+reduzida, com limite exclusivo aplicado tanto à cópia quanto às contagens e à reconciliação.
+`operacao_especial.escopo` identifica explicitamente esse recorte; ele não comprova integridade
+fora da faixa. C1 reduzido deixa a réplica parcial; para a execução completa use o padrão.
+
+C10 executa pelo menos três pares alternados (captura ligada/desligada), primeiro sem a consulta
+de métricas e depois com ela. Não executa worker durante as medições, isolando o custo no legado.
+O gerador usa a mesma taxa, duração, semente, threads e mix nos quatro modos; usa somente updates
+(`PCT_INSERT=0 PCT_DELETE=0`) para manter a população de chaves estável entre repetições. Somente
+os três triggers `*_captura` são alternados; `*_updated` são conferidos habilitados em cada fase.
+A captura é restaurada inclusive em erro/interrupção, após parar os geradores da execução.
+
+No modo com métricas, o coordenador consulta `COUNT(*), MIN(criado_em)` de `evento_replicacao`
+no início e a cada 5 s durante a carga, em uma thread independente da vigilância por SSH.
+Essa thread é encerrada e aguardada antes de concluir a fase, inclusive em erro/interrupção.
+No modo sem métricas não consulta pendentes dentro dessa janela.
+O meta guarda as consultas e seu tempo monotônico incluindo transporte SSH/conexão SQLPlus;
+esse tempo não é apresentado como tempo SQL puro. A diferença entre as médias de transação
+com/sem consultas quantifica sua interferência em cada estado de captura. Esse experimento
+mede a consulta de backlog, não o custo de todo o monitor JDBC do worker. A vigilância de
+serviços/relógios continua igual nos dois modos. O tamanho do backlog antes/depois de cada fase
+é registrado, pois acumula eventos durante o experimento e pode afetar o custo observado.
+
+`medidas.custo_legado` traz médias, amostras, desvio padrão amostral, mínimo/máximo, overhead
+absoluto e percentual da captura em ambos os modos e custo das consultas. O critério principal
+usa a comparação **sem métricas**, para não incluir essa interferência. Padrões:
+`C10_REPETICOES=3` (mínimo 3 por modo), `C10_LIMITE_ATIVO=true`, `C10_LIMITE_PCT=15` e
+`C10_LIMITE_MS=5`. Exige simultaneamente os dois limites inclusivos, segundo critério proposto
+(Q-T3 ainda pendente). `C10_LIMITE_ATIVO=false` preserva os números e produz `SEM_CRITERIO`,
+exit 0; taxa abaixo de 98%, ausência de consultas no modo com métricas ou evidência incompleta
+continuam invalidando a execução. Use `DURACAO_SEG` maior que 5 s para observar consultas.
+As alterações sem captura não são reparadas por C10; a integridade da réplica é explicitamente
+não aplicável neste cenário. Prepare/reconcilie a réplica antes do próximo cenário de replicação.
+
+O gate `bash scripts/testes/test-v13-c1-c10.sh` executa três verificações reais: C1 com até 2000
+chaves por tabela; C10 com 12 s por fase e três repetições por modo; nova execução C10 com o limite
+desligado. Confere os números contra os logs e o veredito contra os dois limites, aceitando que
+a medição curta em hosts compartilhados produza `REPROVADO`. Verifica também restauração dos
+triggers e ausência de containers abandonados. As evidências ficam em `.tsg-flow/v13-gate-*/`.
+A execução completa e sua consolidação pertencem à task 16.0.

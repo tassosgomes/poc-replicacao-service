@@ -424,7 +424,7 @@ class Runner:
                     stats = remote(entry["host"], ["docker", "stats", "--no-stream", "--format", "{{.CPUPerc}};{{.MemUsage}}", entry["name"]]).decode().strip()
                     stream.write(f"{utc()},{entry['name']},{stats.replace(';', ',')},0\n")
 
-    def execute(self):
+    def setup(self):
         shell_function("pre_requisitos_rapidos")
         if not self.jar.is_file():
             raise RuntimeError("jar ausente; execute ./mvnw -B -q package")
@@ -446,6 +446,12 @@ class Runner:
         self.legacy_address = re.search(r"^hostname (.+)$", config, re.M)[1]
         self.clock("inicio")
         self.next_watch = time.monotonic() + self.interval
+
+    def reconciliation_options(self):
+        return {}
+
+    def execute(self):
+        self.setup()
         self.prepare_replica()
         self.start_worker()
         self.wait_until(lambda: pending() == 0, self.drain_timeout, "pendentes iniciais nao zeraram")
@@ -455,7 +461,7 @@ class Runner:
         self.workload()
         self.wait_until(lambda: pending() == 0, self.drain_timeout, "pendentes finais nao zeraram")
         self.integrity["pendentes_final"] = pending()
-        recon = self.spawn("reconciliacao", "infra-server", {"MODO": "completo", "DRY_RUN": True})
+        recon = self.spawn("reconciliacao", "infra-server", {"MODO": "completo", "DRY_RUN": True} | self.reconciliation_options())
         self.wait_until(lambda: recon["process"].poll() is not None, 300, "reconciliacao excedeu limite")
         # Reconciliation has no result directory; the complete stdout is its evidence.
         process = recon["process"]
@@ -525,17 +531,20 @@ class Runner:
         if errors:
             self.reasons.append("ERRO_LIMPEZA")
 
-    def save(self):
+    def evaluate(self):
         self.measures = analyze(self.directory, self.phases, self.special)
         if self.scenario == "c2" and self.phases:
             self.measures["p95_ms"] = self.phases[0]["p95_ms"]
         # C8 deliberately produces no events when capture is disabled and delta misses its window.
         # Its evidence is the generator row log plus complete comparisons, even with zero latencies.
-        if self.measures["amostras"] == 0 or (self.scenario != "c8" and self.measures["eventos_medidos"] == 0):
+        if self.measures["amostras"] == 0 or (self.scenario not in ("c1", "c8") and self.measures["eventos_medidos"] == 0):
             self.reasons.append("EVIDENCIA_INSUFICIENTE")
         if not self.measures["relogios_validos"]:
             self.reasons.append("RELOGIO")
-        checks = criteria(self.scenario, self.phases, self.measures, self.integrity, self.special)
+        return criteria(self.scenario, self.phases, self.measures, self.integrity, self.special)
+
+    def save(self):
+        checks = self.evaluate()
         if any(c["veredito"] == "INVALIDO" for c in checks):
             missing_2000 = self.scenario in ("c3", "c9") and not any(p["grupo"] == "c3" and p["valido"] and p["alvo"] == 2000 for p in self.phases)
             self.reasons.append("TAXA" if missing_2000 else "EVIDENCIA_INSUFICIENTE")
@@ -547,6 +556,8 @@ class Runner:
                 if check["veredito"] not in ("NAO_EXECUTADO", "SEM_CRITERIO"):
                     check["veredito"] = "INVALIDO"
         verdict = "INVALIDO" if invalid else "REPROVADO" if any(c["veredito"] == "REPROVADO" for c in checks) else "APROVADO"
+        if verdict == "APROVADO" and self.scenario == "c10" and not self.special.get("limite_ativo", True):
+            verdict = "SEM_CRITERIO"
         data = {"cenario": self.scenario, "execucao": self.execution, "inicio": self.started, "fim": utc(),
                 "diretorio": os.path.relpath(self.directory, ROOT), "ambiente": self.environment,
                 "validade": {"estado": "INVALIDO" if invalid else "VALIDO", "motivos": sorted(set(self.reasons))},
@@ -568,11 +579,14 @@ class Runner:
         temporary.write_text(payload)
         temporary.replace(self.base / "meta.json")
         print(f"{self.scenario}: {verdict}; {self.directory / 'meta.json'}", flush=True)
-        return 0 if verdict == "APROVADO" else 1
+        return 0 if verdict in ("APROVADO", "SEM_CRITERIO") else 1
 
 
 def main():
-    if sys.argv[1] in ("c6", "c7", "c8"):
+    if sys.argv[1] in ("c1", "c10"):
+        from carga_custo import LoadCostRunner
+        runner = LoadCostRunner(sys.argv[1])
+    elif sys.argv[1] in ("c6", "c7", "c8"):
         from falhas import FailureRunner
         runner = FailureRunner(sys.argv[1])
     else:
