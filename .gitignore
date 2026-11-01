@@ -2,5 +2,7 @@
 target/
 *.tmp
 *.log
+!resultados/**/*.log
 .tsg-flow/
+__pycache__/
 # resultados/ é versionado (entregável da PoC) e nunca deve ser ignorado.

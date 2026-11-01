@@ -21,16 +21,24 @@ public final class Metricas {
             "ts,particoes,eventos_s,linhas_s,coalesce,p50_ms,p95_ms,p99_ms,max_ms,pendentes,lag_ms,anomalias,ms_poll,ms_busca,ms_upsert,ms_ack,skew_ms,skew_incerteza_ms,transacoes_longas,valida";
     private static final System.Logger LOG = System.getLogger(Metricas.class.getName());
     private final Path arquivo;
+    private final Path eventosArquivo;
+    private final boolean eventosCsv;
     private final Clock clock;
     private final List<Long> latencias = new ArrayList<>();
     private long eventos, linhas, anomalias, longas, lotes, poll, busca, upsert, ack;
 
     public Metricas(Path diretorio, String workerId, Clock clock) {
+        this(diretorio, workerId, clock, false);
+    }
+
+    public Metricas(Path diretorio, String workerId, Clock clock, boolean eventosCsv) {
         if (!workerId.matches("[A-Za-z0-9._-]+") || workerId.equals(".") || workerId.equals("..")) {
             throw new IllegalArgumentException("invalid worker id");
         }
         this.clock = clock;
         arquivo = diretorio.resolve("worker-" + workerId + ".csv");
+        eventosArquivo = diretorio.resolve("eventos-" + workerId + ".csv");
+        this.eventosCsv = eventosCsv;
         try {
             Files.createDirectories(diretorio);
             if (!Files.exists(arquivo) || Files.size(arquivo) == 0) {
@@ -40,6 +48,13 @@ public final class Metricas {
                         StandardCharsets.UTF_8,
                         StandardOpenOption.CREATE,
                         StandardOpenOption.APPEND);
+            }
+            if (eventosCsv) {
+                Files.writeString(
+                        eventosArquivo,
+                        "evento_id,tabela,codigo,criado_em,confirmado_em,latencia_ms\n",
+                        StandardCharsets.UTF_8,
+                        StandardOpenOption.CREATE_NEW);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -56,10 +71,33 @@ public final class Metricas {
         busca += tempos[1];
         upsert += tempos[2];
         ack += tempos[3];
+        StringBuilder evidencia = new StringBuilder();
         for (ChangeEvent event : changes) {
             long ms = Duration.between(event.criadoEm(), commit).toMillis();
+            if (eventosCsv) {
+                evidencia
+                        .append(event.eventoId())
+                        .append(',')
+                        .append(event.tabela())
+                        .append(',')
+                        .append(event.codigo())
+                        .append(',')
+                        .append(event.criadoEm())
+                        .append(',')
+                        .append(commit)
+                        .append(',')
+                        .append(ms)
+                        .append('\n');
+            }
             if (ms > 5000) longas++;
             else latencias.add(ms);
+        }
+        if (eventosCsv) {
+            try {
+                Files.writeString(eventosArquivo, evidencia, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
     }
 

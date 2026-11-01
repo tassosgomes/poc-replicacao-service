@@ -58,7 +58,7 @@ public final class Worker implements AutoCloseable {
 
     private void abrir(Config config, Clock clock, TableSpec faultTable, int faultPartition, Runnable fault) {
         this.clock = clock;
-        metricas = new Metricas(Path.of(config.resultadosDir()), config.workerId(), clock);
+        metricas = new Metricas(Path.of(config.resultadosDir()), config.workerId(), clock, config.eventosCsv());
         monitor = Thread.ofPlatform().name("metricas").start(new MonitorMetricas(config, clock, metricas, ativas::get));
         coordinator =
                 Thread.ofPlatform().name("leases").start(() -> coordenar(config, faultTable, faultPartition, fault));

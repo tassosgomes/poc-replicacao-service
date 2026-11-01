@@ -1,0 +1,96 @@
+Execute no laptop, com Python 3.12+, Bash, SSH/Docker dos dois hosts configurados, `.env` ignorado,
+os dois bancos da PoC carregados e nenhum outro worker/gerador ativo. O `.env` nunca é carregado.
+Gere o jar com `./mvnw -B -q package` antes de executar:
+
+```bash
+bash scripts/cenarios/c2-regime.sh
+bash scripts/cenarios/c3-teto.sh
+bash scripts/cenarios/c4-rajada.sh
+bash scripts/cenarios/c5-transacao-longa.sh
+bash scripts/cenarios/c9-threads.sh
+```
+
+Cada chamada cria apenas containers próprios `poc-*`, limitados a 2 CPUs/1 GiB (gerador no
+desenv-server; worker/reconciliação no infra-server). Somente esses containers são encerrados e
+removidos. Os bancos e os demais serviços permanecem sob vigilância. Falha operacional retorna
+exit 2; resultado reprovado/inválido retorna 1; aprovado retorna 0. `SEM_CRITERIO` identifica uma
+medição descritiva. Ausência de dados não aprova uma medição.
+
+O jar é transferido uma vez por host e conteúdo, para uma imagem local
+`poc-cenarios:<sha256-do-jar>`, reaproveitada nas próximas execuções. Os containers temporários
+de preparação também são removidos; somente as imagens cacheadas permanecem. A cópia inicial
+mantém a vigilância ativa e não instala arquivos ou ferramentas no host.
+
+Os resultados ficam em `resultados/<cenario>/<execucao>/`; `meta.json` na pasta do cenário é a
+cópia atômica da última execução. `diretorio` localiza os artefatos e os caminhos internos são
+relativos à execução. Reexecutar preserva todos os resultados anteriores. A pasta contém logs,
+CSV por worker/gerador, latências individuais, recursos, inventários/carga, snapshots completos,
+diferenças e reconciliação `MODO=completo DRY_RUN=true`. Resultados de produção são versionáveis;
+o gate guarda suas evidências temporárias em `.tsg-flow/v11-gate-*/`.
+
+Parâmetros de duração permitem o gate curto sem alterar os limites dos critérios:
+
+| Variável | Padrão | Uso |
+|---|---:|---|
+| `DURACAO_SEG` | 600 | C2 e regime de C4/C5/C9 |
+| `DEGRAU_SEG` | 300 | Duração de cada degrau C3 |
+| `TAXA` | 1000 | Taxa do regime |
+| `C3_TAXAS` | 500,1000,2000,4000 | Escada; mudar não permite aprovar o teto sem medir 2000 |
+| `RAJADA_APOS_SEG` / `RAJADA_LINHAS` | 120 / 50000 | C4 |
+| `OBSERVACAO_RECUPERACAO_SEG` | 125 | Observação após o commit; alvo continua 120 s |
+| `PATAMAR_JANELA_SEG` | 60 | Janela de amostras do patamar de pendentes do C4 |
+| `PREPARAR_REPLICA` / `PREPARAR_TIMEOUT_SEG` / `PREPARAR_THREADS` | false / 3600 / 4 | Antes do cenário, executa a carga inicial idempotente (preserva UUID, nada é apagado) para partir de réplica consistente |
+| `TX_APOS_SEG` / `TX_ABERTA_SEG` | 5 / 30 | C5 |
+| `VIGILANCIA_SEG` | 30 | Intervalo da vigilância dos serviços existentes |
+| `DRENAGEM_TIMEOUT_SEG` | 180 | Limite da espera por pendentes=0 |
+| `RESULTADOS_BASE` | resultados | Destino dos resultados |
+| `POC_JAR` | target/poc-replicacao-service-0.0.1-SNAPSHOT.jar | Jar a copiar |
+| `THREADS`, `SEMENTE`, `PCT_INSERT`, `PCT_DELETE`, `HOT_PCT` | 8, 1, 5, 1, 10 | Gerador de regime |
+
+O início aguarda as 48 partições do worker, drena pendências e exporta um snapshot novo. Inventário
+e recursos são coletados durante a execução, a cada 30 s; a vigilância compara identidade,
+reinícios, instante de partida, estado running e saída de healthy. Relógios são medidos no início,
+a cada minuto e no fim, pelo ponto médio do RTT entre o laptop e cada host, usando uma âncora
+monotônica comum que não depende dos saltos do relógio de parede do WSL. Os tempos de espera
+usam relógio monotônico. Identidades/digests das imagens, SHA-256 do jar e limites ficam no meta.
+Nenhuma configuração de credenciais nem `docker inspect` completo é exportado.
+
+O p95 usa nearest-rank sobre os eventos efetivamente confirmados, incluindo eventos lentos.
+`EVENTOS_CSV=true` habilita essa evidência no worker do cenário, sem alterar o CSV legado de janelas.
+O p95 do C2 usa somente sua janela de geração, excluindo a drenagem inicial. A tendência usa
+regressão linear nos últimos 180 s do degrau e exige inclinação positiva e médias estritamente
+crescentes em três blocos consecutivos para classificar crescimento sustentado. Em execuções
+curtas a janela é 60% do período; menos de três amostras não produz aprovação. O meta registra
+janela, número de amostras e inclinação. O teto do C3 só aprova com degrau válido de 2000 ev/s;
+`GERADOR_SATURADO` interrompe a escada e preserva as medições válidas.
+
+No C4, o patamar de pendentes é a **banda de regime**, medida com várias amostras do worker (uma
+por 5 s) tomadas entre o início da carga de fundo e o commit da rajada, limitadas aos últimos
+`PATAMAR_JANELA_SEG` (60 s). O commit é o instante registrado pelo gerador; antes dele as linhas da
+rajada não são visíveis ao worker, e só os relógios do worker/gerador são usados (nunca o do laptop).
+O patamar é o **máximo** dessas amostras (a mediana também é gravada em `medidas.patamar`, com
+janela e número de amostras). Com carga de fundo, `pendentes` oscila naturalmente; por isso uma única
+leitura instantânea não serve. Menos de 3 amostras não definem patamar: a recuperação não é
+calculada e o critério sai `INVALIDO`, nunca `REPROVADO`. A recuperação usa a primeira janela completa
+de 5 s após o commit com pendentes <= patamar e p95 <= 5000 ms, enquanto o regime ainda está ativo; o
+tempo parte do commit. Janelas
+parciais de encerramento não comprovam recuperação. No C5, o gerador identifica o evento de sua
+própria transação antes de confirmar; o runner correlaciona esse ID com o CSV do worker, separa
+sua latência e mede o tempo após o commit. O p95 das demais transações usa os eventos criados
+durante a abertura. Isso evita classificar toda latência >5 s como transação longa. Integridade é
+verificada pelo estado final, sem exigir igualdade de contagens que ignoraria o coalescing.
+
+C9 executa C2 e C3 nos dois modos na mesma chamada, drenando antes de trocar de worker. A tabela
+`comparacao.csv` referencia os mesmos dados dos degraus, com taxa, p95 e validade. A comparação
+tem `SEM_CRITERIO` por não haver alvo de superioridade entre modos; os critérios dos cenários
+repetidos e de integridade continuam calculados.
+
+O gate `bash scripts/testes/test-v11-cenarios.sh` usa os bancos reais e durações reduzidas. Sua primeira
+execução usa `PREPARAR_REPLICA=true` para completar a réplica deixada incompleta por ITs anteriores
+(carga inicial idempotente e protegida por versão, sem apagar dados), e exige `divergencias = 0`. Somente
+o container que ele próprio cria com nome `v11-servico-teste-*` é parado para exercitar a vigilância.
+O gate verifica o comportamento do runner e a coerência de seus vereditos. Se a réplica já estiver
+incompleta, a reconciliação completa deve reprovar o cenário; o teste exige esse `REPROVADO` e
+exit 1 coerentes, sem esconder divergências nem executar C1 para reparar a massa. Erro operacional,
+medição inválida inesperada ou evidência ausente reprovam o gate. Passar o gate não comprova que
+as execuções completas da PoC foram aprovadas; elas pertencem à V-15.

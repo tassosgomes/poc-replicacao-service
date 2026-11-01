@@ -3,13 +3,9 @@ set -euo pipefail
 source "$(dirname "$0")/comum.sh"
 cd "$ROOT"
 fail() { printf 'Pré-requisito: %s\n' "$*" >&2; exit 1; }
-[[ -f .env ]] || fail 'crie .env no repositório'
-git check-ignore -q .env || fail '.env deve ser ignorado pelo git'
-if git ls-files --error-unmatch .env >/dev/null 2>&1; then fail '.env não pode ser rastreado pelo git'; fi
+pre_requisitos_rapidos || fail 'verifique .env ignorado, SSH, Docker e sincronização NTP'
 [[ ! -e "$STATE" ]] || fail 'inventário anterior existe; execute scripts/derrubar.sh'
 for host in desenv-server infra-server; do
-  ssh_poc "$host" 'docker info >/dev/null' || fail "$host: corrija SSH e Docker"
-  ssh_poc "$host" 'test "$(timedatectl show -p NTPSynchronized --value)" = yes' || fail "$host: sincronize o relógio"
   ssh_poc "$host" 'awk "/MemAvailable/ {exit !(\$2 >= 4194304)}" /proc/meminfo' || fail "$host: RAM livre inferior a 4 GB"
   ssh_poc "$host" 'df -Pk "$(docker info --format "{{.DockerRootDir}}")" | awk "NR==2 {exit !(\$4 >= 10485760)}"' || fail "$host: disco livre inferior a 10 GB"
 done
@@ -20,13 +16,8 @@ done
 for host in desenv-server infra-server; do
   ssh_poc "$host" 'test -z "$(docker ps -aq --filter name=^/poc-; docker volume ls -q --filter name=^poc-; docker network ls -q --filter name=^poc-)"' || fail "$host: recursos poc- já existem; verifique antes de continuar"
 done
-# Mede cada relógio remoto contra o relógio local pelo ponto médio da ida e volta.
-for host in desenv-server infra-server; do
-  start=$(date +%s%N); remote=$(ssh_poc "$host" 'date +%s%N'); end=$(date +%s%N)
-  offset=$((remote - (start + (end-start)/2)))
-  if [[ $host == desenv-server ]]; then a=$offset; else b=$offset; fi
-done
-delta=$((a-b)); (( delta < 0 )) && delta=$((-delta))
+read -r delta _ < <(medir_relogios)
+(( delta < 0 )) && delta=$((-delta))
 (( delta <= 100000000 )) || fail 'diferença de relógios acima de 100 ms; sincronize os servidores'
 for host in desenv-server infra-server; do
   for image in gvenzl/oracle-free:23-slim-faststart eclipse-temurin:25-jre; do

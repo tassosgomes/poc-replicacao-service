@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["6.0", "7.0", "8.0", "9.0", "10.0"]
 gate: "bash scripts/testes/test-v11-cenarios.sh"
@@ -41,6 +41,6 @@ Execuções completas (10 min, 5 min por degrau) e o relatório (V-15); cenário
 
 ## Pronto quando
 
-- [ ] Gate focalizado passa (exit 0): `bash scripts/testes/test-v11-cenarios.sh`
-- [ ] As 7 verificações passam.
-- [ ] `meta.json` contém todos os campos mínimos do contrato e vereditos calculados.
+- [x] Gate focalizado passa (exit 0): `bash scripts/testes/test-v11-cenarios.sh`
+- [x] As 7 verificações passam.
+- [x] `meta.json` contém todos os campos mínimos do contrato e vereditos calculados.

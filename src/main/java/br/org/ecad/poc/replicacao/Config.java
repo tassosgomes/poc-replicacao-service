@@ -27,6 +27,7 @@ public final class Config {
     private final int leaseSeg;
     private final boolean virtualThreads;
     private final String resultadosDir;
+    private final boolean eventosCsv;
 
     private Config(
             String legadoUrl,
@@ -40,7 +41,8 @@ public final class Config {
             int pollMs,
             int leaseSeg,
             boolean virtualThreads,
-            String resultadosDir) {
+            String resultadosDir,
+            boolean eventosCsv) {
         this.legadoUrl = legadoUrl;
         this.legadoUsuario = legadoUsuario;
         this.legadoSenha = legadoSenha;
@@ -53,6 +55,7 @@ public final class Config {
         this.leaseSeg = leaseSeg;
         this.virtualThreads = virtualThreads;
         this.resultadosDir = resultadosDir;
+        this.eventosCsv = eventosCsv;
     }
 
     public static Config load(Function<String, String> lookup, Clock clock) {
@@ -70,7 +73,8 @@ public final class Config {
                 nonNegativeInt(lookup, "POLL_MS", 200),
                 positiveInt(lookup, "LEASE_SEG", 15),
                 bool(lookup, "VIRTUAL_THREADS", true),
-                text(lookup, "RESULTADOS_DIR", "resultados"));
+                text(lookup, "RESULTADOS_DIR", "resultados"),
+                bool(lookup, "EVENTOS_CSV", false));
     }
 
     public String legadoUrl() {
@@ -119,6 +123,11 @@ public final class Config {
 
     public String resultadosDir() {
         return resultadosDir;
+    }
+
+    /** Opt-in event evidence for scenario percentiles, including latencies above the SLA. */
+    public boolean eventosCsv() {
+        return eventosCsv;
     }
 
     private static String text(Function<String, String> lookup, String key, String fallback) {

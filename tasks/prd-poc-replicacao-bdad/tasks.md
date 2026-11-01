@@ -70,7 +70,7 @@ Cenários C1–C10 automatizados com veredito calculado e relatório final com r
 - [x] 9.0 Dois snapshots dizem se algum UUID mudou (V-08)
 - [x] 10.0 A reconciliação encontra e reenfileira toda divergência (V-09)
 - [x] 11.0 A carga inicial copia 1,7 milhão de linhas sem regerar UUID (V-10)
-- [ ] 12.0 Um cenário de carga roda sozinho, é validado e arquiva seus resultados (V-11)
+- [x] 12.0 Um cenário de carga roda sozinho, é validado e arquiva seus resultados (V-11)
 - [ ] 13.0 Cenários de falha e recuperação provam integridade (V-12)
 - [ ] 14.0 C1, C10 e a medição de custo no legado (V-13)
 - [ ] 15.0 Os resultados aparecem ao vivo no Kibana (V-14)

@@ -140,6 +140,7 @@ public final class Gerador {
             }
             prontos.await();
             inicio = System.nanoTime();
+            LOG.log(System.Logger.Level.INFO, "inicio_carga=" + clock.instant());
             long fim = inicio + TimeUnit.SECONDS.toNanos(config.duracao());
             fimCarga = falha.get() == null ? fim : inicio;
             largada.countDown();
@@ -168,6 +169,7 @@ public final class Gerador {
                     throw e.getCause() instanceof Exception causa ? causa : e;
                 }
             }
+            LOG.log(System.Logger.Level.INFO, "fim_carga=" + clock.instant());
         }
     }
 
@@ -301,8 +303,22 @@ public final class Gerador {
         try (Connection c = conexao()) {
             long comeco = System.nanoTime();
             if (!atualizar(c, 2, 1, false)) throw new IllegalStateException("titular 1 ausente");
+            long eventoId;
+            Instant criadoEm;
+            // This connection sees its own uncommitted event; membership does not depend on latency.
+            try (Statement s = c.createStatement();
+                    ResultSet rs = s.executeQuery("SELECT id, criado_em FROM evento_replicacao"
+                            + " WHERE tabela='TITULAR' AND codigo=1 ORDER BY id DESC FETCH FIRST 1 ROW ONLY")) {
+                if (!rs.next()) throw new IllegalStateException("evento da transacao longa ausente");
+                eventoId = rs.getLong(1);
+                criadoEm = rs.getTimestamp(2).toInstant();
+            }
             TimeUnit.SECONDS.sleep(config.aberta());
             c.commit();
+            Instant confirmadoEm = clock.instant();
+            LOG.log(
+                    System.Logger.Level.INFO,
+                    "evento_longo=" + eventoId + " criado_em=" + criadoEm + " commit=" + confirmadoEm);
             registrar(List.of("TITULAR,1"), System.nanoTime() - comeco);
         }
     }
