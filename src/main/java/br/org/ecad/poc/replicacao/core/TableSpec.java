@@ -31,7 +31,10 @@ public record TableSpec(String nome, List<String> colunas) {
                 + " WHERE codigo IN (" + marcas + ")";
     }
 
-    /** Idempotent upsert guarded by version; {@code id} is written only when the row is new. */
+    /**
+     * Idempotent upsert guarded by version; {@code id} is written only when the row is new. A null
+     * replica version counts as older than any origin version, so it is repaired, never kept.
+     */
     public String merge() {
         String origem = "? AS codigo, "
                 + colunas.stream().map(c -> "? AS " + c).collect(Collectors.joining(", "))
@@ -43,7 +46,7 @@ public record TableSpec(String nome, List<String> colunas) {
                 + " ON (t.codigo = s.codigo)"
                 + " WHEN MATCHED THEN UPDATE SET " + atribuicoes
                 + ", t.origem_updated_at = s.origem_updated_at, t.replicado_em = SYSTIMESTAMP"
-                + " WHERE s.origem_updated_at >= t.origem_updated_at"
+                + " WHERE t.origem_updated_at IS NULL OR s.origem_updated_at >= t.origem_updated_at"
                 + " WHEN NOT MATCHED THEN INSERT (id, codigo, " + nomes + ", origem_updated_at, replicado_em)"
                 + " VALUES (?, s.codigo, " + valores + ", s.origem_updated_at, SYSTIMESTAMP)";
     }

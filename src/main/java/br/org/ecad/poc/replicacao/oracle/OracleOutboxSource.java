@@ -24,11 +24,29 @@ public final class OracleOutboxSource implements ChangeSource, AutoCloseable {
     private final Connection legado;
     private final PreparedStatement poll;
     private final PreparedStatement ack;
+    private final List<Long> codigos;
 
     public OracleOutboxSource(Connection legado) {
+        this(legado, null);
+    }
+
+    /**
+     * Restricts polling to the explicitly listed codes. For tests on a shared bank.
+     */
+    public OracleOutboxSource(Connection legado, List<Long> codigos) {
         this.legado = legado;
+        this.codigos = codigos == null ? null : List.copyOf(codigos);
+        if (this.codigos != null && this.codigos.isEmpty()) {
+            throw new IllegalArgumentException("codes must not be empty");
+        }
         try {
-            this.poll = legado.prepareStatement(POLL);
+            String sql = this.codigos == null
+                    ? POLL
+                    : "SELECT id, codigo, op, criado_em FROM evento_replicacao"
+                            + " WHERE tabela = ? AND particao = ? AND codigo IN ("
+                            + String.join(", ", java.util.Collections.nCopies(this.codigos.size(), "?"))
+                            + ") ORDER BY id FETCH FIRST ? ROWS ONLY";
+            this.poll = legado.prepareStatement(sql);
             this.ack = legado.prepareStatement(ACK);
         } catch (SQLException e) {
             throw new ReplicacaoException("cannot prepare the outbox statements", e);
@@ -40,7 +58,13 @@ public final class OracleOutboxSource implements ChangeSource, AutoCloseable {
         try {
             poll.setString(1, tabela);
             poll.setInt(2, particao);
-            poll.setInt(3, max);
+            int parametro = 3;
+            if (codigos != null) {
+                for (long codigo : codigos) {
+                    poll.setLong(parametro++, codigo);
+                }
+            }
+            poll.setInt(parametro, max);
             List<ChangeEvent> eventos = new ArrayList<>();
             try (ResultSet rs = poll.executeQuery()) {
                 while (rs.next()) {

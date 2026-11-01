@@ -40,7 +40,7 @@ class MainTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"carga-inicial", "reconciliacao"})
+    @ValueSource(strings = {"carga-inicial"})
     void dispatch_knownStub_returnsNonZeroWithUsage(String command) {
         Main.Result result = Main.dispatch(new String[] {command}, lookupOf(Map.of()), CLOCK);
 

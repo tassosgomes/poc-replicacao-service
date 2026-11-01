@@ -1,9 +1,9 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["4.0"]
 gate: "./mvnw -B -q test -Dtest='V09*Test,V09*IT'"
-gate_expect: "5 testes passam"
+gate_expect: "8 testes passam"
 ---
 
 # 10.0 A reconciliação encontra e reenfileira toda divergência

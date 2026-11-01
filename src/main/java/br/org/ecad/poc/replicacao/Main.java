@@ -2,7 +2,13 @@ package br.org.ecad.poc.replicacao;
 
 import br.org.ecad.poc.replicacao.gerador.ConfigGerador;
 import br.org.ecad.poc.replicacao.gerador.Gerador;
+import br.org.ecad.poc.replicacao.reconciliacao.ConfigReconciliacao;
+import br.org.ecad.poc.replicacao.reconciliacao.Reconciliacao;
 import br.org.ecad.poc.replicacao.worker.Worker;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +18,7 @@ import java.util.function.Function;
  * Single executable entry point. Dispatches the {@code worker}, {@code carga-inicial},
  * {@code reconciliacao} and {@code gerador} subcommands.
  *
- * <p>{@code worker} runs the replication (V-03); carga-inicial and reconciliacao are still stubs: with valid
+ * <p>{@code worker} runs the replication (V-03); carga-inicial is still a stub: with valid
  * configuration they print usage and exit non-zero. An unknown subcommand or an invalid
  * {@link Config} prints a clear one-line message and exits non-zero, never a bare stack trace.
  */
@@ -39,6 +45,18 @@ public final class Main {
                     System.exit(0);
                 } catch (Exception e) {
                     LOG.log(System.Logger.Level.ERROR, "gerador failed: " + e.getMessage(), e);
+                    System.exit(1);
+                }
+            }
+            if (args[0].equals("reconciliacao")) {
+                try {
+                    Reconciliacao.executar(
+                            result.config(),
+                            ConfigReconciliacao.load(key -> firstNonBlank(System.getProperty(key), System.getenv(key))),
+                            new PrintStream(new FileOutputStream(FileDescriptor.out), true, StandardCharsets.UTF_8));
+                    System.exit(0);
+                } catch (Exception e) {
+                    LOG.log(System.Logger.Level.ERROR, "reconciliacao failed: " + e.getMessage(), e);
                     System.exit(1);
                 }
             }
@@ -96,6 +114,14 @@ public final class Main {
                 return new Result(1, e.getMessage());
             }
             return new Result(0, "starting gerador", config);
+        }
+        if (command.equals("reconciliacao")) {
+            try {
+                ConfigReconciliacao.load(lookup);
+            } catch (ConfigException e) {
+                return new Result(1, e.getMessage());
+            }
+            return new Result(0, "starting reconciliacao", config);
         }
         if (command.equals("worker")) {
             return new Result(0, "starting worker " + config.workerId(), config);

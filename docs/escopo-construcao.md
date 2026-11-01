@@ -121,7 +121,7 @@ WHEN MATCHED THEN UPDATE SET
   t.titulo = s.titulo, t.iswc = s.iswc, t.genero = s.genero,
   t.situacao = s.situacao, t.excluido = s.excluido,
   t.origem_updated_at = s.origem_updated_at, t.replicado_em = SYSTIMESTAMP
-  WHERE s.origem_updated_at >= t.origem_updated_at
+  WHERE t.origem_updated_at IS NULL OR s.origem_updated_at >= t.origem_updated_at
 WHEN NOT MATCHED THEN INSERT
   (id, codigo, titulo, iswc, genero, situacao, excluido, origem_updated_at, replicado_em)
   VALUES (?, s.codigo, s.titulo, s.iswc, s.genero, s.situacao, s.excluido,

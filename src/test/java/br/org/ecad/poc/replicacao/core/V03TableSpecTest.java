@@ -15,7 +15,7 @@ class V03TableSpecTest {
                         + " WHEN MATCHED THEN UPDATE SET t.nome = s.nome, t.tipo = s.tipo,"
                         + " t.documento = s.documento, t.situacao = s.situacao, t.excluido = s.excluido,"
                         + " t.origem_updated_at = s.origem_updated_at, t.replicado_em = SYSTIMESTAMP"
-                        + " WHERE s.origem_updated_at >= t.origem_updated_at"
+                        + " WHERE t.origem_updated_at IS NULL OR s.origem_updated_at >= t.origem_updated_at"
                         + " WHEN NOT MATCHED THEN INSERT (id, codigo, nome, tipo, documento, situacao, excluido,"
                         + " origem_updated_at, replicado_em)"
                         + " VALUES (?, s.codigo, s.nome, s.tipo, s.documento, s.situacao, s.excluido,"
@@ -31,7 +31,7 @@ class V03TableSpecTest {
                         + " ? AS genero, ? AS situacao, ? AS excluido, ? AS origem_updated_at FROM dual) s")
                 .contains("t.titulo = s.titulo, t.iswc = s.iswc, t.genero = s.genero, t.situacao = s.situacao,"
                         + " t.excluido = s.excluido, t.origem_updated_at = s.origem_updated_at")
-                .contains("WHERE s.origem_updated_at >= t.origem_updated_at")
+                .contains("WHERE t.origem_updated_at IS NULL OR s.origem_updated_at >= t.origem_updated_at")
                 .endsWith("VALUES (?, s.codigo, s.titulo, s.iswc, s.genero, s.situacao, s.excluido,"
                         + " s.origem_updated_at, SYSTIMESTAMP)");
         assertThat(merge.chars().filter(c -> c == '?').count()).isEqualTo(8);
