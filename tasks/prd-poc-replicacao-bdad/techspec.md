@@ -219,14 +219,18 @@ entregam a operação e a decisão. Os caminhos dos servidores e dos scripts seg
 - **Entrada / gatilho:** subir, matar ou encerrar workers.
 - **Processamento:** heartbeat, cota `ceil(48 / workers ativos)`, renovação, claim com
   `FOR UPDATE SKIP LOCKED`, liberação só depois de parar os processadores excedentes, parada
-  ordenada no desligamento, conforme `docs/escopo-construcao.md:151-169`. `LEASE_SEG=15`;
+  ordenada no desligamento, conforme `docs/escopo-construcao.md:151-169`. `LEASE_SEG` é parâmetro:
+  padrão 15 s na PoC e 12 s nos testes de V-07 (com 15 s o claim após um `kill` cai em 10-20 s e
+  a tomada passa dos 20 s em boa parte das quedas); o ciclo de lease é fixo em
+  `LEASE_SEG / 3` e nunca é antecipado para reivindicar antes (consistência vence disponibilidade).
+  Trade-off e limites em `docs/escopo-construcao.md` (Configuração); quem medir C6 declara o valor;
   nenhum processador processa com lease que vence em menos de 2 s.
 - **Saída observável:** distribuição de partições por worker (coluna `particoes` do CSV e
   `lease_particao`).
 - **Evidência / checkpoint:**
   - Um worker → 48 partições em `lease_particao` com seu `dono`.
   - Sobe o B → `SELECT dono, COUNT(*) … GROUP BY dono` converge para 24/24 e em nenhum instante existem duas linhas processando a mesma `(tabela, particao)` (verificado pelos CSVs: soma de `particoes` ≤ 48 em todas as janelas).
-  - `docker kill -s KILL` no A → o B chega a 48 em ≤ 20 s (medido entre a morte e a primeira janela com `particoes = 48`).
+  - `docker kill -s KILL` no A → o B chega a 48 em ≤ 20 s, medido como tomada real: da morte até B ser dono das 48 partições em `lease_particao` com os 24 processadores adicionais ativos, pelo relógio do banco (critério alterado com aprovação do usuário em 2026-10-31; a janela de 5 s do CSV quantizava a medida e não entra nela). O CSV de B ainda precisa chegar a 48.
   - Parar o A com `SIGTERM` → todas as partições do A são liberadas e assumidas pelo B sem esperar o vencimento do lease.
   - Pausar um worker (`docker pause`) por mais de `LEASE_SEG`, retomar → nenhum estado velho sobrescreve um novo (`origem_updated_at` na réplica nunca regride; teste de integração dedicado).
 - **Bloqueado por:** V-03, V-05
@@ -407,7 +411,8 @@ em `docs/escopo-construcao.md:58-129`; a PoC os adota sem alteração, com estes
 - `updated_at` do legado simulado é `TIMESTAMP(6)`, igual a `origem_updated_at` no banco novo (a
   verificação por hash precisa de tipos equivalentes). O tipo real do BDAD é a Q1 do PRD; as
   conclusões sobre empate de versão dependem dela e entram no relatório.
-- `lease_particao` tem 48 linhas pré-criadas; cada tabela nova acrescenta 16.
+- `lease_particao` tem 48 linhas pré-criadas; cada tabela nova acrescenta 16. Cada claim incrementa
+  `versao`, usada com dono e prazo para cercar atomicamente o commit no relógio do banco.
 
 ### Registro de resultado de cenário (`meta.json`)
 

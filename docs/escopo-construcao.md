@@ -107,7 +107,7 @@ As tabelas réplica espelham as colunas do legado, trocam o PK por `id` UUIDv7 e
 
 **Tabelas de controle:**
 
-- `lease_particao (tabela, particao, dono, expira_em)`: 48 linhas pré-criadas (3 tabelas × 16 partições). Tabela nova = mais 16 linhas.
+- `lease_particao (tabela, particao, dono, expira_em, versao)`: 48 linhas pré-criadas (3 tabelas × 16 partições). `versao` é incrementada a cada claim e cerca o commit do dono; tabela nova = mais 16 linhas.
 - `worker_heartbeat (worker_id, visto_em)`: usada para contar réplicas ativas e dividir as partições.
 
 **MERGE gerado pelo `TableSpec` (exemplo de obra):**
@@ -153,7 +153,7 @@ O núcleo não conhece Oracle: só portas e o `TableSpec`. Trocar a fonte por Ka
 1. Se o lease vence em menos de 2 s, espera.
 2. `poll` até `LOTE_MAX` eventos. Vazio: dorme `POLL_MS`.
 3. Coalesce e `buscar` o estado.
-4. `upsert` e `commit` no novo.
+4. `upsert` e confirmação cercada no novo: dono, `versao` e prazo são revalidados pelo relógio do banco no mesmo bloco server-side que executa o `commit`.
 5. `ack` no legado.
 6. Registra latência por evento e tempo por fase. Lote cheio: volta direto ao passo 2.
 
@@ -165,7 +165,7 @@ Erro em qualquer passo fecha as conexões, espera 2 s e recomeça; os eventos ai
 2. Calcula a cota: `ceil(48 / workers ativos)`.
 3. Renova os próprios leases.
 4. Acima da cota: para os processadores excedentes e só então libera os leases.
-5. Abaixo da cota: `SELECT ... FOR UPDATE SKIP LOCKED` nas partições sem dono ou vencidas, assume e inicia os processadores.
+5. Abaixo da cota: `SELECT ... FOR UPDATE SKIP LOCKED` nas partições sem dono ou vencidas, incrementa `versao`, assume e inicia os processadores.
 6. No desligamento: para tudo e libera os leases.
 
 **Configuração (variável de ambiente ou `-D`):**
@@ -180,6 +180,8 @@ Erro em qualquer passo fecha as conexões, espera 2 s e recomeça; os eventos ai
 | `LEASE_SEG` | 15 | Duração do lease |
 | `VIRTUAL_THREADS` | true | Virtual ou platform threads nos loops |
 | `RESULTADOS_DIR` | `resultados` | Pasta dos CSVs |
+
+`LEASE_SEG` é parâmetro de projeto: padrão 15 s na PoC e 12 s nos testes de V-07. O ciclo do lease é fixo (`LEASE_SEG / 3`) e nunca é antecipado para reivindicar mais cedo: consistência vence disponibilidade, e o failover espera o lease do morto vencer. Depois de um `kill`, o sobrevivente reivindica entre `LEASE_SEG - LEASE_SEG/3` e `LEASE_SEG + LEASE_SEG/3` (o último heartbeat do morto cai em algum ponto do seu ciclo e o claim acontece no primeiro ciclo do sobrevivente depois que ele sai da janela de heartbeat); e some 1-4 s para os processadores abrirem conexões. **Failover é a tomada real** (decisão aprovada pelo usuário em 2026-10-31): da morte do worker até o sobrevivente ser dono das 48 partições em `lease_particao` com um processador ativo em cada uma (o worker registra `all 48 owned partitions active`), medido pelo relógio do banco; limite mantido em ≤ 20 s. A janela de métricas de 5 s não entra na medida: ela quantiza a observação (somava até 5 s), não o tempo de failover, e o relógio de parede do host de testes (WSL2) salta. O CSV continua tendo de chegar a 48 e a soma de `particoes` entre workers continua ≤ 48 em toda janela. Com 12 s: claim em 8-16 s e tomada real tipicamente em 12-18 s; com 15 s: claim em 10-20 s, fora do critério em boa parte das quedas. Trade-off: lease menor encurta o failover, mas aumenta renovações no banco e reduz a pausa (GC, rede, `docker pause`) que um worker tolera antes de perder as partições; a cerca de dono/`versao`/prazo garante a consistência com qualquer valor. Quem medir C6 deve declarar o `LEASE_SEG` usado.
 
 ## Ferramentas de apoio
 
