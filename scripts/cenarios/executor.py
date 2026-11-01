@@ -125,6 +125,7 @@ class Runner:
         self.next_clock = 0
         self.next_resources = 0
         self.worker = None
+        self.workers = []
         self.cleaned = False
         self.closing = False
         self.interval = number("VIGILANCIA_SEG", 30)
@@ -161,8 +162,9 @@ class Runner:
             self.next_resources = time.monotonic() + 30
         if now >= self.next_clock:
             self.clock("durante")
-        if self.worker and self.worker["process"].poll() is not None:
-            raise RuntimeError("worker encerrou durante o cenario")
+        for worker in self.workers:
+            if worker["process"].poll() is not None:
+                raise RuntimeError("worker encerrou durante o cenario")
 
     def wait_until(self, predicate, timeout, message):
         deadline = time.monotonic() + timeout
@@ -263,6 +265,8 @@ class Runner:
 
     def finish(self, entry, stop=False):
         process = entry["process"]
+        if stop and entry in self.workers:
+            self.workers.remove(entry)
         if stop and process.poll() is None:
             remote(entry["host"], ["docker", "stop", "-t", "30", entry["name"]], timeout=60)
         process.wait(timeout=60)
@@ -271,10 +275,17 @@ class Runner:
             raise RuntimeError(f"{entry['role']} falhou (container exit {state})")
         return self.collect(entry)
 
-    def start_worker(self, virtual=True):
+    def create_worker(self, virtual=True, options=None):
         worker_id = f"v11-{self.execution}-{len(self.containers)}"
-        self.worker = self.spawn("worker", "infra-server", {"WORKER_ID": worker_id, "VIRTUAL_THREADS": virtual,
-                                                           "EVENTOS_CSV": True})
+        entry = self.spawn("worker", "infra-server", {"WORKER_ID": worker_id, "VIRTUAL_THREADS": virtual,
+                                                      "EVENTOS_CSV": True} | (options or {}))
+        entry["worker_id"] = worker_id
+        self.workers.append(entry)
+        return entry
+
+    def start_worker(self, virtual=True):
+        self.worker = self.create_worker(virtual)
+        worker_id = self.worker["worker_id"]
         def ready():
             count = sql("infra-server", "poc-novo", "replica",
                         f"select count(*) from lease_particao where dono='{worker_id}' and expira_em>sys_extract_utc(systimestamp);")
@@ -300,11 +311,11 @@ class Runner:
         # The replica was changed on purpose; the clock/watchdog state must not age during it.
         self.clock("apos_preparo")
 
-    def phase(self, group, rate, duration, virtual=True):
+    def phase(self, group, rate, duration, virtual=True, options=None):
         generator = self.spawn("gerador", "desenv-server", {"TAXA": rate, "DURACAO_SEG": duration,
                                "THREADS": number("THREADS", 8), "SEMENTE": number("SEMENTE", 1),
                                "PCT_INSERT": number("PCT_INSERT", 5, 0), "PCT_DELETE": number("PCT_DELETE", 1, 0),
-                               "HOT_PCT": number("HOT_PCT", 10, 0)})
+                               "HOT_PCT": number("HOT_PCT", 10, 0)} | (options or {}))
         return {"entry": generator, "grupo": group, "virtual_threads": virtual, "duration": duration}
 
     def finish_phase(self, phase):
@@ -475,6 +486,7 @@ class Runner:
         errors = []
         self.closing = True
         self.worker = None
+        self.workers.clear()
         # Stop every generator first: evidence transfer must not delay the safety abort.
         for host in HOSTS:
             active = [e["name"] for e in self.containers if e["host"] == host and e["role"] == "gerador"
@@ -517,7 +529,9 @@ class Runner:
         self.measures = analyze(self.directory, self.phases, self.special)
         if self.scenario == "c2" and self.phases:
             self.measures["p95_ms"] = self.phases[0]["p95_ms"]
-        if self.measures["amostras"] == 0 or self.measures["eventos_medidos"] == 0:
+        # C8 deliberately produces no events when capture is disabled and delta misses its window.
+        # Its evidence is the generator row log plus complete comparisons, even with zero latencies.
+        if self.measures["amostras"] == 0 or (self.scenario != "c8" and self.measures["eventos_medidos"] == 0):
             self.reasons.append("EVIDENCIA_INSUFICIENTE")
         if not self.measures["relogios_validos"]:
             self.reasons.append("RELOGIO")
@@ -558,7 +572,11 @@ class Runner:
 
 
 def main():
-    runner = Runner(sys.argv[1])
+    if sys.argv[1] in ("c6", "c7", "c8"):
+        from falhas import FailureRunner
+        runner = FailureRunner(sys.argv[1])
+    else:
+        runner = Runner(sys.argv[1])
     def interrupted(signum, _frame):
         raise InvalidRun("INTERROMPIDO")
     for sig in (signal.SIGTERM, signal.SIGINT):
@@ -588,4 +606,5 @@ def main():
 
 
 if __name__ == "__main__":
+    sys.modules["executor"] = sys.modules[__name__]
     sys.exit(main())

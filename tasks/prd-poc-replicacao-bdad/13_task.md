@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["12.0"]
 gate: "bash scripts/testes/test-v12-falhas.sh"
@@ -38,6 +38,6 @@ C1/C10 (V-13); relatório (V-15).
 
 ## Pronto quando
 
-- [ ] Gate focalizado passa (exit 0): `bash scripts/testes/test-v12-falhas.sh`
-- [ ] As 4 verificações passam.
-- [ ] Veredito `REPROVADO` provocado de propósito aparece no `meta.json`.
+- [x] Gate focalizado passa (exit 0): `bash scripts/testes/test-v12-falhas.sh`
+- [x] As 4 verificações passam.
+- [x] Veredito `REPROVADO` provocado de propósito aparece no `meta.json`.

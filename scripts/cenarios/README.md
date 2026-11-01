@@ -7,6 +7,9 @@ bash scripts/cenarios/c2-regime.sh
 bash scripts/cenarios/c3-teto.sh
 bash scripts/cenarios/c4-rajada.sh
 bash scripts/cenarios/c5-transacao-longa.sh
+bash scripts/cenarios/c6-queda-worker.sh
+bash scripts/cenarios/c7-duas-replicas.sh
+bash scripts/cenarios/c8-trigger-desligado.sh
 bash scripts/cenarios/c9-threads.sh
 ```
 
@@ -41,6 +44,11 @@ Parâmetros de duração permitem o gate curto sem alterar os limites dos crité
 | `PATAMAR_JANELA_SEG` | 60 | Janela de amostras do patamar de pendentes do C4 |
 | `PREPARAR_REPLICA` / `PREPARAR_TIMEOUT_SEG` / `PREPARAR_THREADS` | false / 3600 / 4 | Antes do cenário, executa a carga inicial idempotente (preserva UUID, nada é apagado) para partir de réplica consistente |
 | `TX_APOS_SEG` / `TX_ABERTA_SEG` | 5 / 30 | C5 |
+| `QUEDA_APOS_SEG` / `REINICIO_APOS_SEG` | 180 / 240 | C6: SIGKILL e início da nova instância, a partir do começo da carga |
+| `SEGUNDA_APOS_SEG` | 60 | C7: início de B; A recebe SIGKILL em `QUEDA_APOS_SEG` após a divisão 24/24 |
+| `LEASE_SEG` | 15 | Lease de C6/C7/C8; gate usa 12 s, conforme decisão de V-07 |
+| `TRIGGER_DESLIGADO_SEG` | 60 | C8: duração da carga de updates de obra sem captura |
+| `DESDE_MIN` / `JANELA_MIN` | 60 / 5 | Janela do delta de C8; ambos zero exercitam deliberadamente uma janela vazia |
 | `VIGILANCIA_SEG` | 30 | Intervalo da vigilância dos serviços existentes |
 | `DRENAGEM_TIMEOUT_SEG` | 180 | Limite da espera por pendentes=0 |
 | `RESULTADOS_BASE` | resultados | Destino dos resultados |
@@ -94,3 +102,31 @@ incompleta, a reconciliação completa deve reprovar o cenário; o teste exige e
 exit 1 coerentes, sem esconder divergências nem executar C1 para reparar a massa. Erro operacional,
 medição inválida inesperada ou evidência ausente reprovam o gate. Passar o gate não comprova que
 as execuções completas da PoC foram aprovadas; elas pertencem à V-15.
+
+C6 registra o container morto por `docker kill -s KILL` (exit 137), o início do reinício e a primeira
+janela completa durante a carga em que `lag_ms <= 5000`. Informa o tempo desde a queda e desde o
+reinício. A carga dura ao menos até 45 s após o reinício para observar a recuperação. Perda e
+duplicidade são julgadas pelo estado final completo e pela preservação dos UUIDs, sem exigir
+igualdade entre contagens de eventos que ignoraria o coalescing.
+
+C7 espera a divisão 24/24 no banco antes da queda e exige também a divisão nos CSVs dos workers.
+O failover usa o relógio do banco: desde antes do KILL até B possuir os 48 leases válidos e
+registrar uma nova marca `all 48 owned partitions active`. O limite permanece 20 s; o CSV de 5 s
+comprova a tomada e a soma das partições (<=48), sem compor a duração. `leases.csv` e os logs
+preservam essas evidências. Com o lease padrão de 15 s o limite pode ser reprovado; não é
+reduzido automaticamente pelo runner. O gate declara 12 s, como V-07.
+
+C8 drena a réplica e para o worker, desabilita somente `trg_obra_captura`, gera updates somente
+em `OBRA_MUSICAL` (sem inserts/deletes) e encerra o gerador antes de religar o trigger. A contagem
+é de chaves distintas no CSV do gerador, preservadas em `linhas-afetadas.csv`; a verificação
+completa antes do delta confere o mesmo conjunto. Executa delta com `DRY_RUN=false`, inicia o
+worker e verifica novamente o estado completo. O meta informa afetadas, reenfileiradas,
+corrigidas e divergências finais. O trigger é religado em `finally`, inclusive em interrupções.
+
+O gate `bash scripts/testes/test-v12-falhas.sh` executa quatro verificações reais com durações
+reduzidas. Primeiro prepara a réplica com a carga inicial idempotente, antes de tirar os snapshots
+ou injetar qualquer falha. Exige aprovação de C6, C7 e C8; depois repete C8 com
+`DESDE_MIN=0 JANELA_MIN=0` e exige `REPROVADO` com todas as chaves divergentes listadas. As
+evidências ficam em `.tsg-flow/v12-gate-*/`. Esse último caso deixa divergências deliberadas na
+réplica, com captura habilitada e sem workers ativos; o preparo inicial da próxima execução
+permite repetir o gate. Nenhum reparo posterior é usado para alterar o veredito desse caso.

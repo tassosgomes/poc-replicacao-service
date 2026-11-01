@@ -76,7 +76,7 @@ def analyze(directory, phases, special):
     for path in directory.glob("worker-*/*.csv"):
         if path.name.startswith("worker-"):
             with path.open() as stream:
-                samples.extend(csv.DictReader(stream))
+                samples.extend(row | {"worker": path.stem.removeprefix("worker-")} for row in csv.DictReader(stream))
     samples.sort(key=lambda row: instant(row["ts"]))
     long_id = special.get("evento_longo")
     background = Counter()
@@ -132,6 +132,30 @@ def analyze(directory, phases, special):
         result["janela_recuperacao_s"] = max(0, background_end - commit)
         result["patamar_pendentes"] = baseline["maximo"]
         result["patamar"] = baseline
+    if "reinicio_ts_banco" in special:
+        restart = instant(special["reinicio_ts_banco"])
+        killed = instant(special["queda"]["ts_banco"])
+        end = max((p["fim"] for p in phases), default=restart)
+        recovered = next((instant(row["ts"]) for row in samples
+                          if restart + 5 <= instant(row["ts"]) <= end
+                          and instant(row["ts"]) % 5 == 0 and row["valida"] == "VALIDA"
+                          and float(row["lag_ms"]) <= 5000), None)
+        result.update(tempo_normalizar_s=None if recovered is None else recovered - killed,
+                      apos_reinicio_s=None if recovered is None else recovered - restart,
+                      normalizacao_ts=recovered, lag_normal_ms=5000,
+                      normalizacao_metodo="primeira janela completa com lag_ms <= 5000 durante carga apos reinicio")
+    if "failover_s" in special:
+        result["failover_s"] = special["failover_s"]
+        survivor = special["sobrevivente"]
+        result["sobrevivente_csv_48"] = any(row["worker"] == survivor and int(row["particoes"]) == 48
+                                               for row in samples)
+        paired = {}
+        for row in samples:
+            if instant(row["ts"]) % 5 == 0:
+                paired.setdefault(row["ts"], {})[row["worker"]] = int(row["particoes"])
+        pairs = [values for values in paired.values() if set(values) == set(special["workers"].values())]
+        result["divisao_csv_24_24"] = any(sorted(values.values()) == [24, 24] for values in pairs)
+        result["soma_particoes_csv_max"] = max((sum(values.values()) for values in pairs), default=None)
     return result
 
 
@@ -180,6 +204,29 @@ def criteria(scenario, phases, measures, integrity, special):
                 check["veredito"] = "REPROVADO"
             checks.append(check)
         checks.append(criterion("latencia_transacao_longa_ms", measures.get("latencia_longa_ms"), "reportada separadamente"))
+    elif scenario == "c6":
+        checks.append(criterion("tempo_normalizar_s", measures.get("tempo_normalizar_s"),
+                                "lag_ms <= 5000 em janela completa durante carga apos reinicio",
+                                measures.get("tempo_normalizar_s") is not None))
+    elif scenario == "c7":
+        division = special.get("divisao")
+        checks.append(criterion("divisao_24_24", division, "24/24 no banco e no CSV",
+                                division is not None and sorted(division.values()) == [24, 24]
+                                and measures.get("divisao_csv_24_24") is True))
+        value = measures.get("failover_s")
+        checks.append(criterion("failover_s", value, "<=20; 48 leases com processadores ativos (relogio do banco)",
+                                value is not None and 0 <= value <= 20))
+        checks.append(criterion("sobrevivente_csv_48", measures.get("sobrevivente_csv_48"), True,
+                                measures.get("sobrevivente_csv_48") is True))
+        total = measures.get("soma_particoes_csv_max")
+        checks.append(criterion("soma_particoes_csv_max", total, "<=48", total is not None and total <= 48))
+    elif scenario == "c8":
+        affected = special.get("linhas_afetadas")
+        checks.append(criterion("linhas_afetadas", affected, ">0; chaves distintas do log conferem com verificacao completa antes do delta",
+                                affected is not None and affected > 0 and special.get("afetadas_conferem_antes") is True))
+        corrected = special.get("linhas_corrigidas")
+        checks.append(criterion("linhas_corrigidas", corrected, affected,
+                                corrected is not None and corrected == affected and special.get("delta_cobre_afetadas") is True))
     elif scenario == "c9":
         for mode in (True, False):
             subset = [p for p in phases if p["virtual_threads"] == mode]
