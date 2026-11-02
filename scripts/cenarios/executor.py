@@ -107,7 +107,7 @@ class Runner:
         self.directory = self.base / self.execution
         self.directory.mkdir(parents=True)
         self.started = utc()
-        self.jar = Path(os.environ.get("POC_JAR", ROOT / "target/poc-replicacao-service-0.0.1-SNAPSHOT.jar"))
+        self.jar = Path(os.environ.get("POC_JAR", ROOT / "poc/target/poc-replicacao-service-0.0.1-SNAPSHOT.jar"))
         self.jar_sha = None
         self.image = None
         self.cached_hosts = set()
@@ -427,7 +427,7 @@ class Runner:
     def setup(self):
         shell_function("pre_requisitos_rapidos")
         if not self.jar.is_file():
-            raise RuntimeError("jar ausente; execute ./mvnw -B -q package")
+            raise RuntimeError("jar ausente; execute ./mvnw -B -q package (gera poc/target/...)")
         self.jar_sha = hashlib.sha256(self.jar.read_bytes()).hexdigest()
         self.image = "poc-cenarios:" + self.jar_sha
         self.baseline = [inventory(h) for h in HOSTS]

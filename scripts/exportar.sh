@@ -7,4 +7,4 @@ cd "$ROOT"
 if git ls-files --error-unmatch .env >/dev/null 2>&1; then exit 1; fi
 export EXPORTADOR_ACAO=${1:-seguir}
 if [[ $# -ge 2 ]]; then export EXPORTADOR_EXECUCAO=$2; fi
-exec java -jar target/poc-replicacao-service-0.0.1-SNAPSHOT.jar exportador
+exec java -jar poc/target/poc-replicacao-service-0.0.1-SNAPSHOT.jar exportador
