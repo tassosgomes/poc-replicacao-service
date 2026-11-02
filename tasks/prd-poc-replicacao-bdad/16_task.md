@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 task_kind: vertical
 blocked_by: ["12.0", "13.0", "14.0"]
 gate: "bash scripts/testes/test-v15-relatorio.sh"

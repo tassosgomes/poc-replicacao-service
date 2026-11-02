@@ -1,5 +1,42 @@
 # poc-replicacao-service
 
+PoC de replicação por captura transacional, particionamento com lease e reconciliação. Os dois
+Oracle Free rodam nos hosts internos compartilhados; worker e gerador usam containers próprios
+`poc-*`. Não há instalação de ferramentas nos hosts. As instruções e parâmetros dos dez
+cenários estão em [scripts/cenarios/README.md](scripts/cenarios/README.md).
+
+Compile com `./mvnw -B -q package`, confira os pré-requisitos de SSH/Docker e execute os scripts
+de cenário no laptop. Use as durações padrão para o experimento completo: regime de 600 s,
+degraus de 300 s, rajada de 50.000 linhas e transação aberta de 30 s. C1 recria somente a réplica
+de negócio da PoC; C10 alterna a captura e deve rodar por último, pois deixa alterações sem
+replicação por definição. Não execute cenários simultaneamente nos mesmos bancos.
+
+Depois dos cenários, gere a consolidação local (Python 3.12+, sem banco ou Elastic):
+
+```bash
+bash scripts/relatorio.sh
+# Para outra coleção isolada de evidências:
+bash scripts/relatorio.sh --resultados /caminho/resultados
+```
+
+O [relatório da PoC](resultados/relatorio.md) usa só a última execução de cada
+`resultados/c1/meta.json` até `resultados/c10/meta.json`; os históricos e seus CSVs/logs ficam
+preservados locais e ignorados — só o resumo (relatorio.md, recomendacao-humana.md, meta.json
+e arquivos pequenos de diffs/recuperação) é versionado. Valores de cenários inválidos ou ausentes ficam vazios, com estado
+e motivo explícitos. `nao-executado.md` na pasta de um cenário permite justificar sua ausência;
+isso não aprova o critério. Execuções reduzidas de gates não comprovam o experimento completo.
+Reprovações trazem hipóteses e ajustes para investigação, sem alterar os vereditos dos runners.
+
+A recomendação exige autoria humana: analise os números e riscos e escreva
+`resultados/recomendacao-humana.md` com autor, data e decisão (seguir, ajustar indicando o quê,
+ou descartar). Gere novamente para incorporar esse texto sem sobrescrevê-lo. Enquanto ele não
+existir, o relatório mantém `RECOMENDACAO_HUMANA_PENDENTE`; o fechamento da PoC continua pendente.
+Aceitar/mover o ADR e confirmar o limite C10 com o time do legado são decisões externas.
+
+Gate do consolidador: `bash scripts/testes/test-v15-relatorio.sh` (quatro verificações sintéticas).
+Check dos scripts: `fd -e sh . scripts -X shellcheck -S warning`. Um gate aprovado valida o
+consolidador; os resultados reais e as ressalvas no relatório determinam o que foi demonstrado.
+
 Exportação opcional para Elastic/Kibana (V-14) roda **somente no laptop**. CSVs são o registro
 oficial; indisponibilidade do exportador não interfere em cenários, workers ou critérios.
 
