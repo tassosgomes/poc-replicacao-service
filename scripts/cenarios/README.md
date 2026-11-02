@@ -1,6 +1,6 @@
 Execute no laptop, com Python 3.12+, Bash, SSH/Docker dos dois hosts configurados, `.env` ignorado,
 os dois bancos da PoC carregados e nenhum outro worker/gerador ativo. O `.env` nunca é carregado.
-Gere o jar com `./mvnw -B -q package` antes de executar:
+Gere o jar da PoC (`poc/target/poc-replicacao-service-0.0.1-SNAPSHOT.jar`, que inclui o subcomando `worker`) com `./mvnw -B -q package` antes de executar:
 
 ```bash
 bash scripts/cenarios/c1-carga-inicial.sh
@@ -54,7 +54,7 @@ Parâmetros de duração permitem o gate curto sem alterar os limites dos crité
 | `VIGILANCIA_SEG` | 30 | Intervalo da vigilância dos serviços existentes |
 | `DRENAGEM_TIMEOUT_SEG` | 180 | Limite da espera por pendentes=0 |
 | `RESULTADOS_BASE` | resultados | Destino dos resultados |
-| `POC_JAR` | target/poc-replicacao-service-0.0.1-SNAPSHOT.jar | Jar a copiar |
+| `POC_JAR` | poc/target/poc-replicacao-service-0.0.1-SNAPSHOT.jar | Jar a copiar |
 | `THREADS`, `SEMENTE`, `PCT_INSERT`, `PCT_DELETE`, `HOT_PCT` | 8, 1, 5, 1, 10 | Gerador de regime |
 
 O início aguarda as 48 partições do worker, drena pendências e exporta um snapshot novo. Inventário

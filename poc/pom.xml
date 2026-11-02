@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Everything built only for the PoC: initial load (carga), load generator (gerador),
+  Elastic/Kibana exporter (exportador), reconciliation (reconciliacao) and the PoC entry point
+  MainPoc, which also keeps the `worker` subcommand by delegating to the worker module.
+  The executable jar keeps the historical name poc-replicacao-service-<versão>.jar.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>br.org.ecad</groupId>
+    <artifactId>poc-replicacao-service</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>replicacao-poc</artifactId>
+  <packaging>jar</packaging>
+
+  <name>replicacao-poc</name>
+  <description>Ferramentas da PoC (carga, gerador, exportador, reconciliação).</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>br.org.ecad</groupId>
+      <artifactId>replicacao-worker</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>br.org.ecad</groupId>
+      <artifactId>replicacao-worker</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>poc-replicacao-service-${project.version}</finalName>
+    <plugins>
+      <!-- PoC tests read repository-root paths (.env, .tsg-flow/, resultados/, scripts/),
+           exactly as they did in the single-module build. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <workingDirectory>${maven.multiModuleProjectDirectory}</workingDirectory>
+        </configuration>
+      </plugin>
+
+      <!-- Single executable jar: `java -jar ... <subcomando>`. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals><goal>shade</goal></goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>br.org.ecad.poc.replicacao.MainPoc</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

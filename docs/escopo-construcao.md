@@ -20,7 +20,7 @@ poc-replicacao-bdad/
 │   ├── legado/01_schema.sql
 │   ├── legado/02_massa.sql
 │   └── novo/01_schema.sql
-├── src/main/java/br/org/ecad/poc/replicacao/
+├── src/main/java/br/org/ecad/poc/replicacao/   # (ver nota: hoje em worker/ e poc/)
 │   ├── Main.java             # subcomandos: worker, carga-inicial, reconciliacao, gerador
 │   ├── Config.java
 │   ├── core/                 # portas, TableSpec, Coalescer, Uuid7
@@ -34,6 +34,13 @@ poc-replicacao-bdad/
 ```
 
 Um jar único com subcomandos: `java -jar poc-replicacao.jar worker`.
+
+> **Nota (estrutura de módulos):** a árvore acima é a do escopo original. O build agora é Maven
+> multi-módulo: `worker/` (serviço de produção: core, oracle, worker, Config; jar
+> `worker/target/replicacao-worker-0.0.1-SNAPSHOT-exec.jar`, só o subcomando `worker`) e `poc/`
+> (carga, gerador, exportador, reconciliação, `MainPoc`; jar
+> `poc/target/poc-replicacao-service-0.0.1-SNAPSHOT.jar` com os cinco subcomandos). O worker não
+> depende de `poc/`. Detalhes no README.md.
 
 ## Ambiente
 

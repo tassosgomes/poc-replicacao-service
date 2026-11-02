@@ -5,11 +5,49 @@ Oracle Free rodam nos hosts internos compartilhados; worker e gerador usam conta
 `poc-*`. Não há instalação de ferramentas nos hosts. As instruções e parâmetros dos dez
 cenários estão em [scripts/cenarios/README.md](scripts/cenarios/README.md).
 
-Compile com `./mvnw -B -q package`, confira os pré-requisitos de SSH/Docker e execute os scripts
+Compile com `./mvnw -B -q package` (ver [Estrutura do projeto](#estrutura-do-projeto)), confira os pré-requisitos de SSH/Docker e execute os scripts
 de cenário no laptop. Use as durações padrão para o experimento completo: regime de 600 s,
 degraus de 300 s, rajada de 50.000 linhas e transação aberta de 30 s. C1 recria somente a réplica
 de negócio da PoC; C10 alterna a captura e deve rodar por último, pois deixa alterações sem
 replicação por definição. Não execute cenários simultaneamente nos mesmos bancos.
+
+## Estrutura do projeto
+
+Build Maven multi-módulo (`pom.xml` da raiz é só agregador/pai):
+
+- **`worker/`** (`replicacao-worker`): o serviço de produção — `core`, `oracle`, `worker`, `Config`
+  e um `Main` que aceita apenas o subcomando `worker`.
+- **`poc/`** (`replicacao-poc`): tudo que é só da PoC — carga inicial, gerador, exportador,
+  reconciliação, `MainPoc` (cinco subcomandos; `worker` delega ao módulo worker),
+  `poc-kibana.ndjson`. Fora dos módulos ficam `scripts/` (cenários), `sql/` e `resultados/`.
+
+Construir:
+
+```bash
+./mvnw -B -q package                    # os dois módulos
+./mvnw -B -q -pl worker -am package     # só o worker
+./mvnw -B -q -pl poc -am package        # a PoC (com o worker do reator)
+```
+
+Executar:
+
+```bash
+# Worker de produção (só o subcomando worker)
+java -jar worker/target/replicacao-worker-0.0.1-SNAPSHOT-exec.jar worker
+# PoC (worker, carga-inicial, gerador, reconciliacao, exportador)
+java -jar poc/target/poc-replicacao-service-0.0.1-SNAPSHOT.jar <subcomando>
+```
+
+Os cenários e `scripts/exportar.sh` usam o jar da PoC (inclusive para o `worker` nos containers),
+por isso a mecânica dos cenários não mudou. O `worker/target/replicacao-worker-0.0.1-SNAPSHOT.jar`
+(sem sufixo) é fino e não executável; é o que o módulo `poc` consome.
+
+**Regra de isolamento:** `worker` não depende de `poc`. É garantido pelo maven-enforcer
+(`bannedDependencies`) e pelo teste `IsolamentoWorkerTest`.
+
+**Candidatos a promoção para produção (decisão em aberto, não decidida):** carga inicial e
+reconciliação hoje vivem em `poc/`; se e quando migram para o serviço de produção ainda será
+decidido.
 
 Depois dos cenários, gere a consolidação local (Python 3.12+, sem banco ou Elastic):
 
@@ -46,7 +84,7 @@ lê esse arquivo diretamente; não use `source`, `-D`, argumentos, imagens ou c�
 transportar credenciais. Valores entre aspas simples/duplas são aceitos, sem interpolação.
 
 Para instalar/reinstalar o painel: `bash scripts/exportar.sh painel`. A definição versionada
-fica em `src/main/resources/poc-kibana.ndjson`: data view, seis visualizações e painel com IDs
+fica em `poc/src/main/resources/poc-kibana.ndjson`: data view, seis visualizações e painel com IDs
 fixos. Importação usa `overwrite=true`, no espaço exclusivo `poc-replicacao-bdad`.
 
 Durante um cenário, em outro terminal do laptop, use o identificador exato de sua execução,

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  EN-01: single-module Maven build (DT-02: no Spring, no Flyway, PoC descartável).
-  Gates wired into `verify`: Spotless, forbiddenapis (custom + jdk-unsafe +
+  EN-01: Maven build (DT-02: no Spring, no Flyway). Aggregator and parent of two modules:
+    worker/ - the production replication service (core, oracle, worker, Config, Main `worker`).
+    poc/    - everything built only for the PoC (carga, gerador, exportador, reconciliacao)
+              plus its own entry point; depends on worker. worker never depends on poc.
+  Gates wired into `verify` of every module: Spotless, forbiddenapis (custom + jdk-unsafe +
   jdk-system-out) and maven-enforcer. `verify` runs only *Test; *IT run solely
   when selected via -Dtest (surefire excludes them by default).
 -->
@@ -13,10 +16,15 @@
   <groupId>br.org.ecad</groupId>
   <artifactId>poc-replicacao-service</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
 
   <name>poc-replicacao-service</name>
   <description>PoC de replicação BDAD -&gt; banco novo (sem CDC).</description>
+
+  <modules>
+    <module>worker</module>
+    <module>poc</module>
+  </modules>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -34,34 +42,123 @@
     <palantir-java-format.version>2.101.0</palantir-java-format.version>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>br.org.ecad</groupId>
+        <artifactId>replicacao-worker</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <!-- Shared integration-test helpers of the worker (e.g. oracle.BancosPoc), reused by poc
+           without duplication. -->
+      <dependency>
+        <groupId>br.org.ecad</groupId>
+        <artifactId>replicacao-worker</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+      </dependency>
+      <!-- Sole runtime dependency (DT-02, escopo-construcao.md). -->
+      <dependency>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc11</artifactId>
+        <version>${ojdbc.version}</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <!-- Test libraries inherited by every module. -->
   <dependencies>
-    <!-- Sole runtime dependency (DT-02, escopo-construcao.md). -->
-    <dependency>
-      <groupId>com.oracle.database.jdbc</groupId>
-      <artifactId>ojdbc11</artifactId>
-      <version>${ojdbc.version}</version>
-      <scope>runtime</scope>
-    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>${assertj.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${maven-enforcer-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>de.thetaphi</groupId>
+          <artifactId>forbiddenapis</artifactId>
+          <version>${forbiddenapis.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven-jar-plugin.version}</version>
+        </plugin>
+
+        <!-- Each module that ships a process declares the plugin and its own mainClass. -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${maven-shade-plugin.version}</version>
+          <configuration>
+            <createDependencyReducedPom>false</createDependencyReducedPom>
+            <filters>
+              <filter>
+                <artifact>*:*</artifact>
+                <excludes>
+                  <exclude>META-INF/*.SF</exclude>
+                  <exclude>META-INF/*.DSA</exclude>
+                  <exclude>META-INF/*.RSA</exclude>
+                </excludes>
+              </filter>
+            </filters>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${spotless.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>${maven-enforcer-plugin.version}</version>
         <executions>
           <execution>
             <id>enforce-standard</id>
@@ -96,7 +193,6 @@
       <plugin>
         <groupId>de.thetaphi</groupId>
         <artifactId>forbiddenapis</artifactId>
-        <version>${forbiddenapis.version}</version>
         <configuration>
           <bundledSignatures>
             <bundledSignature>jdk-unsafe</bundledSignature>
@@ -120,77 +216,25 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compiler-plugin.version}</version>
-      </plugin>
-
       <!-- *IT never runs implicitly: only *Test runs in `test`/`verify`.
            *IT runs solely when selected explicitly via -Dtest (which overrides
-           the excludes below), against the real PoC databases. -->
+           the excludes below), against the real PoC databases. A -Dtest pattern that
+           matches nothing in one module (e.g. V14* in worker) does not fail that module. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <excludes>
             <exclude>**/*IT.java</exclude>
           </excludes>
+          <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
         </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>${maven-jar-plugin.version}</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>br.org.ecad.poc.replicacao.Main</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-
-      <!-- Single executable jar: `java -jar ... <subcomando>`. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>${maven-shade-plugin.version}</version>
-        <configuration>
-          <createDependencyReducedPom>false</createDependencyReducedPom>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals><goal>shade</goal></goals>
-            <configuration>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>br.org.ecad.poc.replicacao.Main</mainClass>
-                </transformer>
-              </transformers>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
 
       <!-- Formatting is checked, not discussed. `mvn spotless:apply` fixes it. -->
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>${spotless.version}</version>
         <configuration>
           <java>
             <palantirJavaFormat>
