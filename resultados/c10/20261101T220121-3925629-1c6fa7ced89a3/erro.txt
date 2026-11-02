@@ -1,0 +1,1 @@
+CalledProcessError: falha de comando; verifique o ambiente

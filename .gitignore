@@ -1,0 +1,12 @@
+.env
+target/
+*.tmp
+*.log
+.tsg-flow/
+__pycache__/
+# resultados/: so o resumo e versionado (relatorio.md, recomendacao-humana.md,
+# meta.json e arquivos pequenos de diffs/reconciliacao/recuperacao).
+# Brutos grandes (CSVs, logs, snapshots, recursos) ficam locais e ignorados.
+resultados/**/*.csv
+!resultados/**/diferencas.csv
+resultados/**/snapshots/

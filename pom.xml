@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  EN-01: single-module Maven build (DT-02: no Spring, no Flyway, PoC descartável).
+  Gates wired into `verify`: Spotless, forbiddenapis (custom + jdk-unsafe +
+  jdk-system-out) and maven-enforcer. `verify` runs only *Test; *IT run solely
+  when selected via -Dtest (surefire excludes them by default).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>br.org.ecad</groupId>
+  <artifactId>poc-replicacao-service</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>poc-replicacao-service</name>
+  <description>PoC de replicação BDAD -&gt; banco novo (sem CDC).</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>25</maven.compiler.release>
+    <junit.version>6.0.3</junit.version>
+    <assertj.version>3.27.7</assertj.version>
+    <ojdbc.version>23.26.3.0.0</ojdbc.version>
+    <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
+    <maven-jar-plugin.version>3.5.1</maven-jar-plugin.version>
+    <maven-shade-plugin.version>3.6.2</maven-shade-plugin.version>
+    <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
+    <forbiddenapis.version>3.11</forbiddenapis.version>
+    <spotless.version>3.10.3</spotless.version>
+    <palantir-java-format.version>2.101.0</palantir-java-format.version>
+  </properties>
+
+  <dependencies>
+    <!-- Sole runtime dependency (DT-02, escopo-construcao.md). -->
+    <dependency>
+      <groupId>com.oracle.database.jdbc</groupId>
+      <artifactId>ojdbc11</artifactId>
+      <version>${ojdbc.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${maven-enforcer-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>enforce-standard</id>
+            <goals><goal>enforce</goal></goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion><version>[25,)</version></requireJavaVersion>
+                <requireMavenVersion><version>[3.9,)</version></requireMavenVersion>
+                <banDuplicatePomDependencyVersions/>
+                <bannedDependencies>
+                  <excludes>
+                    <!-- Every member lives in the source, readable by humans and LLMs. -->
+                    <exclude>org.projectlombok:lombok</exclude>
+                    <!-- JUnit 4. -->
+                    <exclude>junit:junit</exclude>
+                    <exclude>org.junit.vintage:*</exclude>
+                    <!-- No in-memory database: unit tests run without a database,
+                         integration tests run against the real PoC databases. -->
+                    <exclude>com.h2database:h2</exclude>
+                    <exclude>org.hsqldb:hsqldb</exclude>
+                    <exclude>org.apache.derby:*</exclude>
+                  </excludes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Forbidden APIs: UUIDv4, clock-less now(), default-locale/charset and
+           System.out fail the build. Signatures live in config/forbidden-apis.txt. -->
+      <plugin>
+        <groupId>de.thetaphi</groupId>
+        <artifactId>forbiddenapis</artifactId>
+        <version>${forbiddenapis.version}</version>
+        <configuration>
+          <bundledSignatures>
+            <bundledSignature>jdk-unsafe</bundledSignature>
+            <bundledSignature>jdk-deprecated</bundledSignature>
+            <bundledSignature>jdk-non-portable</bundledSignature>
+            <bundledSignature>jdk-system-out</bundledSignature>
+          </bundledSignatures>
+          <signaturesFiles>
+            <signaturesFile>${maven.multiModuleProjectDirectory}/config/forbidden-apis.txt</signaturesFile>
+          </signaturesFiles>
+          <ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
+          <failOnUnsupportedJava>false</failOnUnsupportedJava>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+              <goal>testCheck</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+      </plugin>
+
+      <!-- *IT never runs implicitly: only *Test runs in `test`/`verify`.
+           *IT runs solely when selected explicitly via -Dtest (which overrides
+           the excludes below), against the real PoC databases. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+        <configuration>
+          <excludes>
+            <exclude>**/*IT.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>${maven-jar-plugin.version}</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>br.org.ecad.poc.replicacao.Main</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <!-- Single executable jar: `java -jar ... <subcomando>`. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${maven-shade-plugin.version}</version>
+        <configuration>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals><goal>shade</goal></goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>br.org.ecad.poc.replicacao.Main</mainClass>
+                </transformer>
+              </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Formatting is checked, not discussed. `mvn spotless:apply` fixes it. -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless.version}</version>
+        <configuration>
+          <java>
+            <palantirJavaFormat>
+              <version>${palantir-java-format.version}</version>
+            </palantirJavaFormat>
+            <removeUnusedImports/>
+            <importOrder/>
+          </java>
+        </configuration>
+        <executions>
+          <execution>
+            <goals><goal>check</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

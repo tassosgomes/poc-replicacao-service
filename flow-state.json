@@ -1,0 +1,26 @@
+{
+  "artifacts": {
+    "prd-poc-replicacao-bdad": {
+      "type": "prd",
+      "path": "tasks/prd-poc-replicacao-bdad/prd.md",
+      "status": "approved",
+      "mode": "standalone",
+      "capability": null,
+      "origins": [
+        "docs/adr-replocacao.md",
+        "docs/escopo-construcao.md"
+      ],
+      "updated": "2026-10-31"
+    },
+    "techspec-poc-replicacao-bdad": {
+      "type": "techspec",
+      "path": "tasks/prd-poc-replicacao-bdad/techspec.md",
+      "status": "approved",
+      "scope": "backend",
+      "mode": "standalone",
+      "prd": "tasks/prd-poc-replicacao-bdad/prd.md",
+      "updated": "2026-10-31",
+      "approved": "2026-10-31"
+    }
+  }
+}

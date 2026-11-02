@@ -1,0 +1,174 @@
+package br.org.ecad.poc.replicacao;
+
+import br.org.ecad.poc.replicacao.carga.CargaInicial;
+import br.org.ecad.poc.replicacao.carga.ConfigCarga;
+import br.org.ecad.poc.replicacao.exportador.Exportador;
+import br.org.ecad.poc.replicacao.gerador.ConfigGerador;
+import br.org.ecad.poc.replicacao.gerador.Gerador;
+import br.org.ecad.poc.replicacao.reconciliacao.ConfigReconciliacao;
+import br.org.ecad.poc.replicacao.reconciliacao.Reconciliacao;
+import br.org.ecad.poc.replicacao.worker.Worker;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+/**
+ * Single executable entry point. Dispatches the {@code worker}, {@code carga-inicial},
+ * {@code reconciliacao} and {@code gerador} subcommands.
+ *
+ * <p>An unknown subcommand or an invalid
+ * {@link Config} prints a clear one-line message and exits non-zero, never a bare stack trace.
+ */
+public final class Main {
+
+    private static final System.Logger LOG = System.getLogger(Main.class.getName());
+
+    static final List<String> COMMANDS = List.of("worker", "carga-inicial", "reconciliacao", "gerador", "exportador");
+
+    private Main() {}
+
+    public static void main(String[] args) {
+        if (args != null && args.length == 1 && args[0].equals("exportador")) {
+            System.exit(Exportador.run(System::getenv));
+            return;
+        }
+        Clock clock = Clock.systemUTC();
+        Result result = dispatch(args == null ? new String[0] : args, System.getenv(), clock);
+        if (result.config() != null) {
+            if (args[0].equals("carga-inicial")) {
+                try {
+                    new CargaInicial(
+                                    result.config(),
+                                    ConfigCarga.load(key -> firstNonBlank(System.getProperty(key), System.getenv(key))),
+                                    clock,
+                                    new PrintStream(
+                                            new FileOutputStream(FileDescriptor.out), true, StandardCharsets.UTF_8))
+                            .executar();
+                    System.exit(0);
+                } catch (Exception e) {
+                    LOG.log(System.Logger.Level.ERROR, "carga-inicial failed: " + e.getMessage(), e);
+                    System.exit(1);
+                }
+            }
+            if (args[0].equals("gerador")) {
+                try {
+                    new Gerador(
+                                    result.config(),
+                                    ConfigGerador.load(
+                                            key -> firstNonBlank(System.getProperty(key), System.getenv(key))),
+                                    clock)
+                            .executar();
+                    System.exit(0);
+                } catch (Exception e) {
+                    LOG.log(System.Logger.Level.ERROR, "gerador failed: " + e.getMessage(), e);
+                    System.exit(1);
+                }
+            }
+            if (args[0].equals("reconciliacao")) {
+                try {
+                    Reconciliacao.executar(
+                            result.config(),
+                            ConfigReconciliacao.load(key -> firstNonBlank(System.getProperty(key), System.getenv(key))),
+                            new PrintStream(new FileOutputStream(FileDescriptor.out), true, StandardCharsets.UTF_8));
+                    System.exit(0);
+                } catch (Exception e) {
+                    LOG.log(System.Logger.Level.ERROR, "reconciliacao failed: " + e.getMessage(), e);
+                    System.exit(1);
+                }
+            }
+            System.exit(runWorker(result.config(), clock));
+        }
+        LOG.log(result.exitCode() == 0 ? System.Logger.Level.INFO : System.Logger.Level.ERROR, result.message());
+        System.exit(result.exitCode());
+    }
+
+    /** Outcome of a dispatch: process exit code plus the single message to log. */
+    record Result(int exitCode, String message, Config config) {
+
+        Result(int exitCode, String message) {
+            this(exitCode, message, null);
+        }
+    }
+
+    /** Runs the worker until the process is terminated; the shutdown hook stops it in order. */
+    private static int runWorker(Config config, Clock clock) {
+        try (Worker worker = Worker.iniciar(config, clock)) {
+            Runtime.getRuntime().addShutdownHook(new Thread(worker::close));
+            worker.aguardar();
+            return 0;
+        } catch (RuntimeException e) {
+            LOG.log(System.Logger.Level.ERROR, "worker failed: " + e.getMessage(), e);
+            return 1;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return 1;
+        }
+    }
+
+    static Result dispatch(String[] args, Map<String, String> env, Clock clock) {
+        return dispatch(args, key -> firstNonBlank(System.getProperty(key), env.get(key)), clock);
+    }
+
+    static Result dispatch(String[] args, Function<String, String> lookup, Clock clock) {
+        if (args.length == 0) {
+            return new Result(2, "missing subcommand. " + usage());
+        }
+        String command = args[0];
+        if (!COMMANDS.contains(command)) {
+            return new Result(2, "unknown subcommand '" + command + "'. " + usage());
+        }
+        if (command.equals("exportador")) {
+            return new Result(args.length == 1 ? 0 : 2, usage());
+        }
+        Config config;
+        try {
+            config = Config.load(lookup, clock);
+        } catch (ConfigException e) {
+            return new Result(1, e.getMessage());
+        }
+        if (command.equals("carga-inicial")) {
+            try {
+                ConfigCarga.load(lookup);
+            } catch (ConfigException e) {
+                return new Result(1, e.getMessage());
+            }
+            return new Result(0, "starting carga-inicial", config);
+        }
+        if (command.equals("gerador")) {
+            try {
+                ConfigGerador.load(lookup);
+            } catch (ConfigException e) {
+                return new Result(1, e.getMessage());
+            }
+            return new Result(0, "starting gerador", config);
+        }
+        if (command.equals("reconciliacao")) {
+            try {
+                ConfigReconciliacao.load(lookup);
+            } catch (ConfigException e) {
+                return new Result(1, e.getMessage());
+            }
+            return new Result(0, "starting reconciliacao", config);
+        }
+        if (command.equals("worker")) {
+            return new Result(0, "starting worker " + config.workerId(), config);
+        }
+        return new Result(2, "'" + command + "' not implemented yet. " + usage());
+    }
+
+    static String usage() {
+        return "usage: poc-replicacao-service <worker|carga-inicial|reconciliacao|gerador|exportador>";
+    }
+
+    private static String firstNonBlank(String first, String second) {
+        if (first != null && !first.isBlank()) {
+            return first;
+        }
+        return second;
+    }
+}

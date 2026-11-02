@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "branch": "feature/poc-replicacao-bdad",
+  "original_base_ref": "88b61d35cddfa1d45b670d284d23885d3046948e",
+  "base_ref": "88b61d35cddfa1d45b670d284d23885d3046948e",
+  "target_ref": "88b61d35cddfa1d45b670d284d23885d3046948e",
+  "last_checkpoint": "fb45109",
+  "phase": "complete-prd",
+  "active_task": "16.0",
+  "attempt": 1,
+  "max_attempts": 3,
+  "full_attempt": 1,
+  "transport_retries": 7,
+  "specs": [
+    "techspec.md"
+  ],
+  "delivery": "pr",
+  "transport": "herdr",
+  "validated_commit": "fb45109dcfb91732f80953873191561395eb3a33",
+  "validated_tree": "4396f8625b9c839b8415247c421e3ba99e7513bd",
+  "last_result": "16.0 done",
+  "history": [
+    {
+      "event": "prepare-prd-branch",
+      "note": "2 falhas de transporte (opencode nao iniciou); usuario ajustou configuracao; 3a chamada ok"
+    },
+    {
+      "event": "task 1.0 done",
+      "checkpoint": "9df2d2a",
+      "note": "checkbox reconciliado; arquivos de task renomeados 01->1 para o tsg-delegate"
+    },
+    {
+      "event": "4.0 attempt 1 gate_failed",
+      "note": "worker nao implementou codigo"
+    },
+    {
+      "event": "4.0 validator focused: validation_error (gate sem env) + 2 bloqueantes",
+      "note": "fix como tentativa 3/3"
+    },
+    {
+      "event": "4.0 blocked",
+      "note": "limite de 3 tentativas; unico bloqueante restante: limpeza V03ReplicacaoIT.java:260-267"
+    },
+    {
+      "event": "4.0 nova rodada autorizada pelo usuario",
+      "note": "opus medium; rodada anterior 3/3 preservada"
+    },
+    {
+      "event": "7.0 attempt1 gate_failed",
+      "note": "vazao 858/s e ORA-00942"
+    },
+    {
+      "event": "7.0 attempt2 rejeitada",
+      "note": "3 bloqueantes"
+    },
+    {
+      "event": "8.0 attempt1 gate_failed",
+      "note": "testes V07 nao criados"
+    },
+    {
+      "event": "8.0 attempt2 rejeitada",
+      "note": "2 bloqueantes; fix 3/3 com opus medium"
+    },
+    {
+      "event": "8.0 blocked",
+      "note": "limite de 3 tentativas; bloqueante: exclusao entre lote em voo e reassuncao do lease"
+    },
+    {
+      "event": "8.0 nova rodada autorizada pelo usuario",
+      "note": "3 tentativas; opus medium, escalando para codex sol; rodada anterior 3/3 preservada"
+    },
+    {
+      "event": "8.0 r2 tentativa1 rejeitada",
+      "note": "commit de dono vencido ainda confirma; proxima: codex gpt-5.6-sol"
+    },
+    {
+      "event": "8.0 r2 tentativa2 rejeitada",
+      "note": "teste nao discrimina fencing no banco (mutante sobreviveu)"
+    },
+    {
+      "event": "8.0 blocked (rodada 2)",
+      "note": "mecanismo aceito; falta teste para versao e prazo"
+    },
+    {
+      "event": "8.0 rodada 3 autorizada pelo usuario",
+      "note": "escopo: 2 testes de mutacao (versao e prazo); codex gpt-5.6-sol"
+    },
+    {
+      "event": "8.0 r3 tentativa1 rejeitada",
+      "note": "failover 20,1-21 s > 20 s"
+    },
+    {
+      "event": "8.0 r3 tentativa2 rejeitada",
+      "note": "teste de janela da cerca antes do commit quebrou apos acelerar o failover"
+    },
+    {
+      "event": "8.0 blocked (rodada 3)",
+      "note": "regressoes no V07LeaseIT apos acelerar claim/heartbeat; 9 tentativas no total"
+    },
+    {
+      "event": "8.0 rodada 4 autorizada pelo usuario",
+      "note": "opcao 1: descartar aceleracao do claim, LEASE_SEG parametrico; usuario aceita risco de SLA 20,1 s se necessario"
+    },
+    {
+      "event": "decisao do usuario",
+      "note": "consistencia sobre disponibilidade; failover A->B e excecao; aceita SLA 20,1 s se preciso"
+    },
+    {
+      "event": "8.0 r4 tentativa1 rejeitada",
+      "note": "outlier 28,9 s; teto 1 s do ciclo acelerado ainda presente; dist 10 medicoes: min13.4 p50 15.7 p90 18.3"
+    },
+    {
+      "event": "8.0 r4 tentativa2 completa (sem veredito)",
+      "note": "defeito de relogio WSL2 corrigido; failover >20 s em 4/18; usuario aprovou medir tomada real mantendo 20 s"
+    },
+    {
+      "event": "8.0 blocked (rodada 4)",
+      "note": "12 tentativas no total; mecanismo e mutantes ok; 17 medicoes: min10.7 p50 14.5 p90 16.5 max20.02, 1>20s"
+    },
+    {
+      "event": "8.0 aceita com ressalvas (decisao humana)",
+      "note": "checkpoint sem aprovacao do validator; ressalvas em 8.0_task_review.md e obrigatorias no relatorio 16.0"
+    },
+    {
+      "event": "10.0 attempt1 gate_failed",
+      "note": "1 de 5 testes; implementacao parcial"
+    },
+    {
+      "event": "10.0 attempt2 rejeitada",
+      "note": "2 bloqueantes: teste consome eventos alheios; versao nula nao reparada"
+    },
+    {
+      "event": "10.0 blocked",
+      "note": "limite de 3 tentativas; 1 bloqueante restante (isolamento de eventos no teste)"
+    },
+    {
+      "event": "10.0 nova rodada autorizada pelo usuario",
+      "note": "ate 2 tentativas; escopo: filtro de eventos proprios no teste"
+    },
+    {
+      "event": "11.0 attempt1 gate_failed",
+      "note": "3 de 4 testes; implementacao parcial"
+    },
+    {
+      "event": "12.0 attempt1 rejeitada",
+      "note": "B1: patamar de pendentes do C4 instantaneo; C5/C9 sem evidencia"
+    },
+    {
+      "event": "15.0 blocked (operacional)",
+      "note": "conta Elastic do .env tem escrita irrestrita (unrestricted_write); task exige conta restrita ao namespace da PoC; nao contornar; sem tentativa consumida; Should Have"
+    },
+    {
+      "event": "15.0 retomada por decisao humana",
+      "note": "usuario aceita conta Elastic com escrita irrestrita; restricao de namespace por codigo"
+    },
+    {
+      "event": "15.0 attempt1 rejeitada",
+      "note": "B1: IDs do painel mudam (UUID) no import; objetos orfaos"
+    }
+  ]
+}
