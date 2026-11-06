@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "_doc": "Politica de roteamento do transporte Herdr. Campos, valores de modelo e niveis de esforco por agente estao no README.md da skill. Copie para .tsg-flow/routing.json no repositorio alvo para sobrescrever. model/effort null usam o padrao da CLI daquele agente.",
+  "kinds": {
+    "claude": {
+      "model_flag": "--model",
+      "model": "claude-sonnet-5-5",
+      "effort_args": [
+        "--effort",
+        "{effort}"
+      ],
+      "effort": "high",
+      "extra_args": [
+        "--dangerously-skip-permissions"
+      ]
+    },
+    "codex": {
+      "model_flag": "--model",
+      "model": "gpt-6.1-sol",
+      "effort_args": [
+        "-c",
+        "model_reasoning_effort=\"{effort}\""
+      ],
+      "effort": "high",
+      "extra_args": [
+        "--yolo"
+      ]
+    },
+    "opencode": {
+      "model_flag": "--model",
+      "model": null,
+      "effort_args": [],
+      "effort": null,
+      "extra_args": [
+        "--auto"
+      ]
+    },
+    "cursor": {
+      "model_flag": "--model",
+      "model": null,
+      "model_template": "{model}[effort={effort}]",
+      "effort_args": [],
+      "effort": null,
+      "extra_args": []
+    },
+    "agy": {
+      "model_flag": "--model",
+      "model": null,
+      "effort_args": [
+        "--effort",
+        "{effort}"
+      ],
+      "effort": null,
+      "extra_args": ["--dangerously-skip-permissions"]
+    }
+  },
+  "routes": [
+    {
+      "role": "integrator",
+      "kind": "opencode",
+      "escalation": [
+        "codex"
+      ]
+    },
+    {
+      "role": "implementer",
+      "task_kind": "enabling",
+      "kind": "opencode",
+      "escalation": [
+        "codex",
+        "claude"
+      ]
+    },
+    {
+      "role": "implementer",
+      "task_kind": "vertical",
+      "kind": "codex",
+      "escalation": [
+        "claude"
+      ]
+    },
+    {
+      "role": "implementer",
+      "kind": "codex",
+      "escalation": [
+        "claude"
+      ]
+    },
+    {
+      "role": "validator",
+      "mode": "full",
+      "kind": "claude",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "role": "validator",
+      "kind": "claude",
+      "model": "claude-sonnet-5-5"
+    }
+  ],
+  "escalation": {
+    "implementer": [
+      "claude"
+    ],
+    "validator": [],
+    "integrator": [
+      "codex"
+    ]
+  },
+  "anti_affinity": {
+    "enabled": true,
+    "roles": [
+      "validator"
+    ],
+    "preference": [
+      "claude",
+      "codex",
+      "cursor",
+      "agy",
+      "opencode"
+    ]
+  }
+}

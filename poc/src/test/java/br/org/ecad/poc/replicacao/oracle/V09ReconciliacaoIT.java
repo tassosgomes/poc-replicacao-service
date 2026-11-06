@@ -2,11 +2,14 @@ package br.org.ecad.poc.replicacao.oracle;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.ecad.poc.replicacao.core.Esquema;
-import br.org.ecad.poc.replicacao.core.Uuid7;
+import br.org.ecad.poc.replicacao.application.replicacao.ProcessadorParticao;
+import br.org.ecad.poc.replicacao.domain.replicacao.Esquema;
+import br.org.ecad.poc.replicacao.domain.replicacao.Uuid7;
+import br.org.ecad.poc.replicacao.infra.oracle.replicacao.OutboxSource;
+import br.org.ecad.poc.replicacao.infra.oracle.replicacao.ReplicaSinkAdapter;
+import br.org.ecad.poc.replicacao.infra.oracle.replicacao.StateProviderAdapter;
 import br.org.ecad.poc.replicacao.reconciliacao.ConfigReconciliacao;
 import br.org.ecad.poc.replicacao.reconciliacao.Reconciliacao;
-import br.org.ecad.poc.replicacao.worker.ProcessadorParticao;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -112,7 +115,7 @@ class V09ReconciliacaoIT {
         legado.commit();
 
         try (Connection origem = BancosPoc.legado();
-                OracleOutboxSource source = new OracleOutboxSource(origem, criados)) {
+                OutboxSource source = new OutboxSource(origem, criados)) {
             assertThat(source.poll("OBRA_MUSICAL", particao, 100))
                     .extracting(evento -> evento.eventoId())
                     .doesNotContain(idAlheio);
@@ -302,9 +305,9 @@ class V09ReconciliacaoIT {
                 Esquema.OBRA_MUSICAL,
                 particao,
                 BancosPoc.config().loteMax(),
-                new OracleOutboxSource(origem, criados),
-                new OracleStateProvider(origem),
-                new OracleReplicaSink(aberta(BancosPoc.novo()), new Uuid7(CLOCK)));
+                new OutboxSource(origem, criados),
+                new StateProviderAdapter(origem),
+                new ReplicaSinkAdapter(aberta(BancosPoc.novo()), new Uuid7(CLOCK)));
         while (processador.processarLote().eventos() > 0) {
             // drain
         }

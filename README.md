@@ -15,8 +15,9 @@ replicação por definição. Não execute cenários simultaneamente nos mesmos 
 
 Build Maven multi-módulo (`pom.xml` da raiz é só agregador/pai):
 
-- **`worker/`** (`replicacao-worker`): o serviço de produção — `core`, `oracle`, `worker`, `Config`
-  e um `Main` que aceita apenas o subcomando `worker`.
+- **`worker/`**: agregador do serviço de produção, dividido em `domain`, `application`,
+  `infra-oracle`, `bootstrap` e `architecture-tests`. O executável `replicacao-worker` fica em
+  `bootstrap` e aceita apenas o subcomando `worker`. Veja o [fluxo de funcionamento](worker/README.md).
 - **`poc/`** (`replicacao-poc`): tudo que é só da PoC — carga inicial, gerador, exportador,
   reconciliação, `MainPoc` (cinco subcomandos; `worker` delega ao módulo worker),
   `poc-kibana.ndjson`. Fora dos módulos ficam `scripts/` (cenários), `sql/` e `resultados/`.
@@ -24,8 +25,8 @@ Build Maven multi-módulo (`pom.xml` da raiz é só agregador/pai):
 Construir:
 
 ```bash
-./mvnw -B -q package                    # os dois módulos
-./mvnw -B -q -pl worker -am package     # só o worker
+./mvnw -B -q package                    # serviço e ferramentas da PoC
+./mvnw -B -q -pl worker/bootstrap -am package     # só o worker
 ./mvnw -B -q -pl poc -am package        # a PoC (com o worker do reator)
 ```
 
@@ -33,17 +34,17 @@ Executar:
 
 ```bash
 # Worker de produção (só o subcomando worker)
-java -jar worker/target/replicacao-worker-0.0.1-SNAPSHOT-exec.jar worker
+java -jar worker/bootstrap/target/replicacao-worker-0.0.1-SNAPSHOT-exec.jar worker
 # PoC (worker, carga-inicial, gerador, reconciliacao, exportador)
 java -jar poc/target/poc-replicacao-service-0.0.1-SNAPSHOT.jar <subcomando>
 ```
 
 Os cenários e `scripts/exportar.sh` usam o jar da PoC (inclusive para o `worker` nos containers),
-por isso a mecânica dos cenários não mudou. O `worker/target/replicacao-worker-0.0.1-SNAPSHOT.jar`
+por isso a mecânica dos cenários não mudou. O `worker/bootstrap/target/replicacao-worker-0.0.1-SNAPSHOT.jar`
 (sem sufixo) é fino e não executável; é o que o módulo `poc` consome.
 
 **Regra de isolamento:** `worker` não depende de `poc`. É garantido pelo maven-enforcer
-(`bannedDependencies`) e pelo teste `IsolamentoWorkerTest`.
+(`bannedDependencies`), pelo teste `IsolamentoWorkerTest` e pelas regras ArchUnit.
 
 **Candidatos a promoção para produção (decisão em aberto, não decidida):** carga inicial e
 reconciliação hoje vivem em `poc/`; se e quando migram para o serviço de produção ainda será

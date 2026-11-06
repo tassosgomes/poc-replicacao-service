@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
-import br.org.ecad.poc.replicacao.Config;
+import br.org.ecad.poc.replicacao.bootstrap.config.Config;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;

@@ -1,8 +1,8 @@
 package br.org.ecad.poc.replicacao.carga;
 
-import br.org.ecad.poc.replicacao.ConfigException;
-import br.org.ecad.poc.replicacao.core.Esquema;
-import br.org.ecad.poc.replicacao.core.TableSpec;
+import br.org.ecad.poc.replicacao.bootstrap.config.ConfigException;
+import br.org.ecad.poc.replicacao.domain.replicacao.Esquema;
+import br.org.ecad.poc.replicacao.domain.replicacao.TableSpec;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;

@@ -1,0 +1,14 @@
+package br.org.ecad.poc.replicacao.application.port;
+
+import br.org.ecad.poc.replicacao.domain.replicacao.Estados;
+import br.org.ecad.poc.replicacao.domain.replicacao.TableSpec;
+import java.util.Collection;
+
+/**
+ * Current state of the rows of a table. A key that no longer exists is reported explicitly in
+ * {@link Estados#ausentes()}, never as an error.
+ */
+public interface StateProvider {
+
+    Estados buscar(TableSpec spec, Collection<Long> codigos);
+}

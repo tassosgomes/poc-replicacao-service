@@ -1,12 +1,13 @@
 package br.org.ecad.poc.replicacao.carga;
 
-import br.org.ecad.poc.replicacao.Config;
-import br.org.ecad.poc.replicacao.core.Linha;
-import br.org.ecad.poc.replicacao.core.ReprocessavelException;
-import br.org.ecad.poc.replicacao.core.TableSpec;
-import br.org.ecad.poc.replicacao.core.Uuid7;
-import br.org.ecad.poc.replicacao.oracle.Conexoes;
-import br.org.ecad.poc.replicacao.oracle.OracleReplicaSink;
+import br.org.ecad.poc.replicacao.bootstrap.config.Config;
+import br.org.ecad.poc.replicacao.domain.replicacao.Linha;
+import br.org.ecad.poc.replicacao.domain.replicacao.ReprocessavelException;
+import br.org.ecad.poc.replicacao.domain.replicacao.TableSpec;
+import br.org.ecad.poc.replicacao.domain.replicacao.Uuid7;
+import br.org.ecad.poc.replicacao.infra.oracle.conexao.Conexoes;
+import br.org.ecad.poc.replicacao.infra.oracle.replicacao.ReplicaSinkAdapter;
+import br.org.ecad.poc.replicacao.infra.oracle.replicacao.ReplicationSql;
 import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -57,7 +58,7 @@ public final class CargaInicial {
 
     private List<Long> faixas(TableSpec tabela) throws SQLException {
         List<Long> faixas = new ArrayList<>();
-        String sql = "SELECT DISTINCT FLOOR(codigo / " + FAIXA + ") FROM " + tabela.tabelaSql()
+        String sql = "SELECT DISTINCT FLOOR(codigo / " + FAIXA + ") FROM " + ReplicationSql.tabelaSql(tabela)
                 + " WHERE codigo >= ? AND codigo < ? ORDER BY 1";
         try (Connection origem = legado();
                 PreparedStatement ps = origem.prepareStatement(sql)) {
@@ -77,7 +78,7 @@ public final class CargaInicial {
         for (int tentativa = 1; ; tentativa++) {
             try (Connection origem = legado();
                     Connection destino = novo();
-                    OracleReplicaSink sink = new OracleReplicaSink(destino, new Uuid7(clock))) {
+                    ReplicaSinkAdapter sink = new ReplicaSinkAdapter(destino, new Uuid7(clock))) {
                 List<Linha> linhas = ler(origem, tabela, min, max);
                 if (!linhas.isEmpty()) {
                     sink.upsert(tabela, linhas);
@@ -91,8 +92,8 @@ public final class CargaInicial {
     }
 
     private List<Linha> ler(Connection origem, TableSpec tabela, long min, long max) throws SQLException {
-        String sql = "SELECT codigo, updated_at, " + String.join(", ", tabela.colunas()) + " FROM " + tabela.tabelaSql()
-                + " WHERE codigo >= ? AND codigo < ? ORDER BY codigo";
+        String sql = "SELECT codigo, updated_at, " + String.join(", ", tabela.colunas()) + " FROM "
+                + ReplicationSql.tabelaSql(tabela) + " WHERE codigo >= ? AND codigo < ? ORDER BY codigo";
         List<Linha> linhas = new ArrayList<>();
         try (PreparedStatement ps = origem.prepareStatement(sql)) {
             ps.setLong(1, min);

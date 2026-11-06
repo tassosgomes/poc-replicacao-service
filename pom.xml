@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  EN-01: Maven build (DT-02: no Spring, no Flyway). Aggregator and parent of two modules:
-    worker/ - the production replication service (core, oracle, worker, Config, Main `worker`).
+  EN-01: Maven build (DT-02: no Spring, no Flyway). Aggregator and parent:
+    worker/ - domain, application, infra-oracle, bootstrap (CLI `worker`), architecture-tests.
     poc/    - everything built only for the PoC (carga, gerador, exportador, reconciliacao)
               plus its own entry point; depends on worker. worker never depends on poc.
   Gates wired into `verify` of every module: Spotless, forbiddenapis (custom + jdk-unsafe +
@@ -29,6 +29,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>25</maven.compiler.release>
+    <archunit.version>1.5.1</archunit.version>
     <junit.version>6.0.3</junit.version>
     <assertj.version>3.27.7</assertj.version>
     <ojdbc.version>23.26.3.0.0</ojdbc.version>
@@ -44,6 +45,27 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>com.tngtech.archunit</groupId>
+        <artifactId>archunit-junit5</artifactId>
+        <version>${archunit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>br.org.ecad</groupId>
+        <artifactId>replicacao-domain</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>br.org.ecad</groupId>
+        <artifactId>replicacao-application</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>br.org.ecad</groupId>
+        <artifactId>replicacao-infra-oracle</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>br.org.ecad</groupId>
         <artifactId>replicacao-worker</artifactId>

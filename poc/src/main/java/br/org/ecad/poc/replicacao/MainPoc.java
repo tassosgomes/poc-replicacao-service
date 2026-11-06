@@ -1,5 +1,8 @@
 package br.org.ecad.poc.replicacao;
 
+import br.org.ecad.poc.replicacao.bootstrap.Main;
+import br.org.ecad.poc.replicacao.bootstrap.config.Config;
+import br.org.ecad.poc.replicacao.bootstrap.config.ConfigException;
 import br.org.ecad.poc.replicacao.carga.CargaInicial;
 import br.org.ecad.poc.replicacao.carga.ConfigCarga;
 import br.org.ecad.poc.replicacao.exportador.Exportador;

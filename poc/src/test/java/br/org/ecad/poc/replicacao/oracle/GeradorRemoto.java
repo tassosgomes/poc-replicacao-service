@@ -1,6 +1,6 @@
 package br.org.ecad.poc.replicacao.oracle;
 
-import br.org.ecad.poc.replicacao.Config;
+import br.org.ecad.poc.replicacao.bootstrap.config.Config;
 import br.org.ecad.poc.replicacao.gerador.Gerador;
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,27 +100,30 @@ final class GeradorRemoto {
     }
 
     private static void copiarParaContainer(String nome) throws Exception {
-        Path classes = Path.of(Gerador.class
-                .getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .toURI());
-        // The worker module (Config, core, oracle): target/classes in the reactor, merged into
-        // /app/classes, or its jar, picked up by /app/*.
-        Path worker = Path.of(
-                Config.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        Path driver = Path.of(oracle.jdbc.OracleDriver.class
-                .getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .toURI());
-        Process p = new ProcessBuilder(
-                        "bash",
-                        "-c",
-                        "set -o pipefail; tar -c --transform 's|^|app/|' -C '" + classes.getParent()
-                                + "' classes -C '" + worker.getParent() + "' '" + worker.getFileName()
-                                + "' -C '" + driver.getParent() + "' '" + driver.getFileName()
-                                + "' | ssh -o BatchMode=yes " + HOST + " 'docker cp - " + nome + ":/'")
+        java.util.Set<Path> artifacts = new java.util.LinkedHashSet<>();
+        for (Class<?> type : java.util.List.of(
+                Gerador.class,
+                Config.class,
+                br.org.ecad.poc.replicacao.domain.replicacao.ChangeEvent.class,
+                br.org.ecad.poc.replicacao.application.replicacao.ProcessadorParticao.class,
+                br.org.ecad.poc.replicacao.infra.oracle.conexao.Conexoes.class,
+                oracle.jdbc.OracleDriver.class)) {
+            artifacts.add(Path.of(
+                    type.getProtectionDomain().getCodeSource().getLocation().toURI()));
+        }
+        StringBuilder archive = new StringBuilder("set -o pipefail; tar -c --transform 's|^|app/|'");
+        for (Path artifact : artifacts) {
+            archive.append(" -C ")
+                    .append(shellQuote(artifact.getParent().toString()))
+                    .append(' ')
+                    .append(shellQuote(artifact.getFileName().toString()));
+        }
+        archive.append(" | ssh -o BatchMode=yes ")
+                .append(HOST)
+                .append(" 'docker cp - ")
+                .append(nome)
+                .append(":/'");
+        Process p = new ProcessBuilder("bash", "-c", archive.toString())
                 .redirectErrorStream(true)
                 .start();
         String saida = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
@@ -151,5 +154,9 @@ final class GeradorRemoto {
 
     private static String aspas(String valor) {
         return "'" + valor.replace("'", "'\\''") + "'";
+    }
+
+    private static String shellQuote(String value) {
+        return "'" + value.replace("'", "'\"'\"'") + "'";
     }
 }
