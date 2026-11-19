@@ -1,6 +1,6 @@
 package br.org.ecad.poc.replicacao.gerador;
 
-import br.org.ecad.poc.replicacao.ConfigException;
+import br.org.ecad.poc.replicacao.bootstrap.config.ConfigException;
 import java.util.function.Function;
 
 public record ConfigGerador(

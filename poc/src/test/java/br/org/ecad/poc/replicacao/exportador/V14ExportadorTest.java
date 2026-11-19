@@ -3,7 +3,7 @@ package br.org.ecad.poc.replicacao.exportador;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import br.org.ecad.poc.replicacao.ConfigException;
+import br.org.ecad.poc.replicacao.bootstrap.config.ConfigException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

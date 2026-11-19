@@ -1,9 +1,10 @@
 package br.org.ecad.poc.replicacao.reconciliacao;
 
-import br.org.ecad.poc.replicacao.Config;
-import br.org.ecad.poc.replicacao.core.Esquema;
-import br.org.ecad.poc.replicacao.core.TableSpec;
-import br.org.ecad.poc.replicacao.oracle.Conexoes;
+import br.org.ecad.poc.replicacao.bootstrap.config.Config;
+import br.org.ecad.poc.replicacao.domain.replicacao.Esquema;
+import br.org.ecad.poc.replicacao.domain.replicacao.TableSpec;
+import br.org.ecad.poc.replicacao.infra.oracle.conexao.Conexoes;
+import br.org.ecad.poc.replicacao.infra.oracle.replicacao.ReplicationSql;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -108,7 +109,8 @@ public final class Reconciliacao {
 
     private Map<Long, String> hashes(Connection c, TableSpec spec, boolean replica) throws SQLException {
         String sql = "SELECT FLOOR(codigo / " + FAIXA + "), COUNT(*), SUM(" + hashLinha(spec, replica) + ") FROM "
-                + spec.tabelaSql() + " WHERE codigo >= ? AND codigo < ? GROUP BY FLOOR(codigo / " + FAIXA + ")";
+                + ReplicationSql.tabelaSql(spec) + " WHERE codigo >= ? AND codigo < ? GROUP BY FLOOR(codigo / " + FAIXA
+                + ")";
         Map<Long, String> resultado = new HashMap<>();
         try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setLong(1, config.codigoMin());
@@ -126,9 +128,9 @@ public final class Reconciliacao {
         long de = Math.max(faixa * FAIXA, config.codigoMin());
         long ate = Math.min((faixa + 1) * FAIXA, config.codigoMax());
         String colunas = String.join(", ", spec.colunas());
-        String origemSql = "SELECT codigo, updated_at, " + colunas + " FROM " + spec.tabelaSql()
+        String origemSql = "SELECT codigo, updated_at, " + colunas + " FROM " + ReplicationSql.tabelaSql(spec)
                 + " WHERE codigo >= ? AND codigo < ? ORDER BY codigo";
-        String replicaSql = "SELECT codigo, origem_updated_at, " + colunas + " FROM " + spec.tabelaSql()
+        String replicaSql = "SELECT codigo, origem_updated_at, " + colunas + " FROM " + ReplicationSql.tabelaSql(spec)
                 + " WHERE codigo >= ? AND codigo < ? ORDER BY codigo";
         int colunasLidas = spec.colunas().size() + 2;
         try (PreparedStatement a = legado.prepareStatement(origemSql);
@@ -172,7 +174,7 @@ public final class Reconciliacao {
     /** Legacy rows changed in the window whose version is absent or older in the replica. */
     private void delta(TableSpec spec, Map<Long, Long> contagens, List<Long> reenfileirar) throws SQLException {
         Map<Long, Timestamp> recentes = new TreeMap<>();
-        String sql = "SELECT codigo, updated_at FROM " + spec.tabelaSql()
+        String sql = "SELECT codigo, updated_at FROM " + ReplicationSql.tabelaSql(spec)
                 + " WHERE updated_at > SYSTIMESTAMP - NUMTODSINTERVAL(?, 'MINUTE') AND codigo >= ? AND codigo < ?";
         try (PreparedStatement ps = legado.prepareStatement(sql)) {
             ps.setLong(1, (long) config.desdeMin() + config.janelaMin());
@@ -200,8 +202,8 @@ public final class Reconciliacao {
     private Map<Long, Timestamp> versoesNaReplica(TableSpec spec, List<Long> codigos) throws SQLException {
         String marcas = String.join(", ", Collections.nCopies(codigos.size(), "?"));
         Map<Long, Timestamp> versoes = new HashMap<>();
-        try (PreparedStatement ps = novo.prepareStatement(
-                "SELECT codigo, origem_updated_at FROM " + spec.tabelaSql() + " WHERE codigo IN (" + marcas + ")")) {
+        try (PreparedStatement ps = novo.prepareStatement("SELECT codigo, origem_updated_at FROM "
+                + ReplicationSql.tabelaSql(spec) + " WHERE codigo IN (" + marcas + ")")) {
             for (int i = 0; i < codigos.size(); i++) ps.setLong(i + 1, codigos.get(i));
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) versoes.put(rs.getLong(1), rs.getTimestamp(2));

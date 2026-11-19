@@ -1,0 +1,3 @@
+{
+    "window.title": "${dirty}${activeEditorShort}${separator}poc-replicacao-service${separator}${profileName}${separator}${appName}"
+}

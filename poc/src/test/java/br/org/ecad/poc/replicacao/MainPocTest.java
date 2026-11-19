@@ -2,6 +2,7 @@ package br.org.ecad.poc.replicacao;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.ecad.poc.replicacao.bootstrap.Main;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;

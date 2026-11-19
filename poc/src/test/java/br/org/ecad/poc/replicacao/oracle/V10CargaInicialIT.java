@@ -2,15 +2,16 @@ package br.org.ecad.poc.replicacao.oracle;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.ecad.poc.replicacao.Config;
 import br.org.ecad.poc.replicacao.MainPoc;
+import br.org.ecad.poc.replicacao.bootstrap.config.Config;
+import br.org.ecad.poc.replicacao.bootstrap.execucao.Worker;
 import br.org.ecad.poc.replicacao.carga.CargaInicial;
 import br.org.ecad.poc.replicacao.carga.ConfigCarga;
-import br.org.ecad.poc.replicacao.core.Esquema;
-import br.org.ecad.poc.replicacao.core.TableSpec;
+import br.org.ecad.poc.replicacao.domain.replicacao.Esquema;
+import br.org.ecad.poc.replicacao.domain.replicacao.TableSpec;
+import br.org.ecad.poc.replicacao.infra.oracle.replicacao.ReplicationSql;
 import br.org.ecad.poc.replicacao.reconciliacao.ConfigReconciliacao;
 import br.org.ecad.poc.replicacao.reconciliacao.Reconciliacao;
-import br.org.ecad.poc.replicacao.worker.Worker;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -63,7 +64,7 @@ class V10CargaInicialIT {
                 .as("another worker is alive: refusing to empty the replica under it")
                 .isZero();
         for (TableSpec tabela : Esquema.TABELAS) {
-            executar(destino, "TRUNCATE TABLE " + tabela.tabelaSql());
+            executar(destino, "TRUNCATE TABLE " + ReplicationSql.tabelaSql(tabela));
         }
         assertThat(contarReplica()).isZero();
     }
@@ -241,27 +242,11 @@ class V10CargaInicialIT {
     /** The real {@code carga-inicial} subcommand in its own JVM, so that it can be killed for real. */
     private Process iniciarProcessoDeCarga(Path log) throws Exception {
         Config base = BancosPoc.config();
-        Path classes = Path.of(MainPoc.class
-                .getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .toURI());
-        Path worker = Path.of(
-                Config.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        Path driver = Path.of(oracle.jdbc.OracleDriver.class
-                .getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .toURI());
         ProcessBuilder pb = new ProcessBuilder(
                         Path.of(System.getProperty("java.home"), "bin", "java").toString(),
                         "-Xmx512m",
                         "-cp",
-                        classes
-                                + System.getProperty("path.separator")
-                                + worker
-                                + System.getProperty("path.separator")
-                                + driver,
+                        System.getProperty("java.class.path"),
                         MainPoc.class.getName(),
                         "carga-inicial")
                 .redirectErrorStream(true)
@@ -284,10 +269,11 @@ class V10CargaInicialIT {
         long total = 0;
         for (TableSpec tabela : Esquema.TABELAS) {
             try (Statement s = destino.createStatement();
-                    BufferedWriter w = Files.newBufferedWriter(dir.resolve(tabela.tabelaSql() + ".csv"))) {
+                    BufferedWriter w =
+                            Files.newBufferedWriter(dir.resolve(ReplicationSql.tabelaSql(tabela) + ".csv"))) {
                 s.setFetchSize(20_000);
-                try (ResultSet rs =
-                        s.executeQuery("SELECT codigo, RAWTOHEX(id) FROM " + tabela.tabelaSql() + " ORDER BY codigo")) {
+                try (ResultSet rs = s.executeQuery(
+                        "SELECT codigo, RAWTOHEX(id) FROM " + ReplicationSql.tabelaSql(tabela) + " ORDER BY codigo")) {
                     while (rs.next()) {
                         w.write(rs.getLong(1) + "," + rs.getString(2) + "\n");
                         total++;
@@ -326,7 +312,7 @@ class V10CargaInicialIT {
     }
 
     private static long contar(Connection c, TableSpec t) throws Exception {
-        return escalar(c, "SELECT COUNT(*) FROM " + t.tabelaSql());
+        return escalar(c, "SELECT COUNT(*) FROM " + ReplicationSql.tabelaSql(t));
     }
 
     private static long escalar(Connection c, String sql) throws Exception {

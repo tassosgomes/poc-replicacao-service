@@ -2,7 +2,7 @@ package br.org.ecad.poc.replicacao.reconciliacao;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.ecad.poc.replicacao.core.Esquema;
+import br.org.ecad.poc.replicacao.domain.replicacao.Esquema;
 import org.junit.jupiter.api.Test;
 
 class V09HashTest {

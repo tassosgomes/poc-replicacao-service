@@ -1,6 +1,6 @@
 package br.org.ecad.poc.replicacao.exportador;
 
-import br.org.ecad.poc.replicacao.ConfigException;
+import br.org.ecad.poc.replicacao.bootstrap.config.ConfigException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;

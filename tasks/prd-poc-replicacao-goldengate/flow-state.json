@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "phase": "prd-draft",
+  "artifacts": {
+    "prd": {"path": "prd.draft.md", "status": "draft", "updated": "2026-11-05"}
+  },
+  "specs": [],
+  "history": [
+    {"event": "prd-draft", "note": "PoC GoldenGate Free Oracle->Oracle, comparavel a prd-poc-replicacao-bdad"}
+  ]
+}

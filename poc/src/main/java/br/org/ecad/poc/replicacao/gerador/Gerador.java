@@ -1,7 +1,7 @@
 package br.org.ecad.poc.replicacao.gerador;
 
-import br.org.ecad.poc.replicacao.Config;
-import br.org.ecad.poc.replicacao.oracle.Conexoes;
+import br.org.ecad.poc.replicacao.bootstrap.config.Config;
+import br.org.ecad.poc.replicacao.infra.oracle.conexao.Conexoes;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
