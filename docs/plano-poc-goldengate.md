@@ -128,6 +128,8 @@ Se o item 2 ou 3 falhar, voltar com o problema antes da Fase 1.
 
 ### Fase 3: calibração do gerador (antes de qualquer cenário)
 
+**Status (2026-11-20): concluída.** Taxa efetiva >= 100% do alvo a 1.000 e 2.000 ev/s com e sem Extract; legado sem saturação sustentada; latência de base ajustada; primeiro C2 curto (1.000 ev/s, 300 s) aprovado. Evidência em `docs/spike-goldengate-notas.md`, seção "Fase 3 e C2 curto".
+
 Rodar o gerador contra `gg-legado` com Extract parado e confirmar taxa ≥ 98% do alvo a 1.000 e
 2.000 ev/s. Sem trigger de captura o custo por transação é menor e a taxa pode fechar; se não
 fechar, os cenários sairão INVALIDO/TAXA de novo e o problema é o ambiente, não a ponte.

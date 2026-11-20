@@ -13,7 +13,7 @@ create table titular (id raw(16) primary key, codigo number unique not null, nom
 create table obra_musical (id raw(16) primary key, codigo number unique not null, titulo varchar2(200), iswc varchar2(30), genero varchar2(50), situacao varchar2(20), excluido number(1), origem_updated_at timestamp(6), replicado_em timestamp(6), origem_commit_ts timestamp(6));
 create table fonograma (id raw(16) primary key, codigo number unique not null, obra_codigo number, titulo varchar2(200), isrc varchar2(30), duracao_seg number, excluido number(1), origem_updated_at timestamp(6), replicado_em timestamp(6), origem_commit_ts timestamp(6));
 
-create table aplicacao_log (tabela varchar2(30), codigo number, op char(1), origem_commit_ts timestamp(6), aplicado_em timestamp(6) default systimestamp);
+create table aplicacao_log (tabela varchar2(30), codigo number, op char(1), origem_commit_ts timestamp(6), aplicado_em timestamp(6) default systimestamp, origem_updated_at timestamp(6));
 create index ix_aplicacao_log_em on aplicacao_log(aplicado_em);
 
 -- Contador de 12 bits (rand_a) como no Uuid7.java do worker: ordena dentro do mesmo milissegundo.
@@ -56,7 +56,7 @@ create or replace trigger trg_titular_log after insert or update on titular for 
 declare
   v_op char(1) := case when inserting then 'I' else 'U' end;
 begin
-  insert into aplicacao_log (tabela, codigo, op, origem_commit_ts) values ('TITULAR', :new.codigo, v_op, :new.origem_commit_ts);
+  insert into aplicacao_log (tabela, codigo, op, origem_commit_ts, origem_updated_at) values ('TITULAR', :new.codigo, v_op, :new.origem_commit_ts, :new.origem_updated_at);
 end;
 /
 create or replace trigger trg_obra_musical_bi before insert on obra_musical for each row
@@ -75,7 +75,7 @@ create or replace trigger trg_obra_musical_log after insert or update on obra_mu
 declare
   v_op char(1) := case when inserting then 'I' else 'U' end;
 begin
-  insert into aplicacao_log (tabela, codigo, op, origem_commit_ts) values ('OBRA_MUSICAL', :new.codigo, v_op, :new.origem_commit_ts);
+  insert into aplicacao_log (tabela, codigo, op, origem_commit_ts, origem_updated_at) values ('OBRA_MUSICAL', :new.codigo, v_op, :new.origem_commit_ts, :new.origem_updated_at);
 end;
 /
 create or replace trigger trg_fonograma_bi before insert on fonograma for each row
@@ -94,7 +94,7 @@ create or replace trigger trg_fonograma_log after insert or update on fonograma 
 declare
   v_op char(1) := case when inserting then 'I' else 'U' end;
 begin
-  insert into aplicacao_log (tabela, codigo, op, origem_commit_ts) values ('FONOGRAMA', :new.codigo, v_op, :new.origem_commit_ts);
+  insert into aplicacao_log (tabela, codigo, op, origem_commit_ts, origem_updated_at) values ('FONOGRAMA', :new.codigo, v_op, :new.origem_commit_ts, :new.origem_updated_at);
 end;
 /
 exit

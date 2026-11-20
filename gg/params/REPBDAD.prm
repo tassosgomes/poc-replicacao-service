@@ -5,6 +5,11 @@ USERIDALIAS ggdestino DOMAIN OracleGoldenGate
 DBOPTIONS NOSUPPRESSTRIGGERS
 REPERROR (DEFAULT, ABEND)
 -- DELETE fisico na origem vira UPDATE (excluido = 1): a replica nunca apaga linha.
+-- Latencia de base (Fase 3): espera no fim do trail 0,01 s (padrao 1 s); grupos de ~100 operacoes (padrao 1000), cada
+-- transacao de origem continua atomica no destino; BATCHSQL agrupa DML iguais (menos CPU, menos latencia a 1000 ev/s).
+EOFDELAYCSECS 1
+GROUPTRANSOPS 100
+BATCHSQL
 UPDATEDELETES
 MAP bdad.titular, TARGET replica.titular, KEYCOLS (codigo), &
   COMPARECOLS (ON UPDATE KEYINCLUDING (origem_updated_at)), &

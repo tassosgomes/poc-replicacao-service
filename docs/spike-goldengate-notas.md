@@ -263,3 +263,117 @@ registro do Extract nas duas execuções (2322820 ≥ 2321844; 2322830 ≥ 23218
   Um órfão do lab do spike (criado em 2026-11-19 21:03, conteúdo `setup`/`startup` do GG) foi removido à mão.
 - Ressalvas ainda abertas para a Fase 4: a carga de 1,7 M linhas leva ~8 min; política RMAN/alarme de disco dos archive logs
   não implementada; Distribution Path e Parallel Replicat não testados.
+
+
+---
+
+## Fase 3 e C2 curto (2026-11-20)
+
+Lab GG com massa completa. Todas as medições a seguir usam o relógio dos bancos: latência por evento = `aplicado_em` (gg-novo) menos
+`origem_updated_at` (hora do DML no legado, `updated_at`; `COMMITTIMESTAMP` tem resolução de 1 s). Offset de relógio
+(`scripts/medir-relogios.py` com `lab-gg.env`): desenv-server menos infra-server = +0,03 ms (antes da calibração) e +1,35 ms (C2), incerteza ±5 ms:
+desprezível frente a 100 ms (a latência é corrigida pelo offset no C2). Percentis nearest-rank.
+
+### Ferramentas novas
+
+| Arquivo | Uso |
+|---|---|
+| `scripts/gg/gerar.sh TAXA DUR DIR` | Gerador da PoC (jar, subcomando `gerador`) em container `gg-gerador-*` no desenv-server, 2 CPU/1 GiB, imagem cacheada `gg-cenarios:<sha do jar>` sobre `eclipse-temurin:25-jre` (precisou de um `docker pull` dessa imagem, ausente no host); variáveis do C2 (THREADS 8, SEMENTE 1, PCT_INSERT 5, PCT_DELETE 1, HOT_PCT 10); `docker stats` a cada ~5 s dos 4 containers |
+| `scripts/gg/calibrar-gerador.sh` | Fase 3 completa (Extract parado, religa, drena, repete) |
+| `scripts/gg/drenar.sh` | Espera `aplicacao_log` estável (15 s) com Extract e Replicat RUNNING |
+| `scripts/gg/latencia-janela.sh` + `analisar-latencia.py` | Percentis e tendência (regra do runner Java, `analise.trend`) sobre `aplicacao_log` |
+| `scripts/gg/hb-estagios.sh` | Lag por estágio (captura x aplicação) do histórico do heartbeat |
+| `scripts/gg/medir-latencia.sh` | Gera carga, drena e mede (usado nos ajustes) |
+| `gg/aplicar-params.sh PROC arquivo.prm` | PATCH do param file via REST, stop/start |
+| `scripts/gg/c2-curto.sh` | C2 curto reprodutível (resultados em `resultados/gg/c2/<execucao>/`) |
+| `sql/gg/novo/03_log_origem_updated_at.sql` | `ALTER TABLE aplicacao_log ADD origem_updated_at` + `CREATE OR REPLACE` dos 3 triggers de log; aplicado no lab em pé sem perder massa nem UUIDs; `01_schema.sql` já traz a coluna |
+
+Conexão do gerador: não existe `gg-rede` e o `gg-legado` está na bridge padrão do Docker; o container do gerador usa o IP:porta publicados
+(`jdbc:oracle:thin:@//192.168.0.5:1523/FREEPDB1`), que funcionou com os containers em hosts diferentes. `docker wait` por ssh travou uma vez
+por minutos depois de o container terminar; `gerar.sh` agora consulta `docker inspect` a cada 5 s, com limite de tempo.
+
+### Calibração do gerador (120 s por modo, `resultados/gg/calibracao/20261120T011641Z/`)
+
+| Modo | Alvo | Taxa efetiva | Veredito | CPU gg-legado média/máx (limite 200%) | CPU gerador média/máx | tx média |
+|---|---|---|---|---|---|---|
+| Extract parado | 1.000 | 1000,06 | VALIDO | 90,4% / 128,2% | 31,9% / 174,8% | 5,69 ms |
+| Extract parado | 2.000 | 2000,09 | VALIDO | 134,1% / 205,7% | 42,4% / 191,9% | 4,90 ms |
+| Extract rodando | 1.000 | 1000,06 | VALIDO | 91,3% / 134,2% | 34,1% / 182,2% | 5,74 ms |
+| Extract rodando | 2.000 | 2000,07 | VALIDO | 142,0% / 191,5% | 40,7% / 159,3% | 4,88 ms |
+
+Sem trigger de captura o gerador fecha 2.000 ev/s com folga: o **legado não satura de forma sustentada** (pico de amostra de 5 s encosta nos 200% só
+no 2.000 sem Extract, média de 67% do limite); a taxa não é o problema do ambiente. O custo do Extract no legado, descritivo (não é o C10): +0,9 ponto
+de CPU a 1.000 ev/s e +7,9 a 2.000, tempo médio de transação praticamente igual. gg-novo com Extract: 36%/70% de média a 1.000/2.000 ev/s, gg-hub 18%/26%.
+
+Antes de qualquer ajuste, com Extract rodando (latência por evento na janela de geração):
+
+| Carga | n | p50 | p95 | p99 | max | tendência |
+|---|---|---|---|---|---|---|
+| 1.000 ev/s, 120 s | 120.007 | 3,10 s | 3,82 s | 4,04 s | 5,67 s | média por balde de 5 s +3 ms/s (sem crescimento sustentado); pelo pior caso por balde +12,6 ms/s, crescimento sustentado marginal (lag subindo de ~3,2 para ~4 s ao longo dos 120 s) |
+| 2.000 ev/s, 120 s | 240.011 | 10,22 s | 17,16 s | 18,30 s | 18,88 s | +115 ms/s, crescimento sustentado: **o Replicat clássico não acompanha 2.000 ev/s** |
+
+A 2.000 ev/s o apply ficou em ~1.750 a 1.950 ev/s (8,5 a 9,8 mil eventos por 5 s) e o lag cresceu até 19 s. Ao religar o Extract depois dos 240 s de carga
+com Extract parado (360.011 operações acumuladas), Extract + Replicat drenaram o atraso em 243 s (inclui 15 s de estabilização), ~1.580 ops/s, sem perda
+(o redo foi recuperado do archive log). O 2.000 ev/s sustentado é assunto do C3 (clássico x coordenado); não foi tentado o coordenado aqui.
+
+### Latência de base: diagnóstico
+
+Lag por estágio (heartbeat, `scripts/gg/hb-estagios.sh`) em repouso/carga leve: captura (commit na origem até o Extract) ~2,3 a 3,3 s, aplicação ~0,5 a 1,8 s;
+a 1.000 ev/s a captura cai para 0,7 a 1,5 s. No banco de origem a captura está em tempo real: `v$goldengate_capture` mostra `WAITING FOR TRANSACTION` com
+`capture_message_create_time` e `enqueue_message_create_time` a 0 s de idade, então a espera está no processo Extract (e no Replicat), não no LogMiner. Isso aponta
+para as esperas de polling no fim do dado (`EOFDELAY`), cujo padrão é 1 s. Do ponto de vista da documentação oficial: `EOFDELAY`/`EOFDELAYCSECS` controla a frequência com
+que Extract ou Replicat voltam a procurar dados ao chegar ao fim; `GROUPTRANSOPS` (padrão 1000) é um mínimo de operações por transação agrupada do Replicat sem
+nunca partir uma transação de origem; `FLUSHSECS/FLUSHCSECS` (padrão 1 s) é o buffer do Extract para destino remoto. Fontes: Oracle GoldenGate Reference
+(EOFDELAY, GROUPTRANSOPS, BATCHSQL, FLUSHSECS), "Optional Parameters for Integrated Modes" (21.3), guia "Tuning Replicat Transactions".
+
+### Ajustes e efeito (um de cada vez; `resultados/gg/ajuste-latencia/NN-*`)
+
+Carga leve = 60 ev/s (~20 tx/s) por 60 s (3.607 eventos), repetida quando indicado; a primeira medição depois de reiniciar um processo traz um transitório
+(buckets iniciais de 8 s), por isso a repetição.
+
+| Passo | Mudança | p50 | p95 | max | Decisão |
+|---|---|---|---|---|---|
+| 00 | base (padrões) | 2,56 s | 3,29 s | 3,64 s | |
+| 01 / 01b | Extract `FLUSHCSECS 10` | 2,85 / 2,92 | 5,57 / 3,66 | 8,23 / 4,08 | sem ganho; revertido |
+| 02 / 02b | Extract `EOFDELAYCSECS 10` | 1,70 / 1,88 | 2,43 / 2,66 | 2,77 / 3,86 | **mantido**: -0,8 s no p50 |
+| 03 / 03b | + Replicat `EOFDELAYCSECS 10` | 1,53 / 1,27 | 2,17 / 2,15 | 3,11 / 2,64 | mantido |
+| 04 / 04b | ambos `EOFDELAYCSECS 1` (0,01 s) | 1,05 / 1,23 | 1,56 / 1,84 | 3,64 / 2,74 | **mantido**; custo: CPU do hub em repouso 9,7% -> 17,2% |
+
+Carga leve: p50 2,56 -> ~1,15 s, p95 3,29 -> ~1,7 s.
+
+A 1.000 ev/s por 120 s (mesma carga do "antes" da calibração):
+
+| Passo | Mudança | p50 | p95 | p99 | max | CPU gg-novo média |
+|---|---|---|---|---|---|---|
+| cal. | padrões | 3,10 s | 3,82 s | 4,04 s | 5,67 s | 36% |
+| 05 | `EOFDELAYCSECS 1` nos dois | 2,20 | 4,38 | 4,97 | 5,17 | 42% |
+| 06 | + Replicat `GROUPTRANSOPS 100` | 2,42 | 3,20 | 4,32 | 4,58 | 56% |
+| 07 | + Replicat `BATCHSQL` | 1,91 | 2,84 | 3,09 | 4,23 | 19% |
+
+`EOFDELAYCSECS` pouco muda a 1.000 ev/s (o fim do dado quase nunca é atingido), e piorou o p95 em 05; `GROUPTRANSOPS 100` reduziu a cauda (grupos menores, menos espera pelo
+grupo de 1.000 operações) ao custo de mais commits (CPU do destino 42% -> 56%); `BATCHSQL` reduziu a CPU do destino a 19% e a latência. Verificação de consistência com
+BATCHSQL: `scripts/gg/reconciliar.sh` e o jar `reconciliacao` sem divergência, UUIDs intactos no C2. Nada disso muda a atomicidade: o Replicat nunca parte uma transação de origem
+(`GROUPTRANSOPS` é um mínimo) e o checkpoint segue na tabela `ggadmin.ggschkpt`. Não foi mexido em nada que enfraqueça isso (sem `COMMIT_SERIALIZATION`,
+sem `NOCOMMIT`, sem aumento de paralelismo). Ressalva: numa medição isolada com BATCHSQL o `aplicacao_log` teve 111.837 linhas para 120.011 eventos gerados (o log é um por operação
+aplicada; a hipótese é que o Replicat aplica de uma vez operações consecutivas da mesma linha, não verificada), com estado final idêntico; nas execuções seguintes (C2) o log teve exatamente o número de
+eventos do gerador (300.008).
+
+Parâmetros finais versionados: `gg/params/EXTBDAD.prm` (`EOFDELAYCSECS 1`) e `gg/params/REPBDAD.prm` (`EOFDELAYCSECS 1`, `GROUPTRANSOPS 100`, `BATCHSQL`); aplicados com
+`gg/aplicar-params.sh` e usados por `criar-pipeline.sh` em lab novo. `REPCO.prm` (coordenado) não foi alterado nem testado com eles. Achado: o `aplicar-params.sh` inicial usou caminho
+relativo e gravou configuração vazia, que deixou Extract e Replicat parados; corrigido (caminho absoluto, falha se o arquivo não existir). O Replicat retomou do checkpoint sem perda.
+
+### C2 curto (`resultados/gg/c2/20261120T022300Z-regime/`, `scripts/gg/c2-curto.sh`)
+
+1.000 ev/s por 300 s, Extract + Replicat clássico (parâmetros finais), sem o coordenado (não foi preciso):
+
+| Critério | Medido | Alvo | Veredito |
+|---|---|---|---|
+| Taxa efetiva do gerador | 1000,02 ev/s (300.008 linhas, 100.137 transações) | >= 980 | APROVADO |
+| p95 (nearest-rank, 300.008 eventos da janela de geração) | 2,89 s (p50 1,85; p99 3,20; max 5,24) | <= 5 s | APROVADO |
+| Lag sem tendência de alta (últimos 175,5 s) | inclinação do pior caso por balde de 5 s -3,5 ms/s, da média -4,2 ms/s; sem crescimento sustentado | sem tendência | APROVADO |
+| Diferença de relógios | +1,35 ms, incerteza 5,0 ms (início e fim) | <= 100 ms | APROVADO |
+| Integridade | reconciliação SQL 0 divergências; jar `reconciliacao` MODO=completo DRY_RUN=true total=0 (19,2 s); 1.700.000 UUIDs pré-existentes comparados com o snapshot de `resultados/gg/c1/`, 0 alterados | 0 | APROVADO |
+
+CPU (docker stats, 64 amostras): gg-legado 107% média (máx 177%, limite 200%), gerador 30%, gg-novo 17%, gg-hub 21%. O lag usado na tendência é o analógo do `lag_ms` do
+worker: máximo (e média) da latência dos eventos aplicados em baldes de 5 s, sem os baldes parciais de início e fim. Ressalvas: uma única execução; um evento isolado passou de 5 s (max 5,24 s)
+embora o p95 esteja em 2,9 s; o lab é compartilhado (outros containers `infra-*` nos hosts). A 2.000 ev/s o Replicat clássico continua sem acompanhar nos padrões; com os ajustes não foi remedido.

@@ -1,0 +1,41 @@
+container=gg-gerador-1795137986 exit=0
+INFO: log_linhas=gerador-linhas-20261120T012626Z-1-289a2320d452.csv
+INFO: inicio_carga=2026-11-20T01:26:28.723735784Z
+INFO: janela_linhas=5011 taxa=1002.20
+INFO: janela_linhas=4996 taxa=999.20
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=5003 taxa=1000.60
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=5001 taxa=1000.20
+INFO: janela_linhas=4996 taxa=999.20
+INFO: janela_linhas=5004 taxa=1000.80
+INFO: janela_linhas=5000 taxa=1000.00
+INFO: janela_linhas=5004 taxa=1000.80
+INFO: janela_linhas=4988 taxa=997.60
+INFO: janela_linhas=5012 taxa=1002.40
+INFO: janela_linhas=4992 taxa=998.40
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=4995 taxa=999.00
+INFO: janela_linhas=5000 taxa=1000.00
+INFO: janela_linhas=5003 taxa=1000.60
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=5008 taxa=1001.60
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=4993 taxa=998.60
+INFO: janela_linhas=5006 taxa=1001.20
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=4999 taxa=999.80
+INFO: fim_carga=2026-11-20T01:28:28.724377757Z
+INFO: linhas=120007 transacoes=39928 taxa=1000.06 alvo=1000 transacao_media_ms=5.737 VALIDO
+recursos (CPU% de docker stats; 100% = 1 CPU, limite 200%):
+gerador media=34.1 max=97.2 amostras=28
+gg-novo media=36.2 max=74.7 amostras=28
+gg-hub media=17.6 max=9.2 amostras=28
+gg-legado media=91.3 max=96.8 amostras=28
+drenado em 17 s (aplicacao_log=481250, lag reportado do replicat=4 s)
+{
+  "n": 120007,
+  "p50_s": 3.104,
+  "p95_s": 3.824,
+  "max_s": 5.673
+}

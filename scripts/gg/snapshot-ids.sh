@@ -16,6 +16,6 @@ sha=$(sha256sum "$csv" | cut -d' ' -f1)
 dups=$(cut -d, -f3 "$csv" | sort | uniq -d | wc -l)
 porTabela=$(cut -d, -f1 "$csv" | sort | uniq -c | awk '{printf "%s%s=%s", (NR>1?",":""), $2, $1}')
 meta="$dir/meta.json"; [[ -s $meta ]] || echo '{}' > "$meta"
-jq --arg n "$nome" --arg sha "$sha" --argjson linhas "$(wc -l < "$csv")" --argjson bytes "$(wc -c < "$csv")" --argjson dups "$dups" --arg pt "$porTabela" --arg quando "$(date -u +%FT%TZ)" \
-  '.snapshots[$n] = {linhas:$linhas, bytes:$bytes, sha256:$sha, uuids_duplicados:$dups, por_tabela:$pt, gerado_em:$quando, arquivo:("resultados/gg/c1/snapshots/"+$n+".csv (ignorado pelo git)")}' "$meta" > "$meta.tmp" && mv "$meta.tmp" "$meta"
+jq --arg n "$nome" --arg c "$cen" --arg sha "$sha" --argjson linhas "$(wc -l < "$csv")" --argjson bytes "$(wc -c < "$csv")" --argjson dups "$dups" --arg pt "$porTabela" --arg quando "$(date -u +%FT%TZ)" \
+  '.snapshots[$n] = {linhas:$linhas, bytes:$bytes, sha256:$sha, uuids_duplicados:$dups, por_tabela:$pt, gerado_em:$quando, arquivo:("resultados/gg/"+$c+"/snapshots/"+$n+".csv (ignorado pelo git)")}' "$meta" > "$meta.tmp" && mv "$meta.tmp" "$meta"
 echo "snapshot $nome: $(wc -l < "$csv") linhas, sha256=$sha, uuids duplicados=$dups ($porTabela)"
