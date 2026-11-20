@@ -1,0 +1,3 @@
+container=gg-gerador-1795146546 exit=0
+INFO: log_linhas=gerador-linhas-20261120T034908Z-1-3063a3f89c0c.csv
+INFO: linhas=50000 transacoes=1 taxa=14168.68 alvo=1000 transacao_media_ms=2224.680 VALIDO

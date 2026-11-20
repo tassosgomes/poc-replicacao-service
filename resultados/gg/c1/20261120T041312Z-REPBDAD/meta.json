@@ -1,0 +1,299 @@
+{
+  "cenario": "c1",
+  "execucao": "20261120T041312Z-REPBDAD",
+  "inicio": "2026-11-20T04:13:13Z",
+  "fim": "2026-11-20T04:26:20Z",
+  "diretorio": "resultados/gg/c1/20261120T041312Z-REPBDAD",
+  "ambiente": {
+    "lab": "goldengate",
+    "hosts": [
+      "desenv-server",
+      "infra-server"
+    ],
+    "containers": [
+      {
+        "nome": "gg-legado",
+        "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+        "imagem": "gvenzl/oracle-free:23-slim-faststart",
+        "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+        "cpu": 2000000000,
+        "memoria": 3221225472,
+        "running": true,
+        "inicio": "2026-11-20T00:51:55.461509857Z",
+        "reinicios": 0,
+        "saudavel": "healthy"
+      },
+      {
+        "nome": "gg-novo",
+        "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+        "imagem": "gvenzl/oracle-free:23-slim-faststart",
+        "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+        "cpu": 2000000000,
+        "memoria": 3221225472,
+        "running": true,
+        "inicio": "2026-11-20T00:52:06.858681453Z",
+        "reinicios": 0,
+        "saudavel": "healthy"
+      },
+      {
+        "nome": "gg-hub",
+        "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+        "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+        "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+        "cpu": 2000000000,
+        "memoria": 4294967296,
+        "running": true,
+        "inicio": "2026-11-20T01:05:15.109487246Z",
+        "reinicios": 0,
+        "saudavel": "healthy"
+      }
+    ],
+    "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+    "limites_gerador": {
+      "cpu": 2,
+      "memoria": 1073741824
+    },
+    "params_sha256": {
+      "EXTBDAD.prm": "54011670fd1b8a3c",
+      "REPBDAD.prm": "8e90c308d824c054",
+      "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+      "REPCO.prm": "7abada0cf861f222"
+    },
+    "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+    "processos": []
+  },
+  "validade": {
+    "estado": "VALIDO",
+    "motivos": []
+  },
+  "veredito": "APROVADO",
+  "skew_ms": {
+    "inicio": 0.407,
+    "fim": -0.55
+  },
+  "skew_incerteza_ms": {
+    "inicio": 4.746,
+    "fim": 5.315
+  },
+  "relogios": [
+    {
+      "etapa": "c1-inicio",
+      "ts": "2026-11-20T04:13:13Z",
+      "skew_ms": 0.407,
+      "incerteza_ms": 4.746
+    },
+    {
+      "etapa": "c1-fim",
+      "ts": "2026-11-20T04:26:20Z",
+      "skew_ms": -0.55,
+      "incerteza_ms": 5.315
+    }
+  ],
+  "carga_servidores": [],
+  "integridade": {
+    "pendentes_inicial": 0,
+    "snapshot_antes": "snapshots/antes.csv",
+    "pendentes_final": 0,
+    "divergencias": 0,
+    "divergencias_sql": 0,
+    "divergencias_java": 0,
+    "reconciliacao": "reconciliacao-java.log",
+    "reconciliacao_sql": "reconciliacao-sql.txt",
+    "snapshot_depois": "snapshots/apos.csv",
+    "uuids_alterados": 0,
+    "uuids": {
+      "preexistentes_comparados": 2011552,
+      "uuids_alterados": 0
+    },
+    "diferencas": "reconciliacao-sql.txt",
+    "contagens_legado": {
+      "TITULAR": 262491,
+      "OBRA_MUSICAL": 625703,
+      "FONOGRAMA": 1123358
+    },
+    "contagens_novo": {
+      "TITULAR": 262491,
+      "OBRA_MUSICAL": 625703,
+      "FONOGRAMA": 1123358
+    }
+  },
+  "criterios": [
+    {
+      "nome": "divergencias",
+      "valor": 0,
+      "alvo": 0,
+      "veredito": "APROVADO"
+    },
+    {
+      "nome": "uuids_alterados",
+      "valor": 0,
+      "alvo": 0,
+      "veredito": "APROVADO"
+    },
+    {
+      "nome": "pendentes_final",
+      "valor": 0,
+      "alvo": "0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s)",
+      "veredito": "APROVADO"
+    },
+    {
+      "nome": "contagens_iguais",
+      "valor": {
+        "legado": {
+          "TITULAR": 262491,
+          "OBRA_MUSICAL": 625703,
+          "FONOGRAMA": 1123358
+        },
+        "novo": {
+          "TITULAR": 262491,
+          "OBRA_MUSICAL": 625703,
+          "FONOGRAMA": 1123358
+        }
+      },
+      "alvo": "iguais por tabela no escopo declarado",
+      "veredito": "APROVADO"
+    },
+    {
+      "nome": "carga_inicial",
+      "valor": {
+        "tabelas": {
+          "TITULAR": {
+            "linhas": 262491,
+            "segundos": 72.69,
+            "linhas_s": 3611.1
+          },
+          "OBRA_MUSICAL": {
+            "linhas": 625703,
+            "segundos": 172.71,
+            "linhas_s": 3622.85
+          },
+          "FONOGRAMA": {
+            "linhas": 1123358,
+            "segundos": 317.92,
+            "linhas_s": 3533.46
+          }
+        },
+        "tempo_total_s": 565.9,
+        "log": "carga-inicial.log"
+      },
+      "alvo": "linhas/s por tabela e tempo total; linhas copiadas == linhas do legado AS OF SCN",
+      "veredito": "APROVADO"
+    }
+  ],
+  "degraus": [],
+  "medidas": {
+    "eventos_medidos": 0,
+    "relogios_validos": true,
+    "carga_inicial": {
+      "tabelas": {
+        "TITULAR": {
+          "linhas": 262491,
+          "segundos": 72.69,
+          "linhas_s": 3611.1
+        },
+        "OBRA_MUSICAL": {
+          "linhas": 625703,
+          "segundos": 172.71,
+          "linhas_s": 3622.85
+        },
+        "FONOGRAMA": {
+          "linhas": 1123358,
+          "segundos": 317.92,
+          "linhas_s": 3533.46
+        }
+      },
+      "tempo_total_s": 565.9,
+      "log": "carga-inicial.log"
+    },
+    "tempo_ate_drenado_s": 666.3,
+    "scn": 9779205
+  },
+  "operacao_especial": {
+    "escopo": {
+      "codigo_min_inclusivo": 0,
+      "codigo_max_exclusivo": null,
+      "completo": true
+    },
+    "scn": 9779205,
+    "carga_inicial": {
+      "tabelas": {
+        "TITULAR": {
+          "linhas": 262491,
+          "segundos": 72.69,
+          "linhas_s": 3611.1
+        },
+        "OBRA_MUSICAL": {
+          "linhas": 625703,
+          "segundos": 172.71,
+          "linhas_s": 3622.85
+        },
+        "FONOGRAMA": {
+          "linhas": 1123358,
+          "segundos": 317.92,
+          "linhas_s": 3533.46
+        }
+      },
+      "tempo_total_s": 565.9,
+      "log": "carga-inicial.log"
+    },
+    "contagens_apos_truncate": {
+      "TITULAR": 0,
+      "OBRA_MUSICAL": 0,
+      "FONOGRAMA": 0
+    },
+    "tempos_s": {
+      "recriar_replicat_e_truncate": 4.6,
+      "carga": 565.9,
+      "start_replicat_ate_running": 1.6,
+      "drenagem_do_replicat": 47.6
+    },
+    "archive_antes": {
+      "modo": "limpar",
+      "apagados": 0,
+      "required_checkpoint_scn": 9778943,
+      "livre_gb_antes": 58,
+      "livre_gb_depois": 58,
+      "archive_bytes_antes": 1436776448,
+      "archive_bytes_depois": 1436776448,
+      "min_livre_gb": 10,
+      "max_archive_gb": 20,
+      "alarme": false
+    },
+    "archive_depois": {
+      "modo": "limpar",
+      "apagados": 0,
+      "required_checkpoint_scn": 11826240,
+      "livre_gb_antes": 58,
+      "livre_gb_depois": 58,
+      "archive_bytes_antes": 1436776448,
+      "archive_bytes_depois": 1436776448,
+      "min_livre_gb": 10,
+      "max_archive_gb": 20,
+      "alarme": false
+    }
+  },
+  "parametros": {
+    "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+    "metodo": "INSERT AS OF SCN via DB link + START REPLICAT AFTERCSN"
+  },
+  "snapshots": {
+    "apos-carga": {
+      "linhas": 2011552,
+      "bytes": 101719771,
+      "sha256": "e33f0149f2e15bd79ee0a40d55202a0f13a90890632710dd3f738e340bafb1a1",
+      "uuids_duplicados": 0,
+      "por_tabela": "fonograma=1123358,obra_musical=625703,titular=262491",
+      "gerado_em": "2026-11-20T04:26:02Z",
+      "arquivo": "resultados/gg/c1/snapshots/apos-carga.csv (ignorado pelo git)"
+    },
+    "apos-autostart": {
+      "linhas": 1700000,
+      "bytes": 85766686,
+      "sha256": "b401a2616f803d2ebba23b0309ddc2c7a9523742495de2b9fffab5ba58ac5040",
+      "uuids_duplicados": 0,
+      "por_tabela": "fonograma=1000000,obra_musical=500000,titular=200000",
+      "gerado_em": "2026-11-20T01:06:26Z",
+      "arquivo": "resultados/gg/c1/snapshots/apos-autostart.csv (ignorado pelo git)"
+    }
+  }
+}

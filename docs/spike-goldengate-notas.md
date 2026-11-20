@@ -448,3 +448,72 @@ a ele. O teste do spike (4 threads) mostrou que o coordenado funciona, mas sem g
 
 Uma única execução do C3 (um degrau de cada). Lab compartilhado. `COMMITTIMESTAMP` tem resolução de 1 s (usa-se `origem_updated_at`). A latência inclui o trigger `aplicacao_log` + índice no destino. O C2 completo de 600 s (critério do PRD) ainda não foi executado
 no lab GG (`scripts/gg/c2-regime.sh`).
+
+
+---
+
+## Fase 4: C1, C2, C4, C5 (2026-11-20)
+
+Todos com Replicat clássico `REPBDAD` (EOFDELAYCSECS 1, GROUPTRANSOPS 100, BATCHSQL), Extract `EXTBDAD`, gerador 2 CPU/1 GiB, relógios medidos no início e no fim (|offset|+incerteza <= 100 ms em todos), `limpar-archive.sh` antes/depois (sem alarme),
+reconciliação SQL + jar Java (`MODO=completo DRY_RUN=true`) = 0 divergências, UUIDs pré-existentes comparados com o snapshot de referência = 0 alterados. Runner: `scripts/gg/cenario.sh c1|c2|c3|c4|c5` (atalhos `c1-carga-inicial.sh`, `c2-regime.sh`, `c3-teto.sh`,
+`c4-rajada.sh`, `c5-transacao-longa.sh`); `meta.json` no contrato do relatório; `bash scripts/relatorio.sh --resultados resultados/gg` mostra C1 a C5 APROVADO.
+
+### C2 completo (`resultados/gg/c2/20261120T032036Z-REPBDAD/`): APROVADO
+
+1.000 ev/s por 600 s: taxa 1000,02 ev/s (600.012 linhas). Latência `aplicado_em - origem_updated_at` (corrigida pelo offset): p50 1,85 s, **p95 2,82 s** (alvo <= 5 s), p99 3,11 s, max 4,28 s. Tendência do lag (últimos 180 s, 37 amostras): +2,0 ms/s,
+sem crescimento sustentado (médias dos três blocos não crescem). Relógios +1,0 ms (incerteza 4,7 ms). CPU média: gg-legado 107% (máx 147), gerador 28%, gg-novo 20%, gg-hub 20%. Drenagem 19 s. Uma execução.
+
+### C4 rajada (`resultados/gg/c4/20261120T034630Z-REPBDAD/`): APROVADO
+
+Regime de 1.000 ev/s por 600 s (taxa 1000,02; p95 de fundo 2,89 s) e, 120 s depois do início, um segundo gerador (`RAJADA_LINHAS=50000`: uma UPDATE de 50.000 linhas de TITULAR e um COMMIT, `gerador-linhas.csv`). Medição (`scripts/gg/analisar-especial.py`, só relógios
+dos bancos e do gerador; instantes de aplicação do gg-novo trazidos para a linha do tempo do desenv-server pelo offset):
+
+- Patamar = **máximo** da latência por balde de 5 s (eventos de fundo, por `aplicado_em`) nos 60 s antes do commit: 11 amostras (mediana 3,23 s), **patamar 3,71 s**.
+- A rajada foi aplicada inteira entre 0,12 s e 8,11 s depois do commit (latência das linhas da rajada p50 5,25 s, max 7,81 s; ela inclui os segundos da própria UPDATE); o balde com o pico do fundo (9,90 s) é o de 2,9 a 7,9 s depois do commit: o Replicat aplica
+  a transação de 50.000 linhas inteira antes das seguintes.
+- **Recuperação = 17,9 s** (primeiro balde de 5 s inteiro após o commit, regime ativo, rajada inteira aplicada, lag máximo 3,19 s <= 3,71 s, p95 2,86 s <= 5 s). Alvo <= 120 s. Sem perda: 50.161 eventos classificados como rajada (>= 50.000, ver ressalva),
+  0 divergências, drenou.
+- Ressalvas: (1) `COMMITTIMESTAMP` tem 1 s de resolução, então a rajada é identificada por `TITULAR`, `codigo <= chave máxima` e commit_ts do commit; transações de fundo do mesmo segundo nessa faixa entram na conta (161 eventos, 0,3%). (2) O recorte de "balde completo" é
+  só "inteiro e com eventos de fundo" (como na especificação); a variante que exige >= 50% da mediana de eventos por balde também é gravada (`recuperacao_s_estrita_50pct_mediana`, 17,9 s). Num teste curto (descartado) a rajada reduziu a taxa do gerador por alguns segundos (linhas
+  bloqueadas pela UPDATE) e com a regra de 50% a recuperação era 25 s maior: a regra "estrita" confunde falta de eventos com lag. (3) A rajada tira ~1 balde (5 s) de vazão do fundo: `janela_linhas` do gerador caiu a 938 ev/s no balde do commit. (4) Uma execução.
+
+### C5 transação longa (`resultados/gg/c5/20261120T035943Z-REPBDAD/`): APROVADO
+
+O modo `TX_ABERTA_SEG` do gerador Java lê `evento_replicacao` (inexistente no lab GG), então a transação longa é `sql/gg/testes/tx_longa.sql` rodada no gg-legado 5 s depois do início: `UPDATE titular SET excluido = 0 WHERE codigo = 1`, `dbms_session.sleep(30)`, `COMMIT`, com os instantes do banco legado (UTC). A
+linha é identificada no `aplicacao_log` por `TITULAR/1` com `origem_updated_at` entre os instantes antes/depois do UPDATE (exatamente 1 candidato, senão INVALIDO).
+
+| Critério | Medido | Alvo | Veredito |
+|---|---|---|---|
+| Transação aberta | 30,00 s (04:00:23,989 a 04:00:53,990 UTC, relógio do legado) | >= 30 s | ok |
+| p95 das demais durante a abertura (29.293 eventos) | **2,88 s** (p50 1,72; max 3,33) | <= 5 s | APROVADO |
+| Aplicação da longa após o commit | **1,84 s** (aplicada 04:00:55,828) | <= 5 s | APROVADO |
+| Latência da longa (reportada) | 31,84 s | SEM_CRITERIO | - |
+| Integridade (estado final) | 0 divergências, 0 UUIDs alterados, drenado | 0 | APROVADO |
+
+O GG não bloqueou as demais: a transação só é emitida no commit e as outras seguem na ordem de commit. Taxa 1000,01 ev/s, p95 geral 2,75 s. Ressalva: o instante do commit é lido logo após o `COMMIT` retornar (ms de atraso, favorável ao critério por décimos de ms).
+
+### C1 carga inicial (`resultados/gg/c1/20261120T041312Z-REPBDAD/`): APROVADO
+
+`scripts/gg/c1-carga.sh`: para e recria o REPBDAD (`gg/criar-pipeline.sh recriar-replicat`: stop, DELETE e POST pela REST), trunca só `titular`, `obra_musical`, `fonograma` e `aplicacao_log` do gg-novo, `carga-inicial.sh` (SCN no legado, `INSERT ... AS OF SCN` via
+DB link, UUIDv7 por trigger), snapshot "antes", `START REPLICAT AFTERCSN <SCN>` + autostart, uma transação-sonda no legado (só quando ela aparece no `aplicacao_log` o Replicat percorreu o trail até o fim), drenagem, reconciliações, snapshot de referência.
+
+- Escopo completo: o legado já tinha crescido com as inserções dos cenários anteriores (SCN 9.779.205): titular 262.491, obra_musical 625.703, fonograma 1.123.358 (2.011.552 linhas; antes 1.700.000), contagens iguais nos dois lados e iguais às contagens `AS OF SCN` do legado.
+- Linhas/s: titular 3.611 (72,7 s), obra_musical 3.623 (172,7 s), fonograma 3.533 (317,9 s); **carga 565,9 s** (2,01 M linhas, ~3.554/s; com a massa antiga de 1,7 M o ritmo equivale aos 484 s anteriores), contra 109,9 s do Java (1,85 M, ~16.800/s). Do início ao drenado: 666,3 s
+  (Replicat running em 1,6 s, sonda aplicada 15,5 s depois, drenagem 47,6 s: o trail é relido até o SCN, 1,4 GB).
+- 0 divergências (SQL e Java 21,6 s), pendentes 0, 0 UUIDs alterados entre o snapshot "antes" (logo após a carga) e o "depois" (2.011.552 comparados). Os UUIDs são recriados pelo truncate/carga por definição.
+- **Novo snapshot de referência**: `resultados/gg/c1/snapshots/apos-carga.csv` (2.011.552 linhas, sha256 `e33f0149...1a1`, 0 duplicados); o anterior (1,7 M) ficou em `apos-carga-anterior.csv` e o meta do `subir.sh` em `meta-spike.json`. Os CSVs são ignorados pelo git.
+
+#### Como acelerar a carga (não implementado; fica fora do `worker/`)
+
+Gargalo medido: ~3.500 linhas/s numa sessão do gg-novo (2 CPU), com 3 triggers por linha (UUIDv7 em PL/SQL com `dbms_crypto` e sequence, `replicado_em`, e insert em `aplicacao_log` + índice) e leitura linha a linha pelo DB link.
+1. Desabilitar `trg_*_log` durante a carga (o log é truncado ao fim de qualquer forma): remove um insert indexado por linha; a trigger de UUID e a leitura pelo link continuam.
+2. Rodar as três tabelas (ou faixas de `codigo` do fonograma) em sessões paralelas, mesmo SCN: o tempo cai para o da maior fatia (~318 s hoje; com 2 CPUs no gg-novo o ganho prático é de ~1,5 a 2x).
+3. Gerar o UUID no SELECT em vez da trigger (função SQL com `UTL_RAW`/`SYS_GUID` + timestamp) e `INSERT /*+ APPEND PARALLEL */` em direct-path: o direct-path só vale sem trigger de linha ativa (o Oracle volta para o caminho convencional se há trigger), então exige desabilitar as triggers `_bi`/`_bu`/`_log`
+   só durante a carga. Preserva UUIDv7 desde que a função mantenha a ordem (48 bits de ms + contador) e o SCN; o contador de 12 bits precisa de uma sequence por sessão ou bits aleatórios.
+4. Alternativa de produção: `expdp FLASHBACK_SCN` + `impdp` ou o Initial Load do GG (não usados aqui), com UUID atribuído em UPDATE posterior.
+Com 1 e 2 juntos é razoável esperar 250 a 300 s; chegar perto de 110 s do Java provavelmente exige 3 (e o CPU do destino de 2 vCPU como limite). Nada disso foi medido: são hipóteses a testar.
+
+### Arquivos desta etapa
+
+`scripts/gg/cenario.sh` (c1 a c5), `scripts/gg/c1-carga.sh`, `scripts/gg/{c1-carga-inicial,c4-rajada,c5-transacao-longa}.sh`, `scripts/gg/eventos-janela.sh`, `scripts/gg/analisar-especial.py`, `scripts/gg/meta_gg.py` (c1, c4, c5), `sql/gg/testes/tx_longa.sql`, `gg/criar-pipeline.sh` (`recriar-replicat`).
+Estado final do lab: gg-legado, gg-novo e gg-hub no ar; EXTBDAD e REPBDAD RUNNING com autostart; lab Java parado e intocado; archive 1,4 GB, 58 GB livres.

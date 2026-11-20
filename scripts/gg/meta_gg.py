@@ -5,7 +5,8 @@ DIR_EXECUCAO tem `cenario.json` (escrito por cenario.sh) e, por degrau, `dN-<tax
 recursos-*.csv, relogio-inicio.json, relogio-fim.json, drenagem.txt. Mais: reconciliacao-sql.txt, reconciliacao-java.log,
 uuids.json, archive-antes.json, archive-depois.json, containers.json. Saida: meta.json. Exit 0 aprovado, 1 caso contrario.
 Regras (README do lab Java): degrau valido = taxa >= 98% do alvo, senao GERADOR_SATURADO (c3) / INVALIDO; teto = maior alvo valido
-sem crescimento sustentado do lag; teto so aprova com degrau valido de 2000 ev/s; sem dado = INVALIDO, nunca APROVADO."""
+sem crescimento sustentado do lag; teto so aprova com degrau valido de 2000 ev/s; sem dado = INVALIDO, nunca APROVADO.
+c4/c5: `dN-<taxa>/especial.json` (scripts/gg/analisar-especial.py) e `especial/` (rajada/transacao longa); c1: `carga.json` (scripts/gg/c1-carga.sh)."""
 import json, re, sys
 from pathlib import Path
 
@@ -68,6 +69,13 @@ for step in cfg["degraus"]:
             relogios.append({"etapa": f"{step['dir']}-{tag}", "ts": step.get(f"{tag}_iso", ""),
                              "skew_ms": r["offset_ms"], "incerteza_ms": r["incerteza_ms"]})
 
+if cen == "c1":
+    for tag in ("inicio", "fim"):
+        r = load(f"relogio-{tag}.json")
+        if r:
+            relogios.append({"etapa": f"c1-{tag}", "ts": cfg.get(tag, ""), "skew_ms": r["offset_ms"], "incerteza_ms": r["incerteza_ms"]})
+carga = load("carga.json") if cen == "c1" else None
+esp = load(f"{cfg['degraus'][0]['dir']}/especial.json", {}) if (cen in ("c4", "c5") and cfg["degraus"]) else {}
 # integridade
 sql_txt = (D / "reconciliacao-sql.txt").read_text() if (D / "reconciliacao-sql.txt").exists() else ""
 java_txt = (D / "reconciliacao-java.log").read_text() if (D / "reconciliacao-java.log").exists() else ""
@@ -83,15 +91,54 @@ div = None if (div_java is None or div_sql is None) else div_java + div_sql
 uu = load("uuids.json")
 uuid_alt = uu["uuids_alterados"] if uu and uu.get("preexistentes_comparados", 0) > 0 else None
 drenado = all(s.get("drenagem_s") is not None for s in cfg["degraus"]) and bool(cfg["degraus"])
+if cen == "c1":
+    drenado = bool(carga) and carga.get("drenado") is True
 integ = {"pendentes_inicial": 0, "snapshot_antes": "../../c1/snapshots/apos-carga.csv", "pendentes_final": 0 if drenado else None,
          "divergencias": div, "divergencias_sql": div_sql, "divergencias_java": div_java, "reconciliacao": "reconciliacao-java.log",
          "reconciliacao_sql": "reconciliacao-sql.txt", "snapshot_depois": "snapshots/apos.csv", "uuids_alterados": uuid_alt,
          "uuids": uu, "diferencas": "reconciliacao-sql.txt"}
+if cen == "c1":
+    integ.update(snapshot_antes="snapshots/antes.csv", snapshot_depois="snapshots/apos.csv", contagens_legado=(carga or {}).get("contagens_legado"),
+                 contagens_novo=(carga or {}).get("contagens_novo"))
 
 validos = [p for p in degraus if p["grupo"] == cen and p["valido"]]
 criterios = [crit("divergencias", div, 0, div == 0), crit("uuids_alterados", uuid_alt, 0, uuid_alt == 0),
              crit("pendentes_final", integ["pendentes_final"], "0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s)", integ["pendentes_final"] == 0)]
 medidas = {"eventos_medidos": sum(p["eventos_medidos"] for p in degraus), "relogios_validos": True}
+special = {}
+if cen == "c1":
+    cl, cn = carga.get("contagens_legado"), carga.get("contagens_novo")
+    criterios.append(crit("contagens_iguais", {"legado": cl, "novo": cn} if cl and cn else None, "iguais por tabela no escopo declarado", bool(cl) and cl == cn))
+    ci = carga.get("carga_inicial")
+    ok = bool(ci) and all(ci["tabelas"][t]["linhas"] == carga["contagens_as_of_scn"][t] for t in ci["tabelas"])
+    criterios.append(crit("carga_inicial", ci, "linhas/s por tabela e tempo total; linhas copiadas == linhas do legado AS OF SCN", ok))
+    medidas.update(carga_inicial=ci, tempo_ate_drenado_s=carga.get("tempo_ate_drenado_s"), scn=carga.get("scn"))
+    special = {"escopo": {"codigo_min_inclusivo": 0, "codigo_max_exclusivo": None, "completo": True}, "scn": carga.get("scn"),
+               "carga_inicial": ci, "contagens_apos_truncate": carga.get("contagens_apos_truncate"), "tempos_s": carga.get("tempos_s")}
+elif cen == "c4":
+    p = degraus[0] if degraus else {}
+    pat = (esp.get("patamar") or {}).get("maximo_ms")
+    rec = esp.get("recuperacao_s") if p.get("valido") else None
+    c = crit("recuperacao_rajada_s", rec, "<=120 apos commit", rec is not None and rec <= 120)
+    if rec is None and p.get("valido") and esp:
+        # observacao concluida sem recuperar com patamar medido e rajada completa: REPROVADO; sem patamar (< 3 amostras) ou rajada incompleta: INVALIDO
+        c["veredito"] = "REPROVADO" if pat is not None and (esp.get("rajada") or {}).get("completa") and esp.get("janela_recuperacao_s", 0) >= 120 else "INVALIDO"
+    criterios.append(c)
+    medidas.update(p95_ms=p.get("p95_ms"), recuperacao_s=esp.get("recuperacao_s"), janela_recuperacao_s=esp.get("janela_recuperacao_s"), patamar_lag_ms=pat,
+                   patamar=esp.get("patamar"), rajada=esp.get("rajada"), pico_lag_fundo_apos_commit_ms=esp.get("pico_lag_fundo_apos_commit_ms"),
+                   pico_lag_fundo_apos_commit_s=esp.get("pico_lag_fundo_apos_commit_s"))
+    special = {"rajada_commit": esp.get("rajada_commit"), "rajada_linhas": cfg.get("rajada_linhas_param"), "commit_iso": esp.get("rajada_commit_iso"),
+               "metodo": esp.get("metodo_recuperacao")}
+elif cen == "c5":
+    p = degraus[0] if degraus else {}
+    for nome, chave in (("p95_demais_durante_aberta_ms", "p95_demais_ms"), ("aplicacao_apos_commit_ms", "apos_commit_ms")):
+        val = esp.get(chave) if p.get("valido") else None
+        criterios.append(crit(nome, val, "<=5000", val is not None and val <= 5000))
+    criterios.append({"nome": "latencia_transacao_longa_ms", "valor": esp.get("latencia_longa_ms"), "alvo": "reportada separadamente",
+                      "veredito": "SEM_CRITERIO" if esp.get("latencia_longa_ms") is not None else "INVALIDO"})
+    medidas.update(p95_ms=p.get("p95_ms"), p95_demais_ms=esp.get("p95_demais_ms"), p50_demais_ms=esp.get("p50_demais_ms"), max_demais_ms=esp.get("max_demais_ms"),
+                   latencia_longa_ms=esp.get("latencia_longa_ms"), apos_commit_ms=esp.get("apos_commit_ms"), eventos_durante_aberta=esp.get("eventos_durante_aberta"))
+    special = {k: esp.get(k) for k in ("evento_longo", "criado", "commit", "criado_iso", "commit_iso", "aberta_s", "aplicada_em_iso")}
 if cen == "c2":
     p = degraus[0] if degraus else {}
     v = p.get("p95_ms") if p.get("valido") else None
@@ -100,7 +147,7 @@ if cen == "c2":
     rising = tr.get("crescimento_sustentado")
     criterios.append(crit("tendencia_lag", tr if rising is not None else None, "sem crescimento sustentado", rising is False))
     medidas["p95_ms"] = p.get("p95_ms")
-else:
+elif cen == "c3":
     cand = [p["alvo"] for p in validos if p["tendencia_lag"]["crescimento_sustentado"] is False]
     suficiente = bool(validos) and all(p["tendencia_lag"]["crescimento_sustentado"] is not None for p in validos)
     teto = max(cand, default=0) if suficiente else None
@@ -115,10 +162,12 @@ else:
 
 # validade (mesmas razoes do relatorio.py: TAXA, RELOGIO, escopo, evidencia)
 motivos = []
-if not degraus or any(p["taxa"] is None for p in degraus):
+if cen != "c1" and (not degraus or any(p["taxa"] is None for p in degraus)):
     motivos.append("EVIDENCIA_INSUFICIENTE: taxa efetiva ausente")
-if cen == "c2" and degraus and not degraus[0]["valido"]:
+if cen in ("c2", "c4", "c5") and degraus and not degraus[0]["valido"]:
     motivos.append("TAXA")
+if cen in ("c4", "c5") and not esp:
+    motivos.append("EVIDENCIA_INSUFICIENTE: analise da operacao especial ausente")
 if cen == "c3" and degraus and not any(p["valido"] for p in degraus):
     motivos.append("TAXA")
 if not relogios:
@@ -131,7 +180,7 @@ for k in ("archive_antes", "archive_depois"):
         motivos.append("DISCO: alarme ou verificacao ausente (" + k + ")")
 validade = {"estado": "INVALIDO" if motivos else "VALIDO", "motivos": sorted(set(motivos))}
 veredito = "INVALIDO" if motivos else (
-    "APROVADO" if all(c["veredito"] == "APROVADO" for c in criterios) else
+    "APROVADO" if all(c["veredito"] in ("APROVADO", "SEM_CRITERIO") for c in criterios) else
     "INVALIDO" if any(c["veredito"] == "INVALIDO" for c in criterios) else "REPROVADO")
 
 skew = {"inicio": relogios[0]["skew_ms"] if relogios else None, "fim": relogios[-1]["skew_ms"] if relogios else None}
@@ -144,13 +193,17 @@ meta = {"cenario": cen, "execucao": cfg["execucao"], "inicio": cfg["inicio"], "f
                      "params_sha256": cfg.get("params_sha256", {}), "jar_sha256": cfg.get("jar_sha256"), "processos": []},
         "validade": validade, "veredito": veredito, "skew_ms": skew, "skew_incerteza_ms": inc, "relogios": relogios,
         "carga_servidores": [], "integridade": integ, "criterios": criterios, "degraus": degraus, "medidas": medidas,
-        "operacao_especial": {"archive_antes": load("archive-antes.json"), "archive_depois": load("archive-depois.json")},
-        "parametros": {"taxa": cfg.get("taxa"), "duracao_seg": cfg.get("dur_s") if cen == "c2" else None, "degrau_seg": cfg.get("dur_s") if cen == "c3" else None,
+        "operacao_especial": {**special, "archive_antes": load("archive-antes.json"), "archive_depois": load("archive-depois.json")},
+        "parametros": {"taxa": cfg.get("taxa"), "duracao_seg": cfg.get("dur_s") if cen != "c3" else None, "degrau_seg": cfg.get("dur_s") if cen == "c3" else None,
                        "c3_taxas": cfg.get("taxas") if cen == "c3" else None, "replicat": cfg["replicat"]}}
-if cen == "c2":
-    meta["parametros"].pop("c3_taxas"); meta["parametros"].pop("degrau_seg")
-else:
+if cen == "c3":
     meta["parametros"].pop("duracao_seg")
+else:
+    meta["parametros"].pop("c3_taxas"); meta["parametros"].pop("degrau_seg")
+if cen in ("c4", "c5"):
+    meta["parametros"].update(delay_s=cfg.get("delay_s"), hold_s=cfg.get("hold_s"), rajada_linhas=cfg.get("rajada_linhas_param"))
+if cen == "c1":
+    meta["parametros"] = {"replicat": cfg["replicat"], "metodo": "INSERT AS OF SCN via DB link + START REPLICAT AFTERCSN"}
 (D / "meta.json").write_text(json.dumps(meta, indent=1, ensure_ascii=False) + "\n")
 print(json.dumps({"veredito": veredito, "validade": validade, "criterios": {c["nome"]: (c["veredito"], c["valor"]) for c in criterios},
                   "degraus": [(p["alvo"], p["taxa"], p["validade"], p["p95_ms"], p["tendencia_lag"].get("crescimento_sustentado")) for p in degraus]}, ensure_ascii=False))

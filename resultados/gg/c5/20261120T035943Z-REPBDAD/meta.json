@@ -1,0 +1,260 @@
+{
+ "cenario": "c5",
+ "execucao": "20261120T035943Z-REPBDAD",
+ "inicio": "2026-11-20T03:59:43Z",
+ "fim": "2026-11-20T04:12:57Z",
+ "diretorio": "resultados/gg/c5/20261120T035943Z-REPBDAD",
+ "ambiente": {
+  "lab": "goldengate",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "gg-legado",
+    "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:51:55.461509857Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-novo",
+    "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:52:06.858681453Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-hub",
+    "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+    "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+    "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+    "cpu": 2000000000,
+    "memoria": 4294967296,
+    "running": true,
+    "inicio": "2026-11-20T01:05:15.109487246Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   }
+  ],
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "EXTBDAD.prm": "54011670fd1b8a3c",
+   "REPBDAD.prm": "8e90c308d824c054",
+   "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+   "REPCO.prm": "7abada0cf861f222"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "APROVADO",
+ "skew_ms": {
+  "inicio": 0.284,
+  "fim": 0.358
+ },
+ "skew_incerteza_ms": {
+  "inicio": 4.653,
+  "fim": 4.691
+ },
+ "relogios": [
+  {
+   "etapa": "d1-1000-inicio",
+   "ts": "2026-11-20T04:00:18.604424298Z",
+   "skew_ms": 0.284,
+   "incerteza_ms": 4.653
+  },
+  {
+   "etapa": "d1-1000-fim",
+   "ts": "2026-11-20T04:10:18.612306748Z",
+   "skew_ms": 0.358,
+   "incerteza_ms": 4.691
+  }
+ ],
+ "carga_servidores": [],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "snapshot_antes": "../../c1/snapshots/apos-carga.csv",
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "divergencias_sql": 0,
+  "divergencias_java": 0,
+  "reconciliacao": "reconciliacao-java.log",
+  "reconciliacao_sql": "reconciliacao-sql.txt",
+  "snapshot_depois": "snapshots/apos.csv",
+  "uuids_alterados": 0,
+  "uuids": {
+   "preexistentes_comparados": 1700000,
+   "uuids_alterados": 0
+  },
+  "diferencas": "reconciliacao-sql.txt"
+ },
+ "criterios": [
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s)",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "p95_demais_durante_aberta_ms",
+   "valor": 2884,
+   "alvo": "<=5000",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "aplicacao_apos_commit_ms",
+   "valor": 1837.3,
+   "alvo": "<=5000",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "latencia_transacao_longa_ms",
+   "valor": 31838,
+   "alvo": "reportada separadamente",
+   "veredito": "SEM_CRITERIO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c5",
+   "linhas": 600012,
+   "transacoes": 200327,
+   "taxa": 1000.01,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T04:00:18.604424298Z",
+   "fim": "2026-11-20T04:10:18.612306748Z",
+   "validade": "VALIDO",
+   "p95_ms": 2746,
+   "eventos_medidos": 600012,
+   "tendencia_lag": {
+    "inclinacao_ms_s": 2.4592078236130863,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "drenagem_s": 18,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 111.0,
+     "max_pct": 201.92,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 27.5,
+     "max_pct": 192.14,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 22.4,
+     "max_pct": 173.59,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 19.6,
+     "max_pct": 70.91,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 6.263,
+   "latencia_s": {
+    "min_s": 0.338,
+    "p50_s": 1.804,
+    "p95_s": 2.746,
+    "p99_s": 3.019,
+    "max_s": 3.702,
+    "media_s": 1.801
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": 2.725007915937493,
+    "crescimento_sustentado": true,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "lag_final_s": 3.281
+  }
+ ],
+ "medidas": {
+  "eventos_medidos": 600012,
+  "relogios_validos": true,
+  "p95_ms": 2746,
+  "p95_demais_ms": 2884,
+  "p50_demais_ms": 1721,
+  "max_demais_ms": 3333,
+  "latencia_longa_ms": 31838,
+  "apos_commit_ms": 1837.3,
+  "eventos_durante_aberta": 29293
+ },
+ "operacao_especial": {
+  "evento_longo": "TITULAR/1@2026-11-20T04:00:23.989221Z",
+  "criado": 1795147223.989221,
+  "commit": 1795147253.990181,
+  "criado_iso": "2026-11-20T04:00:23.989221Z",
+  "commit_iso": "2026-11-20T04:00:53.990181Z",
+  "aberta_s": 30.001,
+  "aplicada_em_iso": "2026-11-20T04:00:55.827527Z",
+  "archive_antes": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 9211047,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1430873600,
+   "archive_bytes_depois": 1430873600,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  },
+  "archive_depois": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 9778292,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1436776448,
+   "archive_bytes_depois": 1436776448,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  }
+ },
+ "parametros": {
+  "taxa": 1000,
+  "duracao_seg": 600,
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "delay_s": 5,
+  "hold_s": 30,
+  "rajada_linhas": null
+ }
+}

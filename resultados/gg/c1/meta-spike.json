@@ -1,0 +1,90 @@
+{
+  "snapshots": {
+    "apos-carga": {
+      "linhas": 1700000,
+      "bytes": 85766686,
+      "sha256": "b401a2616f803d2ebba23b0309ddc2c7a9523742495de2b9fffab5ba58ac5040",
+      "uuids_duplicados": 0,
+      "por_tabela": "fonograma=1000000,obra_musical=500000,titular=200000",
+      "gerado_em": "2026-11-20T01:04:37Z",
+      "arquivo": "resultados/gg/c1/snapshots/apos-carga.csv (ignorado pelo git)"
+    },
+    "apos-autostart": {
+      "linhas": 1700000,
+      "bytes": 85766686,
+      "sha256": "b401a2616f803d2ebba23b0309ddc2c7a9523742495de2b9fffab5ba58ac5040",
+      "uuids_duplicados": 0,
+      "por_tabela": "fonograma=1000000,obra_musical=500000,titular=200000",
+      "gerado_em": "2026-11-20T01:06:26Z",
+      "arquivo": "resultados/gg/c1/snapshots/apos-autostart.csv (ignorado pelo git)"
+    }
+  },
+  "cenario": "c1",
+  "ambiente": "gg-legado, gg-novo, gg-hub (lab GG, massa completa; segunda execucao do zero)",
+  "massa": {
+    "titular": 200000,
+    "obra_musical": 500000,
+    "fonograma": 1000000
+  },
+  "subir": {
+    "massa": "completa",
+    "scn_carga": "2322830",
+    "segundos": {
+      "bancos_saudaveis": 37.6,
+      "esquema_e_massa_legado": 121.8,
+      "esquema_novo": 2.2,
+      "hub_saudavel": 36.3,
+      "extract_running": 8.3,
+      "carga_inicial": 487.1,
+      "replicat_running": 2.2,
+      "pipeline_running_desde_hub": 497.5,
+      "total": 695.4
+    },
+    "relogio": "desenv-server (NTP), nao o do WSL2"
+  },
+  "carga_inicial": {
+    "metodo": "INSERT AS OF SCN via DB link, UUIDv7 por trigger",
+    "scn": 2322830,
+    "segundos": {
+      "titular": 55.91,
+      "obra_musical": 139.50,
+      "fonograma": 288.70
+    },
+    "linhas_por_s": {
+      "titular": 3577,
+      "obra_musical": 3584,
+      "fonograma": 3464
+    },
+    "total_linhas_por_s": 3511,
+    "referencia_java_s": 109.9
+  },
+  "contagens": {
+    "legado": {
+      "titular": 200000,
+      "obra_musical": 500000,
+      "fonograma": 1000000
+    },
+    "novo": {
+      "titular": 200000,
+      "obra_musical": 500000,
+      "fonograma": 1000000
+    }
+  },
+  "reconciliacao": {
+    "java_completo_dry_run": {
+      "divergencias": 0,
+      "tempo_ms": 19825
+    },
+    "sql_hash": {
+      "divergencias": 0,
+      "faixas": 20
+    }
+  },
+  "autostart": {
+    "restart_s_ate_running": 12.2,
+    "kill_start_s_ate_running": 10.0,
+    "updates_durante_queda": 100,
+    "perdas": 0,
+    "duplicidades": 0
+  }
+}

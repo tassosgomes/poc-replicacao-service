@@ -1,0 +1,19 @@
+{
+ "cenario": "c5",
+ "offset_relogio_ms": -0.284,
+ "candidatos_longa": 1,
+ "evento_longo": "TITULAR/1@2026-11-20T04:00:23.989221Z",
+ "criado": 1795147223.989221,
+ "commit": 1795147253.990181,
+ "criado_iso": "2026-11-20T04:00:23.989221Z",
+ "commit_iso": "2026-11-20T04:00:53.990181Z",
+ "aberta_s": 30.001,
+ "eventos_durante_aberta": 29293,
+ "p95_demais_ms": 2884,
+ "p50_demais_ms": 1721,
+ "max_demais_ms": 3333,
+ "apos_commit_ms": 1837.3,
+ "apos_commit_bruto_ms": 1837.3,
+ "latencia_longa_ms": 31838,
+ "aplicada_em_iso": "2026-11-20T04:00:55.827527Z"
+}

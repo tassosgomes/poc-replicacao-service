@@ -1,0 +1,18 @@
+{
+  "cenario": "c1",
+  "execucao": "20261120T041312Z-REPBDAD",
+  "inicio": "2026-11-20T04:13:13Z",
+  "fim": "2026-11-20T04:26:20Z",
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "dur_s": null,
+  "taxa": null,
+  "taxas": [],
+  "params_sha256": {
+    "EXTBDAD.prm": "54011670fd1b8a3c",
+    "REPBDAD.prm": "8e90c308d824c054",
+    "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+    "REPCO.prm": "7abada0cf861f222"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "degraus": []
+}

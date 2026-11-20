@@ -1,0 +1,52 @@
+{
+  "carga_inicial": {
+    "tabelas": {
+      "TITULAR": {
+        "linhas": 262491,
+        "segundos": 72.69,
+        "linhas_s": 3611.10
+      },
+      "OBRA_MUSICAL": {
+        "linhas": 625703,
+        "segundos": 172.71,
+        "linhas_s": 3622.85
+      },
+      "FONOGRAMA": {
+        "linhas": 1123358,
+        "segundos": 317.92,
+        "linhas_s": 3533.46
+      }
+    },
+    "tempo_total_s": 565.9,
+    "log": "carga-inicial.log"
+  },
+  "contagens_legado": {
+    "TITULAR": 262491,
+    "OBRA_MUSICAL": 625703,
+    "FONOGRAMA": 1123358
+  },
+  "contagens_novo": {
+    "TITULAR": 262491,
+    "OBRA_MUSICAL": 625703,
+    "FONOGRAMA": 1123358
+  },
+  "contagens_as_of_scn": {
+    "TITULAR": 262491,
+    "OBRA_MUSICAL": 625703,
+    "FONOGRAMA": 1123358
+  },
+  "contagens_apos_truncate": {
+    "TITULAR": 0,
+    "OBRA_MUSICAL": 0,
+    "FONOGRAMA": 0
+  },
+  "drenado": true,
+  "scn": 9779205,
+  "tempo_ate_drenado_s": 666.3,
+  "tempos_s": {
+    "recriar_replicat_e_truncate": 4.6,
+    "carga": 565.9,
+    "start_replicat_ate_running": 1.6,
+    "drenagem_do_replicat": 47.6
+  }
+}
