@@ -1,0 +1,243 @@
+{
+ "cenario": "c2",
+ "execucao": "20261120T061003Z-REPBDAD-sem-batchsql",
+ "inicio": "2026-11-20T06:10:03Z",
+ "fim": "2026-11-20T06:23:30Z",
+ "diretorio": "resultados/gg/c9/20261120T054721Z-REPBDAD/runs/c2/20261120T061003Z-REPBDAD-sem-batchsql",
+ "ambiente": {
+  "lab": "goldengate",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "gg-legado",
+    "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:51:55.461509857Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-novo",
+    "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:52:06.858681453Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-hub",
+    "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+    "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+    "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+    "cpu": 2000000000,
+    "memoria": 4294967296,
+    "running": true,
+    "inicio": "2026-11-20T05:26:44.427008679Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   }
+  ],
+  "replicat": "REPBDAD classico, modo sem-batchsql (EOFDELAYCSECS 1 GROUPTRANSOPS 100 )",
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "EXTBDAD.prm": "54011670fd1b8a3c",
+   "REPBDAD.prm": "8e90c308d824c054",
+   "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+   "REPCO.prm": "7abada0cf861f222"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "APROVADO",
+ "skew_ms": {
+  "inicio": -0.071,
+  "fim": -0.069
+ },
+ "skew_incerteza_ms": {
+  "inicio": 5.269,
+  "fim": 4.96
+ },
+ "relogios": [
+  {
+   "etapa": "d1-1000-inicio",
+   "ts": "2026-11-20T06:10:43.436663666Z",
+   "skew_ms": -0.071,
+   "incerteza_ms": 5.269
+  },
+  {
+   "etapa": "d1-1000-fim",
+   "ts": "2026-11-20T06:20:43.442634618Z",
+   "skew_ms": -0.069,
+   "incerteza_ms": 4.96
+  }
+ ],
+ "carga_servidores": [],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "snapshot_antes": "../../c1/snapshots/apos-carga.csv",
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "divergencias_sql": 0,
+  "divergencias_java": 0,
+  "reconciliacao": "reconciliacao-java.log",
+  "reconciliacao_sql": "reconciliacao-sql.txt",
+  "snapshot_depois": "snapshots/apos.csv",
+  "uuids_alterados": 0,
+  "uuids": {
+   "preexistentes_comparados": 2011552,
+   "uuids_alterados": 0
+  },
+  "diferencas": "reconciliacao-sql.txt"
+ },
+ "criterios": [
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s)",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "p95_ms",
+   "valor": 3949,
+   "alvo": "<=5000",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "tendencia_lag",
+   "valor": {
+    "inclinacao_ms_s": -0.9856618378378386,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 36
+   },
+   "alvo": "sem crescimento sustentado",
+   "veredito": "APROVADO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c2",
+   "linhas": 599982,
+   "transacoes": 200327,
+   "taxa": 999.97,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T06:10:43.436663666Z",
+   "fim": "2026-11-20T06:20:43.442634618Z",
+   "validade": "VALIDO",
+   "p95_ms": 3949,
+   "eventos_medidos": 599982,
+   "tendencia_lag": {
+    "inclinacao_ms_s": -0.9856618378378386,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 36
+   },
+   "drenagem_s": 15,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 110.6,
+     "max_pct": 203.79,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 26.4,
+     "max_pct": 105.79,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 49.2,
+     "max_pct": 102.89,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 25.1,
+     "max_pct": 83.51,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 6.352,
+   "latencia_s": {
+    "min_s": 0.958,
+    "p50_s": 2.372,
+    "p95_s": 3.949,
+    "p99_s": 8.837,
+    "max_s": 10.972,
+    "media_s": 2.557
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -1.1966815982008807,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 36
+   },
+   "lag_final_s": 2.593
+  }
+ ],
+ "medidas": {
+  "eventos_medidos": 599982,
+  "relogios_validos": true,
+  "p95_ms": 3949
+ },
+ "operacao_especial": {
+  "archive_antes": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 15101431,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1441202688,
+   "archive_bytes_depois": 1441202688,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  },
+  "archive_depois": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 15669237,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1435855872,
+   "archive_bytes_depois": 1435855872,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  }
+ },
+ "parametros": {
+  "taxa": 1000,
+  "duracao_seg": 600,
+  "replicat": "REPBDAD classico, modo sem-batchsql (EOFDELAYCSECS 1 GROUPTRANSOPS 100 )"
+ }
+}

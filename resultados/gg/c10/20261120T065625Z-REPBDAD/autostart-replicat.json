@@ -1,0 +1,1 @@
+{"autoStart":{"enabled":true,"delay":0},"autoRestart":{"enabled":true,"onSuccess":false,"delay":5,"retries":9,"window":60,"disableOnFailure":false,"failures":0}}

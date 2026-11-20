@@ -1,0 +1,1 @@
+{"veredito": "APROVADO", "validade": {"estado": "VALIDO", "motivos": []}, "criterios": {"divergencias": ["APROVADO", 0], "uuids_alterados": ["APROVADO", 0], "pendentes_final": ["APROVADO", 0], "teto_ev_s": ["APROVADO", 2000]}, "degraus": [[2000, 1999.99, "VALIDO", 3956, false]]}

@@ -1,0 +1,5 @@
+INFO OGG-01788 SCHEMATRANDATA has been added on schema "bdad".
+INFO OGG-30198 Partial JSON Update is disabled on schema "bdad".
+INFO OGG-01976 SCHEMATRANDATA for scheduling columns has been added on schema "bdad".
+INFO OGG-01977 SCHEMATRANDATA for all columns has been added on schema "bdad".
+INFO OGG-10154 Schema level PREPARECSN set to mode NOWAIT on schema "bdad"

@@ -1,0 +1,4 @@
+-- fonograma: 110628 chaves
+-- obra_musical: 106758 chaves
+-- titular: 52308 chaves
+toque aplicado (301 comandos)

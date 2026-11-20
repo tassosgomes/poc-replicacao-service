@@ -1,0 +1,65 @@
+container=gg-gerador-1795157226 exit=0
+INFO: log_linhas=gerador-linhas-20261120T064707Z-1-3a1a1a663a93.csv
+INFO: inicio_carga=2026-11-20T06:47:10.034113360Z
+INFO: janela_linhas=10006 taxa=2001.20
+INFO: janela_linhas=9996 taxa=1999.20
+INFO: janela_linhas=10005 taxa=2001.00
+INFO: janela_linhas=9999 taxa=1999.80
+INFO: janela_linhas=9991 taxa=1998.20
+INFO: janela_linhas=9998 taxa=1999.60
+INFO: janela_linhas=10003 taxa=2000.60
+INFO: janela_linhas=9998 taxa=1999.60
+INFO: janela_linhas=9996 taxa=1999.20
+INFO: janela_linhas=10010 taxa=2002.00
+INFO: janela_linhas=9998 taxa=1999.60
+INFO: janela_linhas=9982 taxa=1996.40
+INFO: janela_linhas=10022 taxa=2004.40
+INFO: janela_linhas=9988 taxa=1997.60
+INFO: janela_linhas=10002 taxa=2000.40
+INFO: janela_linhas=10005 taxa=2001.00
+INFO: janela_linhas=9994 taxa=1998.80
+INFO: janela_linhas=9998 taxa=1999.60
+INFO: janela_linhas=9998 taxa=1999.60
+INFO: janela_linhas=10007 taxa=2001.40
+INFO: janela_linhas=10001 taxa=2000.20
+INFO: janela_linhas=9987 taxa=1997.40
+INFO: janela_linhas=9997 taxa=1999.40
+INFO: janela_linhas=10007 taxa=2001.40
+INFO: janela_linhas=10000 taxa=2000.00
+INFO: janela_linhas=10004 taxa=2000.80
+INFO: janela_linhas=9999 taxa=1999.80
+INFO: janela_linhas=9982 taxa=1996.40
+INFO: janela_linhas=10012 taxa=2002.40
+INFO: janela_linhas=9991 taxa=1998.20
+INFO: janela_linhas=10001 taxa=2000.20
+INFO: janela_linhas=10012 taxa=2002.40
+INFO: janela_linhas=10000 taxa=2000.00
+INFO: janela_linhas=9988 taxa=1997.60
+INFO: janela_linhas=10003 taxa=2000.60
+INFO: janela_linhas=10000 taxa=2000.00
+INFO: janela_linhas=9983 taxa=1996.60
+INFO: janela_linhas=10009 taxa=2001.80
+INFO: janela_linhas=10008 taxa=2001.60
+INFO: janela_linhas=9990 taxa=1998.00
+INFO: janela_linhas=10007 taxa=2001.40
+INFO: janela_linhas=9984 taxa=1996.80
+INFO: janela_linhas=10022 taxa=2004.40
+INFO: janela_linhas=9984 taxa=1996.80
+INFO: janela_linhas=8777 taxa=1755.40
+INFO: janela_linhas=11175 taxa=2235.00
+INFO: janela_linhas=10061 taxa=2012.20
+INFO: janela_linhas=9994 taxa=1998.80
+INFO: janela_linhas=10005 taxa=2001.00
+INFO: janela_linhas=9338 taxa=1867.60
+INFO: janela_linhas=10604 taxa=2120.80
+INFO: janela_linhas=10040 taxa=2008.00
+INFO: janela_linhas=10015 taxa=2003.00
+INFO: janela_linhas=9972 taxa=1994.40
+INFO: janela_linhas=10026 taxa=2005.20
+INFO: janela_linhas=10003 taxa=2000.60
+INFO: janela_linhas=9995 taxa=1999.00
+INFO: janela_linhas=7464 taxa=1492.80
+INFO: janela_linhas=12540 taxa=2508.00
+INFO: janela_linhas=9985 taxa=1997.00
+INFO: fim_carga=2026-11-20T06:52:10.043332112Z
+INFO: linhas=599975 transacoes=200327 taxa=1999.87 alvo=2000 transacao_media_ms=5.782 VALIDO

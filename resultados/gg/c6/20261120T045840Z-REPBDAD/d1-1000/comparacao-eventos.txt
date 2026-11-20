@@ -1,0 +1,1 @@
+{"eventos_gerador": 600012, "linhas_log": 600012, "transacoes": 200327, "repeticoes_mesma_chave_na_mesma_transacao": 0, "chaves_com_menos_no_log": 0, "eventos_faltantes_total": 0, "chaves_com_mais_no_log": 0, "eventos_a_mais_total": 0, "ops_log": {"U": 570221, "I": 29791}, "diferenca_liquida": 0, "sem_perda": true}

@@ -1,0 +1,3 @@
+fim do trail: seq 55 rba 67758855
+2026-11-20T07:45:04Z  INFO    OGG-06594  Replicat REPBDAD has been altered. Even the start up position might be updated, duplicate suppression remains active in next startup. To override duplicate suppression, start REPBDAD with NOFILTERDUPTRANSACTIONS option.
+2026-11-20T07:45:04Z  INFO    OGG-08100  Replicat altered.

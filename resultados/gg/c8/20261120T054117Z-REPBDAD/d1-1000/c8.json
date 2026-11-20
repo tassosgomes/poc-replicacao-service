@@ -1,0 +1,16 @@
+{
+  "linhas_afetadas": 55904,
+  "divergentes_antes": 55904,
+  "afetadas_conferem_antes": true,
+  "divergentes_depois": 0,
+  "linhas_corrigidas": 55904,
+  "log_cobre_afetadas": true,
+  "captura_parada_inicio": "2026-11-20T05:42:27Z",
+  "captura_parada_fim": "2026-11-20T05:44:20Z",
+  "parada_s": 112.22314357757568,
+  "religar_extract_s": 0.4788038730621338,
+  "tempo_ate_drenado_s": 42.39680194854736,
+  "ultima_aplicacao_apos_religar_s": 21.151227712631226,
+  "dba_capture_parado": "status=ENABLED required=13890550",
+  "reparo_ou_reconciliacao_antes_de_drenar": false
+}

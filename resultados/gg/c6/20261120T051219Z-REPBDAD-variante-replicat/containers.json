@@ -1,0 +1,38 @@
+[
+  {
+    "nome": "gg-legado",
+    "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:51:55.461509857Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+  },
+  {
+    "nome": "gg-novo",
+    "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:52:06.858681453Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+  },
+  {
+    "nome": "gg-hub",
+    "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+    "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+    "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+    "cpu": 2000000000,
+    "memoria": 4294967296,
+    "running": true,
+    "inicio": "2026-11-20T05:03:17.31703574Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+  }
+]

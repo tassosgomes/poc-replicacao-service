@@ -1,0 +1,385 @@
+{
+ "cenario": "c7",
+ "execucao": "20261120T052037Z-REPBDAD",
+ "inicio": "2026-11-20T05:20:37Z",
+ "fim": "2026-11-20T05:34:07Z",
+ "diretorio": "resultados/gg/c7/20261120T052037Z-REPBDAD",
+ "ambiente": {
+  "lab": "goldengate",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "gg-legado",
+    "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:51:55.461509857Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-novo",
+    "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:52:06.858681453Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-hub",
+    "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+    "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+    "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+    "cpu": 2000000000,
+    "memoria": 4294967296,
+    "running": true,
+    "inicio": "2026-11-20T05:26:44.427008679Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   }
+  ],
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "EXTBDAD.prm": "54011670fd1b8a3c",
+   "REPBDAD.prm": "8e90c308d824c054",
+   "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+   "REPCO.prm": "7abada0cf861f222"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "REPROVADO",
+ "skew_ms": {
+  "inicio": -0.933,
+  "fim": -0.684
+ },
+ "skew_incerteza_ms": {
+  "inicio": 4.736,
+  "fim": 4.742
+ },
+ "relogios": [
+  {
+   "etapa": "d1-1000-inicio",
+   "ts": "2026-11-20T05:21:14.149111610Z",
+   "skew_ms": -0.933,
+   "incerteza_ms": 4.736
+  },
+  {
+   "etapa": "d1-1000-fim",
+   "ts": "2026-11-20T05:31:14.149784770Z",
+   "skew_ms": -0.684,
+   "incerteza_ms": 4.742
+  }
+ ],
+ "carga_servidores": [],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "snapshot_antes": "../../c1/snapshots/apos-carga.csv",
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "divergencias_sql": 0,
+  "divergencias_java": 0,
+  "reconciliacao": "reconciliacao-java.log",
+  "reconciliacao_sql": "reconciliacao-sql.txt",
+  "snapshot_depois": "snapshots/apos.csv",
+  "uuids_alterados": 0,
+  "uuids": {
+   "preexistentes_comparados": 2011552,
+   "uuids_alterados": 0
+  },
+  "diferencas": "reconciliacao-sql.txt"
+ },
+ "criterios": [
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s)",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "failover_s",
+   "valor": 25.84,
+   "alvo": "<=20 (referencia, ADAPTADO: sem segunda replica; queda do hub ate EXTBDAD e REPBDAD RUNNING e lag <= 5 s sob carga)",
+   "veredito": "REPROVADO"
+  },
+  {
+   "nome": "failover_restart_s",
+   "valor": 25.81,
+   "alvo": "<=20 (referencia, ADAPTADO: sem segunda replica; queda do hub ate EXTBDAD e REPBDAD RUNNING e lag <= 5 s sob carga)",
+   "veredito": "REPROVADO"
+  },
+  {
+   "nome": "failover_kill_start_s",
+   "valor": 25.84,
+   "alvo": "<=20 (referencia, ADAPTADO: sem segunda replica; queda do hub ate EXTBDAD e REPBDAD RUNNING e lag <= 5 s sob carga)",
+   "veredito": "REPROVADO"
+  },
+  {
+   "nome": "processos_running_restart_s",
+   "valor": 9.92,
+   "alvo": "reportado (EXTBDAD e REPBDAD RUNNING, desde a queda)",
+   "veredito": "SEM_CRITERIO"
+  },
+  {
+   "nome": "processos_running_kill_start_s",
+   "valor": 10.33,
+   "alvo": "reportado (EXTBDAD e REPBDAD RUNNING, desde a queda)",
+   "veredito": "SEM_CRITERIO"
+  },
+  {
+   "nome": "estavel_apos_restart",
+   "valor": true,
+   "alvo": "reportado (baldes completos seguintes com lag <= 5 s)",
+   "veredito": "SEM_CRITERIO"
+  },
+  {
+   "nome": "estavel_apos_kill_start",
+   "valor": true,
+   "alvo": "reportado (baldes completos seguintes com lag <= 5 s)",
+   "veredito": "SEM_CRITERIO"
+  },
+  {
+   "nome": "eventos_log_x_gerador",
+   "valor": {
+    "eventos_gerador": 600012,
+    "linhas_log": 600012,
+    "eventos_faltantes_total": 0,
+    "eventos_a_mais_total": 0,
+    "chaves_com_menos_no_log": 0,
+    "chaves_com_mais_no_log": 0
+   },
+   "alvo": "reportado (duplicatas de log apos kill sao registradas; integridade = estado final)",
+   "veredito": "SEM_CRITERIO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c7",
+   "linhas": 600012,
+   "transacoes": 200327,
+   "taxa": 1000.02,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T05:21:14.149111610Z",
+   "fim": "2026-11-20T05:31:14.149784770Z",
+   "validade": "VALIDO",
+   "p95_ms": 5722,
+   "eventos_medidos": 600012,
+   "tendencia_lag": {
+    "inclinacao_ms_s": 0.6486477003319111,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "drenagem_s": 15,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 113.8,
+     "max_pct": 153.91,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 27.4,
+     "max_pct": 185.51,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 18.0,
+     "max_pct": 100.18,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 17.8,
+     "max_pct": 70.5,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 5.881,
+   "latencia_s": {
+    "min_s": 0.321,
+    "p50_s": 1.938,
+    "p95_s": 5.722,
+    "p99_s": 13.319,
+    "max_s": 15.661,
+    "media_s": 2.343
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": 0.838373273900164,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "lag_final_s": 3.058
+  }
+ ],
+ "medidas": {
+  "eventos_medidos": 600012,
+  "relogios_validos": true,
+  "p95_ms": 5722,
+  "failover_s": 25.84,
+  "failover_restart_s": 25.81,
+  "failover_kill_start_s": 25.84,
+  "failover_restart_desde_retorno_s": 25.41,
+  "failover_kill_start_desde_retorno_s": 25.44,
+  "failover_metodo": "queda do hub (inicio do docker restart / do docker kill) ate o primeiro balde de 5 s completo com lag <= 5 s (relogio do infra-server e do gg-novo)",
+  "eventos_log": {
+   "eventos_gerador": 600012,
+   "linhas_log": 600012,
+   "transacoes": 200327,
+   "repeticoes_mesma_chave_na_mesma_transacao": 0,
+   "chaves_com_menos_no_log": 0,
+   "eventos_faltantes_total": 0,
+   "chaves_com_mais_no_log": 0,
+   "eventos_a_mais_total": 0,
+   "ops_log": {
+    "U": 570221,
+    "I": 29791
+   },
+   "diferenca_liquida": 0,
+   "sem_perda": true
+  }
+ },
+ "operacao_especial": {
+  "queda": {
+   "docker_restart": {
+    "t_queda": 1795152194.1876872,
+    "t_reinicio": 1795152194.5860121,
+    "t_rest": 1795152199.1081295,
+    "t_ext": 1795152204.1034713,
+    "t_rep": 1795152204.108187
+   },
+   "docker_kill_start": {
+    "t_queda": 1795152404.1626387,
+    "t_reinicio": 1795152404.5635822,
+    "t_rest": 1795152409.3567994,
+    "t_ext": 1795152414.4856575,
+    "t_rep": 1795152414.4905446
+   }
+  },
+  "failover_s": 25.84,
+  "failover_metodo": "queda do hub (inicio do docker restart / do docker kill) ate o primeiro balde de 5 s completo com lag <= 5 s (relogio do infra-server e do gg-novo)",
+  "falha1_apos_s": 120,
+  "falha2_apos_s": 330,
+  "eventos_resultado": {
+   "docker_restart": {
+    "nome": "docker_restart",
+    "t_queda": 1795152194.1876872,
+    "t_reinicio": 1795152194.5860121,
+    "t_rest": 1795152199.1081295,
+    "t_ext": 1795152204.1034713,
+    "t_rep": 1795152204.108187,
+    "ultima_aplicacao_antes_s": 0.052,
+    "primeira_aplicacao_apos_queda_apos_reinicio_s": 10.27,
+    "balde_normalizado": {
+     "inicio_s": 20.8,
+     "n": 4901,
+     "lag_max_s": 3.131
+    },
+    "t_normalizado": 1795152220,
+    "desde_queda_s": 25.81,
+    "desde_reinicio_s": 25.41,
+    "rest_desde_reinicio_s": 4.52,
+    "rest_desde_queda_s": 4.92,
+    "extract_running_desde_reinicio_s": 9.52,
+    "extract_running_desde_queda_s": 9.92,
+    "replicat_running_desde_reinicio_s": 9.52,
+    "replicat_running_desde_queda_s": 9.92,
+    "estavel_apos_normalizar": true,
+    "baldes_violando_apos": [],
+    "pico_lag_s": 15.16
+   },
+   "docker_kill_start": {
+    "nome": "docker_kill_start",
+    "t_queda": 1795152404.1626387,
+    "t_reinicio": 1795152404.5635822,
+    "t_rest": 1795152409.3567994,
+    "t_ext": 1795152414.4856575,
+    "t_rep": 1795152414.4905446,
+    "t_kill_ret": 1795152404.4018114,
+    "ultima_aplicacao_antes_s": 1.742,
+    "primeira_aplicacao_apos_queda_apos_reinicio_s": 10.571,
+    "balde_normalizado": {
+     "inicio_s": 20.8,
+     "n": 6016,
+     "lag_max_s": 4.113
+    },
+    "t_normalizado": 1795152430,
+    "desde_queda_s": 25.84,
+    "desde_reinicio_s": 25.44,
+    "rest_desde_reinicio_s": 4.79,
+    "rest_desde_queda_s": 5.19,
+    "extract_running_desde_reinicio_s": 9.92,
+    "extract_running_desde_queda_s": 10.32,
+    "replicat_running_desde_reinicio_s": 9.93,
+    "replicat_running_desde_queda_s": 10.33,
+    "estavel_apos_normalizar": true,
+    "baldes_violando_apos": [],
+    "pico_lag_s": 15.66
+   }
+  },
+  "adaptado": true,
+  "adaptacao": "Sem segunda replica no GoldenGate Free (Oracle Free): nao ha failover para outro no. Mede-se o reinicio do hub unico (docker restart e docker kill + start; autostart dos processos) ate Extract e Replicat RUNNING e lag normal sob carga, contra a referencia de 20 s do PRD. HA de producao (XAG/RAC, hub secundario) fica fora do escopo da PoC.",
+  "archive_antes": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 13260569,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1430577664,
+   "archive_bytes_depois": 1430577664,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  },
+  "archive_depois": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 13831895,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1431844864,
+   "archive_bytes_depois": 1431844864,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  }
+ },
+ "parametros": {
+  "taxa": 1000,
+  "duracao_seg": 600,
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "variante": "hub"
+ },
+ "adaptado": true,
+ "adaptacao": "Sem segunda replica no GoldenGate Free (Oracle Free): nao ha failover para outro no. Mede-se o reinicio do hub unico (docker restart e docker kill + start; autostart dos processos) ate Extract e Replicat RUNNING e lag normal sob carga, contra a referencia de 20 s do PRD. HA de producao (XAG/RAC, hub secundario) fica fora do escopo da PoC."
+}

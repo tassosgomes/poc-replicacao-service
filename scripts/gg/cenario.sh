@@ -11,7 +11,8 @@
 #   scripts/gg/analisar-especial.py (patamar = maximo da latencia por balde de 5 s nos 60 s antes do commit, PATAMAR_JANELA_SEG).
 # c5 (transacao longa): regime igual; TX_APOS_SEG (5) s apos o inicio, UPDATE de TITULAR 1 em transacao aberta por TX_ABERTA_SEG (30) s
 #   (sql/gg/testes/tx_longa.sql; o modo TX_ABERTA_SEG do gerador Java depende de evento_replicacao, inexistente no lab GG).
-# c1 (carga inicial): delega a scripts/gg/c1-carga.sh.
+# c1 (carga inicial): delega a scripts/gg/c1-carga.sh. c6|c7|c8 delegam a scripts/gg/falhas.sh, c9 a c9-comparacao.sh e c10 a c10-custo.sh.
+# GG_SAIDA (resultados/gg): base de saida; o c9 a muda para nao sobrescrever o meta.json do c2/c3 oficial.
 # Cada degrau: drena, trunca aplicacao_log, gera, drena, mede latencia (aplicado_em - origem_updated_at, corrigida pelo offset de relogios),
 # tendencia do lag. Regra do lab Java: taxa efetiva < 98% do alvo = GERADOR_SATURADO (c3: interrompe a escada, preserva os degraus validos).
 # Antes e depois: verificacao de disco/archive (limpar-archive.sh); alarme = falha operacional. Ao fim: drena, reconcilia (SQL e jar Java
@@ -20,15 +21,17 @@
 set -Eeuo pipefail
 trap 'rc=$?; echo "falha operacional (linha $LINENO, rc=$rc)" >&2; exit 2' ERR
 ROOT=$(cd "$(dirname "$0")/../.." && pwd); cd "$ROOT"
-CEN=${1:?c1|c2|c3|c4|c5}; ROT=${2:-}
+CEN=${1:?c1|c2|c3|c4|c5|c6|c7|c8|c9|c10}; ROT=${2:-}
 [[ $CEN == c1 ]] && exec "$(dirname "$0")/c1-carga.sh" "${@:2}"
+case $CEN in c6|c7|c8) exec "$(dirname "$0")/falhas.sh" "$@" ;; c9) exec "$(dirname "$0")/c9-comparacao.sh" "${@:2}" ;; c10) exec "$(dirname "$0")/c10-custo.sh" "${@:2}" ;; esac
 case $CEN in c2|c3|c4|c5) ;; *) echo "cenario invalido: $CEN" >&2; exit 2 ;; esac
 set -a; source scripts/lab-gg.env; set +a
 REP=${REPLICAT:-REPBDAD}
 if [[ $CEN == c3 ]]; then TAXAS=${C3_TAXAS:-500,1000,2000,4000}; DUR=${DEGRAU_SEG:-300}; else TAXAS=${TAXA:-1000}; DUR=${DURACAO_SEG:-600}; fi
 if [[ $CEN == c4 ]]; then DELAY=${RAJADA_APOS_SEG:-120}; OBS=${OBSERVACAO_RECUPERACAO_SEG:-125}; RLIN=${RAJADA_LINHAS:-50000}; (( DUR < DELAY + OBS + 30 )) && DUR=$((DELAY + OBS + 30)); fi
 if [[ $CEN == c5 ]]; then DELAY=${TX_APOS_SEG:-5}; HOLD=${TX_ABERTA_SEG:-30}; (( DUR < DELAY + HOLD + 30 )) && DUR=$((DELAY + HOLD + 30)); fi
-EXE=$(date -u +%Y%m%dT%H%M%SZ)-$REP${ROT:+-$ROT}; D=resultados/gg/$CEN/$EXE; mkdir -p "$D"
+SAIDA=${GG_SAIDA:-resultados/gg}
+EXE=$(date -u +%Y%m%dT%H%M%SZ)-$REP${ROT:+-$ROT}; D=$SAIDA/$CEN/$EXE; mkdir -p "$D"
 BASE=${SNAPSHOT_BASE:-resultados/gg/c1/snapshots/apos-carga.csv}
 [[ -s $BASE ]] || { echo "snapshot base ausente: $BASE" >&2; exit 2; }
 JAR=poc/target/poc-replicacao-service-0.0.1-SNAPSHOT.jar; [[ -f $JAR ]] || { echo "jar ausente: $JAR" >&2; exit 2; }
@@ -105,7 +108,8 @@ done
 scripts/gg/reconciliar.sh > "$D/reconciliacao-sql.txt" 2>&1 && true || true
 LEGADO_URL=jdbc:oracle:thin:@//192.168.0.5:1523/FREEPDB1 NOVO_URL=jdbc:oracle:thin:@//192.168.0.11:1524/FREEPDB1 MODO=completo DRY_RUN=true \
   java -Xmx512m -jar "$JAR" reconciliacao > "$D/reconciliacao-java.log" 2>&1 && true || true
-scripts/gg/snapshot-ids.sh "$CEN/$EXE" apos > "$D/snapshot.txt"
+SREL=${SAIDA#resultados/gg}; SREL=${SREL#/}
+scripts/gg/snapshot-ids.sh "${SREL:+$SREL/}$CEN/$EXE" apos > "$D/snapshot.txt"
 awk -F, 'NR==FNR{b[$1","$2]=$3; next} ($1","$2) in b {pre++; if (b[$1","$2]!=$3) mud++} END{printf "{\"preexistentes_comparados\":%d,\"uuids_alterados\":%d}\n", pre, mud+0}' "$BASE" "$D/snapshots/apos.csv" > "$D/uuids.json"
 scripts/gg/limpar-archive.sh > "$D/archive-depois.json" || { cat "$D/archive-depois.json"; exit 2; }
 # inventario dos containers do lab (sem credenciais)
@@ -114,6 +118,7 @@ for h in desenv-server:gg-legado infra-server:gg-novo infra-server:gg-hub; do
 done | jq -s . > "$D/containers.json"
 case $REP in REPCO) RDESC="REPCO coordenado (THREADS 4; $(grep -E '^(GROUPTRANSOPS|BATCHSQL|EOFDELAYCSECS)' gg/params/REPCO.prm | tr '\n' ' '))" ;;
   *) RDESC="REPBDAD classico ($(grep -E '^(GROUPTRANSOPS|BATCHSQL|EOFDELAYCSECS)' gg/params/REPBDAD.prm | tr '\n' ' '))" ;; esac
+RDESC=${REPLICAT_DESC:-$RDESC}   # c9: descricao do modo (parametros da variante)
 PSHA=$(for f in gg/params/*.prm; do jq -nc --arg n "$(basename "$f")" --arg h "$(sha256sum "$f" | cut -c1-16)" '{($n):$h}'; done | jq -s add)
 jq -n --arg c "$CEN" --arg e "$EXE" --arg i "$INI_RUN" --arg f "$(date -u +%FT%TZ)" --arg r "$RDESC" --argjson d "$DUR" --arg t "$TAXAS" --argjson delay "${DELAY:-null}" --argjson hold "${HOLD:-null}" --argjson rlin "${RLIN:-null}" \
   --argjson ps "$PSHA" --arg jar "$(sha256sum "$JAR" | cut -d' ' -f1)" --slurpfile st "$D/degraus.jsonl" \
@@ -121,6 +126,6 @@ jq -n --arg c "$CEN" --arg e "$EXE" --arg i "$INI_RUN" --arg f "$(date -u +%FT%T
 trap - ERR
 RC=0; python3 -I scripts/gg/meta_gg.py "$D" | tee "$D/veredito.json" || RC=$?
 [[ -s $D/meta.json ]] || exit 2
-cp "$D/meta.json" "resultados/gg/$CEN/meta.json.tmp" && mv "resultados/gg/$CEN/meta.json.tmp" "resultados/gg/$CEN/meta.json"
+cp "$D/meta.json" "$SAIDA/$CEN/meta.json.tmp" && mv "$SAIDA/$CEN/meta.json.tmp" "$SAIDA/$CEN/meta.json"
 echo "resultados: $D"
 exit $RC

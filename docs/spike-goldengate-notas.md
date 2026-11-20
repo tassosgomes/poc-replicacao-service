@@ -517,3 +517,120 @@ Com 1 e 2 juntos é razoável esperar 250 a 300 s; chegar perto de 110 s do Java
 
 `scripts/gg/cenario.sh` (c1 a c5), `scripts/gg/c1-carga.sh`, `scripts/gg/{c1-carga-inicial,c4-rajada,c5-transacao-longa}.sh`, `scripts/gg/eventos-janela.sh`, `scripts/gg/analisar-especial.py`, `scripts/gg/meta_gg.py` (c1, c4, c5), `sql/gg/testes/tx_longa.sql`, `gg/criar-pipeline.sh` (`recriar-replicat`).
 Estado final do lab: gg-legado, gg-novo e gg-hub no ar; EXTBDAD e REPBDAD RUNNING com autostart; lab Java parado e intocado; archive 1,4 GB, 58 GB livres.
+
+
+---
+
+## Fase 4: C6 a C10 (2026-11-20)
+
+Mesmas condições de C1-C5 (Replicat clássico `REPBDAD` EOFDELAYCSECS 1 / GROUPTRANSOPS 100 / BATCHSQL, Extract `EXTBDAD`, gerador 2 CPU/1 GiB, 1.000 ev/s, relógios dos hosts, `limpar-archive.sh` antes/depois,
+reconciliação SQL + jar Java e UUIDs contra `resultados/gg/c1/snapshots/apos-carga.csv`: 0 divergências e 0 UUIDs alterados em todas as execuções). `bash scripts/relatorio.sh --resultados resultados/gg`: C1 a C10 todos válidos
+(10/10); C7 REPROVADO, os demais APROVADOS. Runners: `scripts/gg/falhas.sh c6|c7|c8` (atalhos `c6-queda.sh`, `c7-failover.sh`, `c8-captura-parada.sh`), `scripts/gg/c9-comparacao.sh`, `scripts/gg/c10-custo.sh`; `cenario.sh c6..c10` delega.
+Ferramentas novas: `hub-evento.sh` (kill/start/restart/kill do Replicat no infra-server, instantes do relógio do infra-server, mesmo host do `gg-novo`), `analisar-queda.py`, `verificar-archive-necessario.sh`,
+`reparar-por-toque.sh`, `comum-cenario.sh`, `meta_c9.py`, `sql/gg/novo/04_divergentes_obra.sql`, variantes `gg/params/variantes/`.
+
+### Achado transversal: STOP manual do Extract é desfeito pelo Admin Service
+
+Na primeira execução do C8 o Extract "parado" voltou a rodar ~6 s depois (autostart/autorestart de `managedProcessSettings`): as 60 s de updates foram capturadas e aplicadas em tempo real (0 divergências antes de religar), então a execução
+foi descartada (nenhum `meta.json` dela foi mantido). Correção em `comum-cenario.sh`: `parar_extract` faz `PATCH` desabilitando autoStart/autoRestart, `STOP`, e confirma que continua `stopped` 12 s depois; `religar_extract` faz `START` e reabilita
+os mesmos valores de `criar-pipeline.sh` (confirmado por `GET`). Os `trap`s de erro religam o Extract. **Ressalva**: as medições da Fase 3 com "Extract parado" não registraram a confirmação posterior; o backlog de 360 mil operações e a CPU
+sugerem que o stop valeu naquelas execuções, mas o custo "sem Extract" daquela tabela deve ser lido com essa cautela. C8 e C10 abaixo já usam o stop confirmado.
+
+### C6 queda: APROVADO (`resultados/gg/c6/20261120T045840Z-REPBDAD/`)
+
+1.000 ev/s por 600 s (taxa 1000,02). `docker kill -s KILL gg-hub` aos 180 s e `docker start gg-hub` aos 240 s da carga (alvos no relógio do infra-server).
+
+| Medida | Valor |
+|---|---|
+| REST de volta após o reinício | 4,8 s |
+| EXTBDAD / REPBDAD RUNNING após o reinício (autostart) | 9,9 s / 9,9 s |
+| **Primeiro balde de 5 s completo com lag <= 5 s**, desde a queda | **112,7 s** |
+| idem, desde o reinício | **52,6 s** (balde com lag máx. 3,04 s, 3.999 eventos) |
+| Pico de lag | 77,5 s; estável depois (nenhum balde posterior > 5 s) |
+| p95 da janela inteira (informativo) | 55,9 s |
+| Integridade | 0 divergências (SQL e jar), 0 UUIDs alterados de 2.011.552, drenado |
+| Log x gerador (por `(tabela, codigo)`) | 600.012 eventos = 600.012 linhas; 0 faltantes, 0 duplicatas (o Replicat não reaplicou nada: checkpoint transacional) |
+
+Critério do lab Java: o `tempo_normalizar_s` só exige que a normalização ocorra (aprova se medido); Java: 111,8 s desde a queda / 57,3 s desde o reinício (INVALIDO por TAXA, regime a 885 ev/s).
+GG: 112,7 s / 52,6 s com taxa válida. Parecido em tempo, mas por razões distintas (aqui a queda é do hub inteiro e o backlog de 60 s é drenado pelo Replicat). A carga seguiu 360 s após o reinício.
+
+Variante descritiva, kill -9 só do processo `REPBDAD` dentro do hub (`VARIANTE=replicat`, 300 s, queda aos 120 s; `resultados/gg/c6/20261120T051219Z-REPBDAD-variante-replicat/`): o autorestart (5 s) recolocou o Replicat RUNNING em 5,7 s;
+primeiro balde com lag <= 5 s a 12,4 s da queda; pico 7,6 s; 0 divergências, 0 UUIDs alterados, log = gerador (300.008 = 300.008). Não promove o `meta.json` do C6 (referenciada em `operacao_especial`).
+
+### C7 failover (ADAPTADO): REPROVADO contra a referência de 20 s (`resultados/gg/c7/20261120T052037Z-REPBDAD/`)
+
+Sem segunda réplica no Free: mede-se o reinício do hub único sob 1.000 ev/s (600 s; `docker restart` aos 120 s e `docker kill`+`docker start` aos 330 s). HA de produção (XAG/RAC, hub secundário) fora do escopo; `meta.json` tem `adaptado: true`.
+
+| Evento | REST | EXTBDAD e REPBDAD RUNNING | Primeiro balde de 5 s com lag <= 5 s | Pico de lag |
+|---|---|---|---|---|
+| `docker restart gg-hub` | 4,9 s | 9,9 s | **25,8 s** | 15,2 s |
+| `docker kill` + `docker start` | 5,2 s | 10,3 s | **25,8 s** | 15,7 s |
+
+Tempos desde o início do comando (o `docker restart` devolveu em 0,4 s; o hub cai rápido). `failover_s` = 25,84 s (máximo dos dois) contra 20 s: **REPROVADO por 5,8 s**. Decomposição: ~10 s para os processos
+voltarem, ~10 s de catch-up do atraso (a primeira aplicação após o reinício vem 10,3 s depois) e a granularidade do balde de 5 s (o balde normalizado começa em 20,8 s). Os processos RUNNING em ~10 s ficam dentro de 20 s; o que passa é "lag normal". Estável depois, 0 divergências,
+0 UUIDs alterados, log = gerador (600.012). Java: 30,0 s (INVALIDO por TAXA, 2 workers com lease). Não é comparação de mecanismo: lá há worker concorrente, aqui o mesmo hub reinicia.
+
+### C8 captura parada: APROVADO (`resultados/gg/c8/20261120T054117Z-REPBDAD/`)
+
+Drena; PARA o Extract (confirmado `stopped`); 60 s de updates só em `OBRA_MUSICAL` (`MIX=0,100,0`, `PCT_INSERT=0 PCT_DELETE=0`, 60.014 linhas); religa o Extract; nenhum reparo, delta ou reconciliação até drenar.
+
+- Chaves afetadas distintas (CSV do gerador): **55.904**. Antes de religar, a comparação por chave legado x destino (DB link, só leitura; `04_divergentes_obra.sql`) achou exatamente essas 55.904 divergentes (conjuntos idênticos); depois da drenagem: 0. **Corrigidas: 55.904 de 55.904 (100%)**, todas presentes no `aplicacao_log` (aplicadas pelo Replicat a partir do redo).
+- Extract parado 112 s (janela dos 60 s de carga mais as verificações). Religar: START em 0,5 s; última aplicação 21,2 s depois; drenado em 42,4 s (inclui 15 s de estabilização). Java: 55.629 corrigidas de 55.629 por delta (reconciliação) com reenfileiramento; aqui nada foi reenfileirado.
+- Archive: `dba_capture` continua `ENABLED` com `required_checkpoint_scn` mesmo com o Extract parado; `limpar-archive.sh` rodou antes de religar (apagou 1 log já consumido, 1,91 GB -> 1,43 GB) e `verificar-archive-necessario.sh` (logs com `NEXT_CHANGE# > required_checkpoint_scn`) mostrou antes/depois: 1 necessário, 1 existente, 0 faltando; depois de religar também 0 faltando. Ressalva: só 1 log necessário (a janela estava quase toda nos redo logs online), prova fraca de proteção de muitos archives.
+- Integridade final: 0 divergências (SQL e jar), 0 UUIDs alterados.
+
+### C9 comparação de parâmetros do Replicat clássico: descritivo (`resultados/gg/c9/20261120T054721Z-REPBDAD/`, `comparacao.csv`)
+
+Aqui o C9 compara modos do Replicat clássico, nunca o coordenado (THREADRANGE pode dividir transação de origem). Cada modo: C2 (1.000 ev/s, 600 s, para o relatório aceitar o escopo; o pedido era 300 s) e um degrau de 2.000 ev/s (300 s).
+Modos: `oficial` (GROUPTRANSOPS 100 + BATCHSQL), `sem-batchsql` (GROUPTRANSOPS 100), `g1000` (GROUPTRANSOPS 1000 + BATCHSQL). Execuções em `resultados/gg/c9/<exec>/runs/` (não sobrescrevem o C2/C3 oficiais).
+
+| Modo | Alvo ev/s | Taxa | p50 / p95 / p99 / max (s) | Tendência do lag | Drenagem | CPU média gg-novo |
+|---|---|---|---|---|---|---|
+| oficial | 1.000 | 1000,02 | 1,82 / 2,84 / 3,12 / 4,28 | +0,4 ms/s, sem crescimento | 17 s | 20% |
+| oficial | 2.000 | 1999,99 | 1,44 / 3,96 / 5,17 / 7,77 | +5,8 ms/s, sem crescimento sustentado | 17 s | 53% |
+| sem-batchsql | 1.000 | 999,97 | 2,37 / 3,95 / 8,84 / 10,97 | -1,0 ms/s, sem crescimento | 15 s | 49% |
+| sem-batchsql | 2.000 | 1999,86 | 30,9 / 54,8 / 56,8 / 57,2 | +137,8 ms/s, **crescimento sustentado** | 56 s | 69% |
+| g1000 | 1.000 | 999,92 | 1,86 / 2,88 / 3,21 / 4,71 | -3,6 ms/s, sem crescimento | 15 s | 20% |
+| g1000 | 2.000 | 1999,87 | 1,36 / 2,22 / 2,63 / 4,62 | -1,9 ms/s, sem crescimento | 15 s | 34% |
+
+Leitura: BATCHSQL é o que sustenta 2.000 ev/s (sem ele o Replicat clássico fica atrás e o lag chega a 57 s, CPU do destino 2,5x maior a 1.000 ev/s); GROUPTRANSOPS 100 x 1000 praticamente empata a 1.000 ev/s e, nesta execução, 1000 foi melhor a 2.000 ev/s (p95 2,2 x 4,0 s;
+diferença dentro do que uma única execução não separa de ruído; o p95 do oficial a 2.000 ev/s foi 2,1 s no C3). Não se trocam os parâmetros oficiais por isso. 0 divergências e 0 UUIDs alterados nas seis execuções. Após o C9 voltaram os parâmetros oficiais (`aplicar-params.sh`; sha256 do `REPBDAD.prm` conferido, config no REST com
+BATCHSQL e GROUPTRANSOPS 100, autostart/autorestart intactos). Java C9 comparava modos de threads do worker (todos INVALIDO por TAXA): não comparável.
+Falha do script: o `c9-comparacao.sh` apanhou `meta.json` em vez do diretório da execução ao montar o `modos.jsonl`; corrigido, e o `modos.jsonl`/`meta.json` do C9 foram regerados dos dados existentes (sem repetir medição).
+
+### C10 custo no legado: APROVADO com ressalva (`resultados/gg/c10/20261120T065625Z-REPBDAD/`)
+
+3 pares alternados (ligada, desligada) a 1.000 ev/s, **300 s por fase** (o C10 Java usou 600 s por fase), só updates, semente 1, 8 threads, HOT_PCT 10, mix 40/40/20, taxa 999,97 a 999,55 (todas válidas). "Ligada" = Extract RUNNING (drenado antes da fase); "desligada" = Extract PARADO
+(confirmado); **FORCE LOGGING e supplemental logging ALLCOLS continuam ativos nas duas: o custo do supplemental logging não é isolado**. Métrica = `transacao_media_ms` do gerador (igual ao Java). Consulta de métricas com/sem: não aplicável (sem worker nem `evento_replicacao`).
+
+| Fase | tx média (ms) | | Fase | tx média (ms) |
+|---|---|---|---|---|
+| 1 ligada | 7,113 | | 2 desligada | 5,679 |
+| 3 ligada | 6,103 | | 4 desligada | 5,526 |
+| 5 ligada | 5,659 | | 6 desligada | 5,492 |
+
+Média ligada 6,292 ms (desvio 0,745), desligada 5,566 ms (desvio 0,100): **+0,726 ms, +13,04%** contra o critério proposto <= 15% E <= 5 ms (Q-T3 pendente): **APROVADO**, mas com folga curta de 2 pontos percentuais. Java (triggers): +0,958 ms, +19,99% (REPROVADO).
+CPU média do gg-legado: 104,4% ligada x 94,4% desligada (+10 pontos de 200%).
+Ressalva importante: a série "ligada" cai fase a fase (7,11 -> 6,10 -> 5,66 ms) e a primeira fase é um outlier provável de aquecimento; só no último par a diferença é 5,659 x 5,492 ms (+3,0%). O resultado de 13% depende de manter a primeira fase; como a ordem sempre foi ligada-primeiro, não se separa efeito do Extract de aquecimento. Recomendado
+repetir com a fase ligada 1 descartada ou com pares de ordem invertida antes de citar o número como custo do Extract.
+
+Variante descritiva sem supplemental logging (`DELETE SCHEMATRANDATA bdad`, Extract parado, mesma carga): tx média **7,280 ms**, maior que as duas séries principais (ligada 6,29; desligada 5,57), ou seja, **a variante não isola o custo do supplemental logging** (ruído do ambiente é da mesma ordem do efeito; CPU do legado 89,9%). Registrar como inconclusiva.
+Achado funcional sobre essa variante: sem supplemental logging o redo gerado **não é aplicável**: numa sonda curta (10 s de updates com o schematrandata removido e Extract religado depois de `ADD SCHEMATRANDATA`) o Replicat abendou com `OGG-30426 Error mapping update record, because key column(s) of table ... is/are missing from the trail`;
+nada é perdido em silêncio, mas o pipeline para. Para voltar sem perda foi preciso: reposicionar o Replicat no fim do trail (`ALTER REPLICAT REPBDAD, EXTSEQNO n, EXTRBA r` via adminclient; o autorestart reiniciou o processo sozinho) e reaplicar no legado um UPDATE de "toque" (`reparar-por-toque.sh`, `excluido = excluido`) nas chaves da janela,
+que o Extract captura inteiras (ALLCOLS). A variante do C10 automatiza isso (Replicat parado antes de religar o Extract, depois reposicionar, tocar as 269.694 chaves distintas (110.628 fonograma, 106.758 obra_musical, 52.308 titular; 301 comandos), drenar 491 s): ao final 0 divergências, 0 UUIDs alterados, Extract e Replicat RUNNING, supplemental restaurado idêntico ao inicial (`schemas_preparados=1`), autostart/autorestart do Extract conferido.
+Conclusão para o desenho: **o supplemental logging (ALLCOLS) não é opcional**, e desligá-lo com captura ativa não é um modo de operação.
+
+Perda no C10: o C10 Java deixava alterações sem replicação (captura de trigger desligada); aqui nada se perde porque o Extract retoma pelo redo: ao final, drenado com Extract ligado (107 s depois do 3º par, 491 s depois da variante), reconciliação SQL e jar Java 0 divergências, 0 UUIDs alterados de 2.011.552.
+Tempos de reinício do Extract não entram na medição de custo (a fase ligada só começa com o pipeline drenado).
+
+### Problemas e correções desta etapa
+
+1. Stop do Extract desfeito pelo autostart/autorestart (acima); C8 reexecutado após corrigir.
+2. Sonda da variante sem supplemental quebrou o Replicat (`OGG-30426`): reposição manual descrita acima (a sonda de 10 s foi feita antes do C6; o lab voltou a 0 divergências antes de medir).
+3. `reparar-por-toque.sh`: primeira versão gerava linhas SQL*Plus > 5.000 caracteres; passou a quebrar a lista de chaves em linhas de 100.
+4. `meta_gg.py` c10: `KeyError: 'dir'` na primeira consolidação (`ordem_das_fases`); corrigido e o meta regerado dos dados existentes (sem repetir a medição).
+5. `c9-comparacao.sh`: seleção do diretório da execução (acima).
+
+### Estado final do lab
+
+gg-legado, gg-novo e gg-hub no ar; EXTBDAD e REPBDAD RUNNING com autostart/autorestart conferidos; parâmetros oficiais do Replicat restaurados; supplemental logging (`ADD SCHEMATRANDATA bdad ALLCOLS`) ativo; lab Java parado e intocado; `resultados/gg/relatorio.md` regenerado com C1 a C10.

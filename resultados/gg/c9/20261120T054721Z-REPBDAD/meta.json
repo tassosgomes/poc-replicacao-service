@@ -1,0 +1,660 @@
+{
+ "cenario": "c9",
+ "execucao": "20261120T054721Z-REPBDAD",
+ "inicio": "2026-11-20T05:47:21Z",
+ "fim": "2026-11-20T06:56:12Z",
+ "diretorio": "resultados/gg/c9/20261120T054721Z-REPBDAD",
+ "ambiente": {
+  "lab": "goldengate",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "gg-legado",
+    "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:51:55.461509857Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-novo",
+    "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:52:06.858681453Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-hub",
+    "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+    "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+    "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+    "cpu": 2000000000,
+    "memoria": 4294967296,
+    "running": true,
+    "inicio": "2026-11-20T05:26:44.427008679Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   }
+  ],
+  "replicat": "REPBDAD classico (modos em comparacao.csv)",
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "EXTBDAD.prm": "54011670fd1b8a3c",
+   "REPBDAD.prm": "8e90c308d824c054",
+   "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+   "REPCO.prm": "7abada0cf861f222"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "APROVADO",
+ "skew_ms": {
+  "inicio": -0.606,
+  "fim": 0.903
+ },
+ "skew_incerteza_ms": {
+  "inicio": 4.822,
+  "fim": 5.101
+ },
+ "relogios": [
+  {
+   "etapa": "d1-1000-inicio",
+   "ts": "2026-11-20T05:48:15.895999222Z",
+   "skew_ms": -0.606,
+   "incerteza_ms": 4.822
+  },
+  {
+   "etapa": "d1-1000-fim",
+   "ts": "2026-11-20T05:58:15.898277920Z",
+   "skew_ms": 0.019,
+   "incerteza_ms": 4.823
+  },
+  {
+   "etapa": "d1-2000-inicio",
+   "ts": "2026-11-20T06:01:54.084007520Z",
+   "skew_ms": -0.029,
+   "incerteza_ms": 5.007
+  },
+  {
+   "etapa": "d1-2000-fim",
+   "ts": "2026-11-20T06:06:54.092753543Z",
+   "skew_ms": -0.025,
+   "incerteza_ms": 4.878
+  },
+  {
+   "etapa": "d1-1000-inicio",
+   "ts": "2026-11-20T06:10:43.436663666Z",
+   "skew_ms": -0.071,
+   "incerteza_ms": 5.269
+  },
+  {
+   "etapa": "d1-1000-fim",
+   "ts": "2026-11-20T06:20:43.442634618Z",
+   "skew_ms": -0.069,
+   "incerteza_ms": 4.96
+  },
+  {
+   "etapa": "d1-2000-inicio",
+   "ts": "2026-11-20T06:24:06.135147608Z",
+   "skew_ms": -0.085,
+   "incerteza_ms": 4.803
+  },
+  {
+   "etapa": "d1-2000-fim",
+   "ts": "2026-11-20T06:29:06.142393509Z",
+   "skew_ms": 0.072,
+   "incerteza_ms": 4.711
+  },
+  {
+   "etapa": "d1-1000-inicio",
+   "ts": "2026-11-20T06:33:39.332261009Z",
+   "skew_ms": 0.164,
+   "incerteza_ms": 4.711
+  },
+  {
+   "etapa": "d1-1000-fim",
+   "ts": "2026-11-20T06:43:39.338188028Z",
+   "skew_ms": 0.51,
+   "incerteza_ms": 4.921
+  },
+  {
+   "etapa": "d1-2000-inicio",
+   "ts": "2026-11-20T06:47:10.034113360Z",
+   "skew_ms": 0.273,
+   "incerteza_ms": 4.595
+  },
+  {
+   "etapa": "d1-2000-fim",
+   "ts": "2026-11-20T06:52:10.043332112Z",
+   "skew_ms": 0.903,
+   "incerteza_ms": 5.101
+  }
+ ],
+ "carga_servidores": [],
+ "criterios": [
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado) em todas as execucoes",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "comparacao_parametros_replicat",
+   "valor": "comparacao.csv",
+   "alvo": "vazao e p95 por modo e degrau (descritivo; nao ha alvo de superioridade)",
+   "veredito": "SEM_CRITERIO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c2",
+   "linhas": 600012,
+   "transacoes": 200327,
+   "taxa": 1000.02,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T05:48:15.895999222Z",
+   "fim": "2026-11-20T05:58:15.898277920Z",
+   "validade": "VALIDO",
+   "p95_ms": 2836,
+   "eventos_medidos": 600012,
+   "tendencia_lag": {
+    "inclinacao_ms_s": 0.41111703406813604,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 35
+   },
+   "drenagem_s": 17,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 111.2,
+     "max_pct": 206.73,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 28.0,
+     "max_pct": 196.23,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 20.2,
+     "max_pct": 43.35,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 20.6,
+     "max_pct": 74.22,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 7.359,
+   "latencia_s": {
+    "min_s": 0.325,
+    "p50_s": 1.815,
+    "p95_s": 2.836,
+    "p99_s": 3.12,
+    "max_s": 4.275,
+    "media_s": 1.826
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -0.6339523082802095,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 35
+   },
+   "lag_final_s": 3.746,
+   "virtual_threads": "oficial",
+   "modo": "oficial",
+   "diretorio": "runs/c2/20261120T054738Z-REPBDAD-oficial"
+  },
+  {
+   "grupo": "c3",
+   "linhas": 600010,
+   "transacoes": 200326,
+   "taxa": 1999.99,
+   "alvo": 2000,
+   "valido": true,
+   "inicio": "2026-11-20T06:01:54.084007520Z",
+   "fim": "2026-11-20T06:06:54.092753543Z",
+   "validade": "VALIDO",
+   "p95_ms": 3956,
+   "eventos_medidos": 600010,
+   "tendencia_lag": {
+    "inclinacao_ms_s": 5.824596395851103,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 30
+   },
+   "drenagem_s": 17,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 158.5,
+     "max_pct": 211.94,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 30.8,
+     "max_pct": 147.18,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 53.0,
+     "max_pct": 152.34,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 20.6,
+     "max_pct": 76.3,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 8.012,
+   "latencia_s": {
+    "min_s": 0.32,
+    "p50_s": 1.438,
+    "p95_s": 3.956,
+    "p99_s": 5.169,
+    "max_s": 7.772,
+    "media_s": 1.713
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": 2.475749582103917,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 30
+   },
+   "lag_final_s": 2.642,
+   "virtual_threads": "oficial",
+   "modo": "oficial",
+   "diretorio": "runs/c3/20261120T060115Z-REPBDAD-oficial"
+  },
+  {
+   "grupo": "c2",
+   "linhas": 599982,
+   "transacoes": 200327,
+   "taxa": 999.97,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T06:10:43.436663666Z",
+   "fim": "2026-11-20T06:20:43.442634618Z",
+   "validade": "VALIDO",
+   "p95_ms": 3949,
+   "eventos_medidos": 599982,
+   "tendencia_lag": {
+    "inclinacao_ms_s": -0.9856618378378386,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 36
+   },
+   "drenagem_s": 15,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 110.6,
+     "max_pct": 203.79,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 26.4,
+     "max_pct": 105.79,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 49.2,
+     "max_pct": 102.89,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 25.1,
+     "max_pct": 83.51,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 6.352,
+   "latencia_s": {
+    "min_s": 0.958,
+    "p50_s": 2.372,
+    "p95_s": 3.949,
+    "p99_s": 8.837,
+    "max_s": 10.972,
+    "media_s": 2.557
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -1.1966815982008807,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 36
+   },
+   "lag_final_s": 2.593,
+   "virtual_threads": "sem-batchsql",
+   "modo": "sem-batchsql",
+   "diretorio": "runs/c2/20261120T061003Z-REPBDAD-sem-batchsql"
+  },
+  {
+   "grupo": "c3",
+   "linhas": 599969,
+   "transacoes": 200327,
+   "taxa": 1999.86,
+   "alvo": 2000,
+   "valido": true,
+   "inicio": "2026-11-20T06:24:06.135147608Z",
+   "fim": "2026-11-20T06:29:06.142393509Z",
+   "validade": "VALIDO",
+   "p95_ms": 54805,
+   "eventos_medidos": 599969,
+   "tendencia_lag": {
+    "inclinacao_ms_s": 137.81118391149394,
+    "crescimento_sustentado": true,
+    "janela_s": 180,
+    "amostras": 35
+   },
+   "drenagem_s": 56,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 146.9,
+     "max_pct": 209.13,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 37.4,
+     "max_pct": 200.62,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 68.5,
+     "max_pct": 87.96,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 30.2,
+     "max_pct": 92.44,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 6.932,
+   "latencia_s": {
+    "min_s": 0.488,
+    "p50_s": 30.865,
+    "p95_s": 54.805,
+    "p99_s": 56.845,
+    "max_s": 57.169,
+    "media_s": 29.883
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": 140.3011494454446,
+    "crescimento_sustentado": true,
+    "janela_s": 180,
+    "amostras": 35
+   },
+   "lag_final_s": 57.169,
+   "virtual_threads": "sem-batchsql",
+   "modo": "sem-batchsql",
+   "diretorio": "runs/c3/20261120T062330Z-REPBDAD-sem-batchsql"
+  },
+  {
+   "grupo": "c2",
+   "linhas": 599959,
+   "transacoes": 200327,
+   "taxa": 999.92,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T06:33:39.332261009Z",
+   "fim": "2026-11-20T06:43:39.338188028Z",
+   "validade": "VALIDO",
+   "p95_ms": 2877,
+   "eventos_medidos": 599959,
+   "tendencia_lag": {
+    "inclinacao_ms_s": -3.5996032716927457,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "drenagem_s": 15,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 108.3,
+     "max_pct": 151.65,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 26.9,
+     "max_pct": 106.42,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 19.6,
+     "max_pct": 41.94,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 20.2,
+     "max_pct": 74.99,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 7.745,
+   "latencia_s": {
+    "min_s": 0.29,
+    "p50_s": 1.862,
+    "p95_s": 2.877,
+    "p99_s": 3.21,
+    "max_s": 4.709,
+    "media_s": 1.865
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -3.6935468861107563,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "lag_final_s": 2.661,
+   "virtual_threads": "g1000",
+   "modo": "g1000",
+   "diretorio": "runs/c2/20261120T063258Z-REPBDAD-g1000"
+  },
+  {
+   "grupo": "c3",
+   "linhas": 599975,
+   "transacoes": 200327,
+   "taxa": 1999.87,
+   "alvo": 2000,
+   "valido": true,
+   "inicio": "2026-11-20T06:47:10.034113360Z",
+   "fim": "2026-11-20T06:52:10.043332112Z",
+   "validade": "VALIDO",
+   "p95_ms": 2219,
+   "eventos_medidos": 599975,
+   "tendencia_lag": {
+    "inclinacao_ms_s": -1.9395904761904756,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 36
+   },
+   "drenagem_s": 15,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 149.9,
+     "max_pct": 203.34,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 38.3,
+     "max_pct": 156.68,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 33.8,
+     "max_pct": 73.81,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 20.8,
+     "max_pct": 70.83,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 5.782,
+   "latencia_s": {
+    "min_s": 0.326,
+    "p50_s": 1.355,
+    "p95_s": 2.219,
+    "p99_s": 2.631,
+    "max_s": 4.619,
+    "media_s": 1.41
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -0.009751381197111587,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 36
+   },
+   "lag_final_s": 1.9,
+   "virtual_threads": "g1000",
+   "modo": "g1000",
+   "diretorio": "runs/c3/20261120T064632Z-REPBDAD-g1000"
+  }
+ ],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "uuids_alterados": 0,
+  "execucoes": [
+   "runs/c2/20261120T054738Z-REPBDAD-oficial",
+   "runs/c2/20261120T061003Z-REPBDAD-sem-batchsql",
+   "runs/c2/20261120T063258Z-REPBDAD-g1000",
+   "runs/c3/20261120T060115Z-REPBDAD-oficial",
+   "runs/c3/20261120T062330Z-REPBDAD-sem-batchsql",
+   "runs/c3/20261120T064632Z-REPBDAD-g1000"
+  ]
+ },
+ "medidas": {
+  "comparacao": "comparacao.csv",
+  "modos": [
+   "oficial",
+   "sem-batchsql",
+   "g1000"
+  ],
+  "eventos_medidos": 3599907
+ },
+ "operacao_especial": {
+  "modos": [
+   {
+    "modo": "oficial",
+    "params": "gg/params/REPBDAD.prm",
+    "params_sha256": "8e90c308d824c054",
+    "descricao": "REPBDAD classico, modo oficial (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+    "c2": "runs/c2/20261120T054738Z-REPBDAD-oficial",
+    "c3": "runs/c3/20261120T060115Z-REPBDAD-oficial",
+    "rc_c2": 0,
+    "rc_c3": 0
+   },
+   {
+    "modo": "sem-batchsql",
+    "params": "gg/params/variantes/REPBDAD.sem-batchsql.prm",
+    "params_sha256": "1ab22ad52baa590c",
+    "descricao": "REPBDAD classico, modo sem-batchsql (EOFDELAYCSECS 1 GROUPTRANSOPS 100 )",
+    "c2": "runs/c2/20261120T061003Z-REPBDAD-sem-batchsql",
+    "c3": "runs/c3/20261120T062330Z-REPBDAD-sem-batchsql",
+    "rc_c2": 0,
+    "rc_c3": 1
+   },
+   {
+    "modo": "g1000",
+    "params": "gg/params/variantes/REPBDAD.g1000.prm",
+    "params_sha256": "17c57e037c694edb",
+    "descricao": "REPBDAD classico, modo g1000 (EOFDELAYCSECS 1 GROUPTRANSOPS 1000 BATCHSQL )",
+    "c2": "runs/c2/20261120T063258Z-REPBDAD-g1000",
+    "c3": "runs/c3/20261120T064632Z-REPBDAD-g1000",
+    "rc_c2": 0,
+    "rc_c3": 0
+   }
+  ],
+  "restauracao_parametros_oficiais": {
+   "status": "running",
+   "managedProcessSettings": {
+    "autoStart": {
+     "enabled": true,
+     "delay": 0
+    },
+    "autoRestart": {
+     "enabled": true,
+     "onSuccess": false,
+     "delay": 5,
+     "retries": 9,
+     "window": 60,
+     "disableOnFailure": false,
+     "failures": 0
+    }
+   },
+   "config": [
+    "REPLICAT REPBDAD",
+    "USERIDALIAS ggdestino DOMAIN OracleGoldenGate",
+    "DBOPTIONS NOSUPPRESSTRIGGERS",
+    "REPERROR (DEFAULT, ABEND)",
+    "EOFDELAYCSECS 1",
+    "GROUPTRANSOPS 100",
+    "BATCHSQL",
+    "UPDATEDELETES",
+    "MAP bdad.titular, TARGET replica.titular, KEYCOLS (codigo), &",
+    "  COMPARECOLS (ON UPDATE KEYINCLUDING (origem_updated_at)), &",
+    "  RESOLVECONFLICT (UPDATEROWEXISTS, (DEFAULT, USEMAX (origem_updated_at))), &",
+    "  COLMAP (USEDEFAULTS, origem_updated_at = updated_at, &",
+    "    excluido = @IF(@STREQ(@GETENV('GGHEADER','OPTYPE'),'DELETE'), 1, excluido), &",
+    "    origem_commit_ts = @GETENV('GGHEADER','COMMITTIMESTAMP'));",
+    "MAP bdad.obra_musical, TARGET replica.obra_musical, KEYCOLS (codigo), &",
+    "  COMPARECOLS (ON UPDATE KEYINCLUDING (origem_updated_at)), &",
+    "  RESOLVECONFLICT (UPDATEROWEXISTS, (DEFAULT, USEMAX (origem_updated_at))), &",
+    "  COLMAP (USEDEFAULTS, origem_updated_at = updated_at, &",
+    "    excluido = @IF(@STREQ(@GETENV('GGHEADER','OPTYPE'),'DELETE'), 1, excluido), &",
+    "    origem_commit_ts = @GETENV('GGHEADER','COMMITTIMESTAMP'));",
+    "MAP bdad.fonograma, TARGET replica.fonograma, KEYCOLS (codigo), &",
+    "  COMPARECOLS (ON UPDATE KEYINCLUDING (origem_updated_at)), &",
+    "  RESOLVECONFLICT (UPDATEROWEXISTS, (DEFAULT, USEMAX (origem_updated_at))), &",
+    "  COLMAP (USEDEFAULTS, origem_updated_at = updated_at, &",
+    "    excluido = @IF(@STREQ(@GETENV('GGHEADER','OPTYPE'),'DELETE'), 1, excluido), &",
+    "    origem_commit_ts = @GETENV('GGHEADER','COMMITTIMESTAMP'));"
+   ]
+  },
+  "coordenado": "nao usado (THREADRANGE pode dividir transacao de origem)",
+  "descritivo": true,
+  "tabela": "comparacao.csv"
+ },
+ "parametros": {
+  "taxa": 1000,
+  "duracao_seg": 600,
+  "degrau_seg": 300,
+  "taxa_alta": 2000,
+  "replicat": "classico; variantes de GROUPTRANSOPS/BATCHSQL"
+ }
+}
