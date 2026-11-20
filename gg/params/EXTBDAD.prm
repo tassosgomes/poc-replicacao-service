@@ -1,0 +1,7 @@
+-- Extract integrado do schema bdad (PDB FREEPDB1). Conexao no PDB com ggadmin (role OGG_CAPTURE).
+EXTRACT EXTBDAD
+USERIDALIAS ggorigem DOMAIN OracleGoldenGate
+EXTTRAIL ea
+-- Limita a memoria do log mining server (streams pool do gg-legado = 256M).
+TRANLOGOPTIONS INTEGRATEDPARAMS (MAX_SGA_SIZE 128)
+TABLE bdad.*;
