@@ -1,0 +1,460 @@
+{
+ "cenario": "c3",
+ "execucao": "20261120T025051Z-REPBDAD-classico",
+ "inicio": "2026-11-20T02:50:51Z",
+ "fim": "2026-11-20T03:17:21Z",
+ "diretorio": "resultados/gg/c3/20261120T025051Z-REPBDAD-classico",
+ "ambiente": {
+  "lab": "goldengate",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "gg-legado",
+    "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:51:55.461509857Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-novo",
+    "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:52:06.858681453Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-hub",
+    "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+    "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+    "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+    "cpu": 2000000000,
+    "memoria": 4294967296,
+    "running": true,
+    "inicio": "2026-11-20T01:05:15.109487246Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   }
+  ],
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "EXTBDAD.prm": "54011670fd1b8a3c",
+   "REPBDAD.prm": "8e90c308d824c054",
+   "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+   "REPCO.prm": "6b0cd02d5a83c0d9"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "APROVADO",
+ "skew_ms": {
+  "inicio": 1.0,
+  "fim": 1.119
+ },
+ "skew_incerteza_ms": {
+  "inicio": 4.687,
+  "fim": 4.774
+ },
+ "relogios": [
+  {
+   "etapa": "d1-500-inicio",
+   "ts": "2026-11-20T02:51:18.619481408Z",
+   "skew_ms": 1.0,
+   "incerteza_ms": 4.687
+  },
+  {
+   "etapa": "d1-500-fim",
+   "ts": "2026-11-20T02:56:18.620361429Z",
+   "skew_ms": 0.809,
+   "incerteza_ms": 4.683
+  },
+  {
+   "etapa": "d2-1000-inicio",
+   "ts": "2026-11-20T02:57:14.989151278Z",
+   "skew_ms": 0.977,
+   "incerteza_ms": 4.84
+  },
+  {
+   "etapa": "d2-1000-fim",
+   "ts": "2026-11-20T03:02:14.990338559Z",
+   "skew_ms": 0.834,
+   "incerteza_ms": 4.735
+  },
+  {
+   "etapa": "d3-2000-inicio",
+   "ts": "2026-11-20T03:03:12.273603361Z",
+   "skew_ms": 0.822,
+   "incerteza_ms": 4.732
+  },
+  {
+   "etapa": "d3-2000-fim",
+   "ts": "2026-11-20T03:08:12.276428525Z",
+   "skew_ms": 0.905,
+   "incerteza_ms": 4.67
+  },
+  {
+   "etapa": "d4-4000-inicio",
+   "ts": "2026-11-20T03:09:17.609271708Z",
+   "skew_ms": 1.052,
+   "incerteza_ms": 4.888
+  },
+  {
+   "etapa": "d4-4000-fim",
+   "ts": "2026-11-20T03:14:17.615841041Z",
+   "skew_ms": 1.119,
+   "incerteza_ms": 4.774
+  }
+ ],
+ "carga_servidores": [],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "snapshot_antes": "../../c1/snapshots/apos-carga.csv",
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "divergencias_sql": 0,
+  "divergencias_java": 0,
+  "reconciliacao": "reconciliacao-java.log",
+  "reconciliacao_sql": "reconciliacao-sql.txt",
+  "snapshot_depois": "snapshots/apos.csv",
+  "uuids_alterados": 0,
+  "uuids": {
+   "preexistentes_comparados": 1700000,
+   "uuids_alterados": 0
+  },
+  "diferencas": "reconciliacao-sql.txt"
+ },
+ "criterios": [
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s)",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "teto_ev_s",
+   "valor": 2000,
+   "alvo": ">=2000 em degrau valido",
+   "veredito": "APROVADO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c3",
+   "linhas": 150016,
+   "transacoes": 49984,
+   "taxa": 500.05,
+   "alvo": 500,
+   "valido": true,
+   "inicio": "2026-11-20T02:51:18.619481408Z",
+   "fim": "2026-11-20T02:56:18.620361429Z",
+   "validade": "VALIDO",
+   "p95_ms": 1950,
+   "eventos_medidos": 150016,
+   "tendencia_lag": {
+    "inclinacao_ms_s": -2.2586362419562422,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 36
+   },
+   "drenagem_s": 18,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 59.4,
+     "max_pct": 83.94,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 17.8,
+     "max_pct": 163.14,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 16.4,
+     "max_pct": 112.52,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 20.0,
+     "max_pct": 70.26,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 6.131,
+   "latencia_s": {
+    "min_s": 0.194,
+    "p50_s": 1.259,
+    "p95_s": 1.95,
+    "p99_s": 3.152,
+    "max_s": 4.443,
+    "media_s": 1.288
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -0.8145050704852319,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 36
+   },
+   "lag_final_s": 2.155
+  },
+  {
+   "grupo": "c3",
+   "linhas": 300008,
+   "transacoes": 100137,
+   "taxa": 1000.03,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T02:57:14.989151278Z",
+   "fim": "2026-11-20T03:02:14.990338559Z",
+   "validade": "VALIDO",
+   "p95_ms": 2785,
+   "eventos_medidos": 300008,
+   "tendencia_lag": {
+    "inclinacao_ms_s": -3.101900437580436,
+    "crescimento_sustentado": false,
+    "janela_s": 175.5,
+    "amostras": 36
+   },
+   "drenagem_s": 18,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 106.5,
+     "max_pct": 198.14,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 28.9,
+     "max_pct": 200.39,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 21.9,
+     "max_pct": 164.04,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 18.8,
+     "max_pct": 29.02,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 5.759,
+   "latencia_s": {
+    "min_s": 0.351,
+    "p50_s": 1.787,
+    "p95_s": 2.785,
+    "p99_s": 3.082,
+    "max_s": 3.871,
+    "media_s": 1.794
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -3.1165994350872412,
+    "crescimento_sustentado": false,
+    "janela_s": 175.5,
+    "amostras": 36
+   },
+   "lag_final_s": 2.73
+  },
+  {
+   "grupo": "c3",
+   "linhas": 600012,
+   "transacoes": 200327,
+   "taxa": 2000.03,
+   "alvo": 2000,
+   "valido": true,
+   "inicio": "2026-11-20T03:03:12.273603361Z",
+   "fim": "2026-11-20T03:08:12.276428525Z",
+   "validade": "VALIDO",
+   "p95_ms": 2092,
+   "eventos_medidos": 600012,
+   "tendencia_lag": {
+    "inclinacao_ms_s": -2.333241209781209,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 36
+   },
+   "drenagem_s": 18,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 146.9,
+     "max_pct": 189.09,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 38.3,
+     "max_pct": 196.46,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 35.3,
+     "max_pct": 80.4,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 21.2,
+     "max_pct": 76.79,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 5.047,
+   "latencia_s": {
+    "min_s": 0.351,
+    "p50_s": 1.474,
+    "p95_s": 2.092,
+    "p99_s": 2.436,
+    "max_s": 3.213,
+    "media_s": 1.471
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -2.6368877739257015,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 36
+   },
+   "lag_final_s": 2.41
+  },
+  {
+   "grupo": "c3",
+   "linhas": 1157527,
+   "transacoes": 386585,
+   "taxa": 3858.38,
+   "alvo": 4000,
+   "valido": false,
+   "inicio": "2026-11-20T03:09:17.609271708Z",
+   "fim": "2026-11-20T03:14:17.615841041Z",
+   "validade": "GERADOR_SATURADO",
+   "p95_ms": 37999,
+   "eventos_medidos": 1157527,
+   "tendencia_lag": {
+    "inclinacao_ms_s": 162.50988209681773,
+    "crescimento_sustentado": true,
+    "janela_s": 180,
+    "amostras": 36
+   },
+   "drenagem_s": 45,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 177.8,
+     "max_pct": 211.14,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 49.9,
+     "max_pct": 204.88,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 55.1,
+     "max_pct": 103.27,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 16.3,
+     "max_pct": 42.34,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 6.051,
+   "latencia_s": {
+    "min_s": 0.556,
+    "p50_s": 12.939,
+    "p95_s": 37.999,
+    "p99_s": 39.995,
+    "max_s": 43.76,
+    "media_s": 16.404
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": 161.1447053388343,
+    "crescimento_sustentado": true,
+    "janela_s": 180,
+    "amostras": 36
+   },
+   "lag_final_s": 40.295
+  }
+ ],
+ "medidas": {
+  "eventos_medidos": 2207563,
+  "relogios_validos": true,
+  "teto_ev_s": 2000,
+  "degraus_validos": [
+   500,
+   1000,
+   2000
+  ],
+  "p95_ms": 2785,
+  "eventos_da_janela_por_s": {
+   "500": 500.1,
+   "1000": 1000.0,
+   "2000": 2000.0,
+   "4000": 3858.4
+  }
+ },
+ "operacao_especial": {
+  "archive_antes": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 5936387,
+   "livre_gb_antes": 60,
+   "livre_gb_depois": 60,
+   "archive_bytes_antes": 159070208,
+   "archive_bytes_depois": 159070208,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  },
+  "archive_depois": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 7823000,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1475064832,
+   "archive_bytes_depois": 1475064832,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  }
+ },
+ "parametros": {
+  "taxa": 1000,
+  "degrau_seg": 300,
+  "c3_taxas": [
+   500,
+   1000,
+   2000,
+   4000
+  ],
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )"
+ }
+}

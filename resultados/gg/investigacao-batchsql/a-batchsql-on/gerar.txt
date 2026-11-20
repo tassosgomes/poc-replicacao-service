@@ -1,0 +1,17 @@
+container=gg-gerador-1795142439 exit=0
+INFO: log_linhas=gerador-linhas-20261120T024042Z-1-2ca781aee5a0.csv
+INFO: inicio_carga=2026-11-20T02:40:44.416812839Z
+INFO: janela_linhas=5011 taxa=1002.20
+INFO: janela_linhas=4996 taxa=999.20
+INFO: janela_linhas=4994 taxa=998.80
+INFO: janela_linhas=5011 taxa=1002.20
+INFO: janela_linhas=4992 taxa=998.40
+INFO: janela_linhas=5006 taxa=1001.20
+INFO: janela_linhas=5001 taxa=1000.20
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=5000 taxa=1000.00
+INFO: janela_linhas=5004 taxa=1000.80
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=5003 taxa=1000.60
+INFO: fim_carga=2026-11-20T02:41:44.417952122Z
+INFO: linhas=60014 transacoes=19905 taxa=1000.23 alvo=1000 transacao_media_ms=5.763 VALIDO

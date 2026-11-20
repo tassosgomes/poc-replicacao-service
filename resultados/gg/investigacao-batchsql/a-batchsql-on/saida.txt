@@ -1,0 +1,2 @@
+drenado em 18 s (aplicacao_log=60014, lag reportado do replicat=2 s)
+{"eventos_gerador": 60014, "linhas_log": 60014, "transacoes": 19905, "repeticoes_mesma_chave_na_mesma_transacao": 0, "chaves_com_menos_no_log": 0, "eventos_faltantes_total": 0, "chaves_com_mais_no_log": 0, "eventos_a_mais_total": 0, "ops_log": {"U": 57084, "I": 2930}, "diferenca_liquida": 0, "explicada_por_repeticao_na_tx": true}

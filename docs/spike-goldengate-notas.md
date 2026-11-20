@@ -355,7 +355,7 @@ grupo de 1.000 operações) ao custo de mais commits (CPU do destino 42% -> 56%)
 BATCHSQL: `scripts/gg/reconciliar.sh` e o jar `reconciliacao` sem divergência, UUIDs intactos no C2. Nada disso muda a atomicidade: o Replicat nunca parte uma transação de origem
 (`GROUPTRANSOPS` é um mínimo) e o checkpoint segue na tabela `ggadmin.ggschkpt`. Não foi mexido em nada que enfraqueça isso (sem `COMMIT_SERIALIZATION`,
 sem `NOCOMMIT`, sem aumento de paralelismo). Ressalva: numa medição isolada com BATCHSQL o `aplicacao_log` teve 111.837 linhas para 120.011 eventos gerados (o log é um por operação
-aplicada; a hipótese é que o Replicat aplica de uma vez operações consecutivas da mesma linha, não verificada), com estado final idêntico; nas execuções seguintes (C2) o log teve exatamente o número de
+aplicada; hipótese posteriormente refutada: ver "Fase 4", item 2; o gerador daquela medição também gravou 111.837 linhas), com estado final idêntico; nas execuções seguintes (C2) o log teve exatamente o número de
 eventos do gerador (300.008).
 
 Parâmetros finais versionados: `gg/params/EXTBDAD.prm` (`EOFDELAYCSECS 1`) e `gg/params/REPBDAD.prm` (`EOFDELAYCSECS 1`, `GROUPTRANSOPS 100`, `BATCHSQL`); aplicados com
@@ -377,3 +377,74 @@ relativo e gravou configuração vazia, que deixou Extract e Replicat parados; c
 CPU (docker stats, 64 amostras): gg-legado 107% média (máx 177%, limite 200%), gerador 30%, gg-novo 17%, gg-hub 21%. O lag usado na tendência é o analógo do `lag_ms` do
 worker: máximo (e média) da latência dos eventos aplicados em baldes de 5 s, sem os baldes parciais de início e fim. Ressalvas: uma única execução; um evento isolado passou de 5 s (max 5,24 s)
 embora o p95 esteja em 2,9 s; o lab é compartilhado (outros containers `infra-*` nos hosts). A 2.000 ev/s o Replicat clássico continua sem acompanhar nos padrões; com os ajustes não foi remedido.
+
+
+---
+
+## Fase 4: preparação e C3 (2026-11-20)
+
+### 1. Archive logs: limpeza e alarme de disco
+
+- A imagem `gvenzl/oracle-free:23-slim-faststart` **não traz o binário `rman`** (só as mensagens `rman*.msb`), então não há `CONFIGURE ARCHIVELOG DELETION POLICY`
+  nem `DELETE ARCHIVELOG` no gg-legado. Pela documentação/notas Oracle (A-Team, Doc ID 2137576.1, 2580979.1) o RMAN integrado ao GG não apaga log ainda exigido pelo
+  Extract integrado (sem `FORCE`); essa proteção não existe sem RMAN, então o script a reproduz.
+- `scripts/gg/limpar-archive.sh` (idempotente): lê `required_checkpoint_scn` de `dba_capture` (no PDB `FREEPDB1`; é o SCN a partir do qual o Extract integrado precisa do
+  redo ao reiniciar) e apaga, por `rm` dentro do container, só os archive logs com `NEXT_CHANGE# <= required_checkpoint_scn`, mantendo sempre os 3 mais recentes
+  (`MANTER_ULTIMOS`). Sem captura habilitada, não apaga nada. `--verificar` só mede. Alarme (exit 2): livre no host < 10 GB (`MIN_LIVRE_GB`) ou archive > 20 GB
+  (`MAX_ARCHIVE_GB`). Saída em JSON. As linhas apagadas continuam em `v$archived_log` (o controlfile não é atualizado sem RMAN); só `rman` as marcaria `DELETED`, inofensivo para o Extract.
+- Teste: 3 `switch logfile` + carga (500 ev/s, 30 s) + drenagem: 6 logs, 3 apagados (1,59 GB -> 159 MB), segunda execução apagou 0; depois, mais carga: Extract e Replicat `running`, sem
+  `OGG-00868`/`ORA-01291` no relatório do Extract, aplicação seguiu. Primeira execução real removeu 6 dos 9 logs de ~4,3 GB (-> 1,4 GB). Ressalva: um Extract parado por muito
+  tempo deixa o `required_checkpoint_scn` parado e o archive cresce até o alarme (comportamento correto: preserva o redo, e avisa).
+- Integrado em `scripts/gg/cenario.sh`: roda antes e depois da execução e após cada degrau (`archive-antes.json`, `archive-depois.json`, `dN-*/archive.json`); alarme = exit 2 e
+  `validade` INVALIDO (`DISCO`). No C3 clássico o archive chegou a 2,9 GB no pico (degrau 4000) e voltou a 1,5 GB; livre no host 57-60 GB.
+
+### 2. Ressalva do BATCHSQL (111.837 x 120.011): causa e conclusão
+
+**Não houve perda de disparo de trigger.** Evidência:
+
+- Na medição 07 (`resultados/gg/ajuste-latencia/07-1000evs-g100-batchsql`) o **próprio gerador** gravou 111.837 linhas (`gerador-linhas.csv`, `linhas=111837 taxa=916,11 ... INVALIDO`: o
+  legado teve uma queda de taxa no fim, janelas de 285 e 252 ev/s). O log do destino teve exatamente 111.837 linhas: igual. O número 120.011 era a meta nominal de outra medição
+  (120.007 do "antes"), comparado por engano; a medição 07 era uma execução com taxa inválida e não uma perda.
+- `scripts/gg/comparar-eventos.sh` compara por `(tabela, codigo)` o CSV do gerador com o `aplicacao_log`. Com BATCHSQL ligado: (a) 1.000 ev/s, 60 s: 60.014 eventos = 60.014 linhas de log, 0 chaves
+  com diferença; (b) pior caso para coalescência, `HOT_PCT=100 TX_MAX=30` (chaves quentes, mais de uma atualização da mesma chave na mesma transação, 25 repetições): 60.068 = 60.068, 0
+  diferença. O log tem uma linha por operação aplicada, incluindo repetições na mesma transação. Evidência em `resultados/gg/investigacao-batchsql/`.
+- Conclusão: BATCHSQL não distorce a métrica de latência; não foi preciso medir a alternativa sem BATCHSQL. A regra operacional fica: o gerador deve comparar `linhas` do próprio log com o `aplicacao_log`
+  (o `comparar-eventos.sh` faz isso), nunca com a meta nominal.
+
+### 3. Runner generalizado
+
+`scripts/gg/cenario.sh c2|c3 [rotulo]` (atalhos `c2-regime.sh`, `c3-teto.sh`; `c2-curto.sh` agora é o C2 com 300 s). Grava `resultados/gg/<cenario>/<execucao>/` e copia o `meta.json`
+para `resultados/gg/<cenario>/meta.json`; `scripts/gg/meta_gg.py` monta o meta no contrato do lab Java (`criterios`, `degraus`, `validade`, `veredito`, `relogios`, `integridade`; nomes
+`p95_ms`, `tendencia_lag`, `teto_ev_s`, `divergencias`, `uuids_alterados`, `pendentes_final`). `bash scripts/relatorio.sh --resultados resultados/gg` consolida (testado; o C3 aparece
+APROVADO; C2 curto aparece INVALIDO por ESCOPO_REDUZIDO, como no Java). `pendentes_final` é 0 quando a drenagem fechou (Replicat RUNNING, `aplicacao_log` estável 15 s, lag <= 2 s); não há contagem de pendentes como
+no worker. `drenar.sh` aceita `REPLICAT=`. Exit codes: 0 aprovado, 1 reprovado/inválido, 2 falha operacional (`trap ERR`, alarme de disco). Regras: degrau válido = taxa >= 98% do alvo, senão
+`GERADOR_SATURADO` (interrompe a escada do C3); teto = maior alvo válido sem crescimento sustentado; aprova só com degrau válido de 2.000. O `c1/meta.json` do lab GG (só snapshots) não tem o contrato e o relatório o marca inválido: não foi alterado.
+
+### 4. C3 (teto): Replicat clássico, execução `resultados/gg/c3/20261120T025051Z-REPBDAD-classico/`
+
+Parâmetros atuais (EXTBDAD `EOFDELAYCSECS 1`; REPBDAD `EOFDELAYCSECS 1`, `GROUPTRANSOPS 100`, `BATCHSQL`), escada 500, 1.000, 2.000, 4.000, 300 s por degrau, drenagem entre degraus, relógios medidos em cada degrau (|offset|+incerteza <= 100 ms).
+
+| Degrau (ev/s) | Taxa efetiva | Validade | p50 / p95 / p99 / max (s) | Tendência do lag (últimos ~180 s) | Drenagem pós-carga | CPU média (máx) gg-legado / gg-novo / gg-hub |
+|---|---|---|---|---|---|---|
+| 500 | 500,05 | VALIDO | 1,26 / 1,95 / 3,15 / 4,44 | -2,3 ms/s, sem crescimento | 18 s | 59% (84) / 16% (113) / 20% (70) |
+| 1.000 | 1000,03 | VALIDO | 1,79 / 2,79 / 3,08 / 3,87 | -3,1 ms/s, sem crescimento | 18 s | 107% (198) / 22% (164) / 19% (29) |
+| 2.000 | 2000,03 | VALIDO | 1,47 / 2,09 / 2,44 / 3,21 | -2,3 ms/s, sem crescimento | 18 s | 147% (189) / 35% (80) / 21% (77) |
+| 4.000 | 3858,38 (96,5%) | GERADOR_SATURADO | 12,9 / 38,0 / 40,0 / 43,8 | +162,5 ms/s, crescimento sustentado | 45 s | 178% (211) / 55% (103) / 16% (42) |
+
+Veredito por critério: `teto_ev_s` = 2.000, **APROVADO** (alvo >= 2.000 em degrau válido); `divergencias` 0 (SQL 0; jar `reconciliacao` MODO=completo DRY_RUN=true total=0, 20,3 s) APROVADO; `uuids_alterados` 0 de 1.700.000
+pré-existentes comparados com o snapshot de `resultados/gg/c1/` APROVADO; `pendentes_final` 0 APROVADO. Veredito geral APROVADO, exit 0.
+
+Leitura: com os ajustes da Fase 3 (`GROUPTRANSOPS 100`, `BATCHSQL`, `EOFDELAYCSECS 1`) o Replicat **clássico** (uma thread de aplicação) acompanhou 2.000 ev/s com p95 2,1 s e lag sem
+tendência de alta; o "não acompanha 2.000 ev/s" da Fase 3 era dos parâmetros padrão. A 4.000 ev/s o gerador (2 CPU, 1 GiB) e o legado (CPU média de 178% de 200%) não sustentam a taxa (3.858, < 98%): degrau inválido e fora do
+teto, como no lab Java. O lag cresceu 162 ms/s e chegou a 43,8 s, e drenou em 45 s depois da carga; isso indica que, perto de 3.900 ev/s, o clássico já fica atrás, mas é uma observação de degrau inválido, não um teto medido. O teto
+medido é um **piso**: o clássico, no Free sem Parallel Replicat, sustenta pelo menos 2.000 ev/s neste ambiente (a 4.000 o gerador/legado limita o teste); não se extrapola para produção.
+
+**Replicat coordenado: não foi medido.** O critério (>= 2.000) foi aprovado no clássico, então a condição "se reprovar" não ocorreu. Além disso, a documentação Oracle (About Coordinated Replicat, 23ai)
+diz que, com THREADRANGE, "the source transactions could be split across CR processes such that the integrity of the total source transaction is not maintained": cada thread confirma sua parte separadamente. Isso quebra a atomicidade
+de transação de origem exigida na PoC (consistência acima de velocidade); só as transações de barreira (DDL, mudança de chave primária) ficam inteiras. O `REPCO.prm` ficou como estava (com um aviso no arquivo); o `EOFDELAYCSECS`/`GROUPTRANSOPS`/`BATCHSQL` não foram acrescentados
+a ele. O teste do spike (4 threads) mostrou que o coordenado funciona, mas sem ganho a medir aqui e com esse risco. Lab final: Replicat clássico `REPBDAD` ativo (nunca foi trocado), `EXTBDAD` ativo.
+
+### Ressalvas
+
+Uma única execução do C3 (um degrau de cada). Lab compartilhado. `COMMITTIMESTAMP` tem resolução de 1 s (usa-se `origem_updated_at`). A latência inclui o trigger `aplicacao_log` + índice no destino. O C2 completo de 600 s (critério do PRD) ainda não foi executado
+no lab GG (`scripts/gg/c2-regime.sh`).

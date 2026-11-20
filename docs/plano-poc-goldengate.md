@@ -97,7 +97,7 @@ Se o item 2 ou 3 falhar, voltar com o problema antes da Fase 1.
 
 ### Fase 1: ambiente reprodutível
 
-**Status (2026-11-20): concluída, exceto a política RMAN de limpeza de archive logs com alarme de disco (pendente).** Evidência e tempos em `docs/spike-goldengate-notas.md`, seção "Fase 1". Desvio do plano: o esquema do legado/destino reaproveitou os arquivos do spike (`sql/gg/...`); o `00_redo.sql` foi reutilizado.
+**Status (2026-11-20): concluída.** A política de limpeza de archive logs com alarme de disco foi feita na Fase 4 (`scripts/gg/limpar-archive.sh`; a imagem slim não tem `rman`, a limpeza é por arquivo respeitando o `required_checkpoint_scn`). Evidência e tempos em `docs/spike-goldengate-notas.md`, seção "Fase 1". Desvio do plano: o esquema do legado/destino reaproveitou os arquivos do spike (`sql/gg/...`); o `00_redo.sql` foi reutilizado.
 
 - `scripts/gg/subir.sh` e `scripts/gg/derrubar.sh`, mesmos pré-requisitos do `subir.sh`
   (NTP, RAM ≥ 4 GB, disco, portas 1523/1524 livres, relógios ≤ 100 ms), inventário próprio,
@@ -149,6 +149,8 @@ Registrar antes de seguir.
 | C8 captura parada | 100% corrigido | Extract parado 60 s com updates; ao religar, deve recuperar tudo pelo redo, sem reconciliação |
 | C9 threads | comparação descritiva (SEM_CRITERIO) | Replicat clássico x coordenado com N threads |
 | C10 custo no legado | ≤ 15% E ≤ 5 ms (Q-T3 pendente) | ligado = Extract ativo + supplemental logging; desligado = Extract parado. Comparar com os 19,99% / 0,958 ms dos triggers |
+
+**Status da Fase 4 (2026-11-20): preparação e C3 concluídos.** Runner `scripts/gg/cenario.sh` (c2/c3, meta.json no contrato do lab Java), limpeza de archive integrada. O C3 com Replicat clássico foi APROVADO (teto 2.000 ev/s válido, p95 2,1 s; 4.000 ev/s inválido por GERADOR_SATURADO a 3.858 ev/s); o coordenado não foi medido (critério aprovado no clássico; THREADRANGE pode dividir transação de origem entre threads, o que viola a atomicidade exigida). A ressalva do BATCHSQL (111.837 x 120.011) era comparação com a meta nominal: sem perda. Detalhes na seção "Fase 4" de `docs/spike-goldengate-notas.md`. Próximos: C2 completo (600 s), C1, C4 a C10.
 
 Ordem: C1 → C2 → C3 → C4 → C5 → C6 → C7 → C8 → C9 → C10 (C10 por último, como no lab Java).
 
