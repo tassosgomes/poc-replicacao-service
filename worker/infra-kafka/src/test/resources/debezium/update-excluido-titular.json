@@ -1,0 +1,65 @@
+{
+  "key": {
+    "CODIGO": "900001"
+  },
+  "offset": 2,
+  "partition": 9,
+  "timestamp": 1795208787544,
+  "topic": "kf.BDAD.TITULAR",
+  "value": {
+    "after": {
+      "CODIGO": "900001",
+      "DOCUMENTO": "123",
+      "EXCLUIDO": "1",
+      "NOME": "Titular KF 2",
+      "SITUACAO": "SUSPENSO",
+      "TIPO": "PF",
+      "UPDATED_AT": 1795208784620694
+    },
+    "before": {
+      "CODIGO": "900001",
+      "DOCUMENTO": "123",
+      "EXCLUIDO": "0",
+      "NOME": "Titular KF 2",
+      "SITUACAO": "SUSPENSO",
+      "TIPO": "PF",
+      "UPDATED_AT": 1795208784617787
+    },
+    "op": "u",
+    "source": {
+      "commit_scn": "2301113",
+      "commit_ts_ms": 1795208784000,
+      "connector": "oracle",
+      "db": "FREEPDB1",
+      "lcr_position": null,
+      "name": "kf",
+      "redo_sql": null,
+      "redo_thread": 1,
+      "row_id": "AAAR6BAAYAAAAAiAAA",
+      "rs_id": "0x00000e.00004682.005c",
+      "schema": "BDAD",
+      "scn": "2301112",
+      "sequence": null,
+      "snapshot": "false",
+      "ssn": 0,
+      "start_scn": "2301112",
+      "start_ts_ms": 1795208784000,
+      "table": "TITULAR",
+      "ts_ms": 1795208784000,
+      "ts_ns": 1795208784000000000,
+      "ts_us": 1795208784000000,
+      "txId": "0a000f0053020000",
+      "txSeq": 1,
+      "user_name": "BDAD",
+      "version": "3.7.1.Final"
+    },
+    "transaction": {
+      "data_collection_order": 1,
+      "id": "0a000f0053020000",
+      "total_order": 1
+    },
+    "ts_ms": 1795208787174,
+    "ts_ns": 1795208787174439356,
+    "ts_us": 1795208787174439
+  }
+}

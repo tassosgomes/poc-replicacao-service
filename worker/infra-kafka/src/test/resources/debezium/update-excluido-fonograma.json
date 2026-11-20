@@ -1,0 +1,65 @@
+{
+  "key": {
+    "CODIGO": "900001"
+  },
+  "offset": 1,
+  "partition": 9,
+  "timestamp": 1795208787557,
+  "topic": "kf.BDAD.FONOGRAMA",
+  "value": {
+    "after": {
+      "CODIGO": "900001",
+      "DURACAO_SEG": "215",
+      "EXCLUIDO": "1",
+      "ISRC": "BR-AAA-26-00001",
+      "OBRA_CODIGO": "900001",
+      "TITULO": "Fono KF",
+      "UPDATED_AT": 1795208784641281
+    },
+    "before": {
+      "CODIGO": "900001",
+      "DURACAO_SEG": "215",
+      "EXCLUIDO": "0",
+      "ISRC": "BR-AAA-26-00001",
+      "OBRA_CODIGO": "900001",
+      "TITULO": "Fono KF",
+      "UPDATED_AT": 1795208784637732
+    },
+    "op": "u",
+    "source": {
+      "commit_scn": "2301128",
+      "commit_ts_ms": 1795208784000,
+      "connector": "oracle",
+      "db": "FREEPDB1",
+      "lcr_position": null,
+      "name": "kf",
+      "redo_sql": null,
+      "redo_thread": 1,
+      "row_id": "AAAR6FAAYAAAAClAB0",
+      "rs_id": "0x00000e.00004696.0064",
+      "schema": "BDAD",
+      "scn": "2301127",
+      "sequence": null,
+      "snapshot": "false",
+      "ssn": 0,
+      "start_scn": "2301127",
+      "start_ts_ms": 1795208784000,
+      "table": "FONOGRAMA",
+      "ts_ms": 1795208784000,
+      "ts_ns": 1795208784000000000,
+      "ts_us": 1795208784000000,
+      "txId": "0400120046020000",
+      "txSeq": 1,
+      "user_name": "BDAD",
+      "version": "3.7.1.Final"
+    },
+    "transaction": {
+      "data_collection_order": 1,
+      "id": "0400120046020000",
+      "total_order": 1
+    },
+    "ts_ms": 1795208787189,
+    "ts_ns": 1795208787189785023,
+    "ts_us": 1795208787189785
+  }
+}

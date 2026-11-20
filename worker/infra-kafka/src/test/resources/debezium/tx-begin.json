@@ -1,0 +1,16 @@
+{
+  "key": {
+    "id": "080020005e020000"
+  },
+  "offset": 22,
+  "partition": 0,
+  "timestamp": 1795208787564,
+  "topic": "kf.transaction",
+  "value": {
+    "data_collections": null,
+    "event_count": null,
+    "id": "080020005e020000",
+    "status": "BEGIN",
+    "ts_ms": 1795208784000
+  }
+}

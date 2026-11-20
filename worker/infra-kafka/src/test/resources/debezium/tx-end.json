@@ -1,0 +1,25 @@
+{
+  "key": {
+    "id": "080020005e020000"
+  },
+  "offset": 23,
+  "partition": 0,
+  "timestamp": 1795208787568,
+  "topic": "kf.transaction",
+  "value": {
+    "data_collections": [
+      {
+        "data_collection": "FREEPDB1.BDAD.OBRA_MUSICAL",
+        "event_count": 1
+      },
+      {
+        "data_collection": "FREEPDB1.BDAD.FONOGRAMA",
+        "event_count": 2
+      }
+    ],
+    "event_count": 3,
+    "id": "080020005e020000",
+    "status": "END",
+    "ts_ms": 1795208784000
+  }
+}

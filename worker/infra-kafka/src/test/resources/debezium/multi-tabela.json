@@ -1,0 +1,218 @@
+{
+  "begin": {
+    "key": {
+      "id": "080020005e020000"
+    },
+    "offset": 22,
+    "partition": 0,
+    "timestamp": 1795208787564,
+    "topic": "kf.transaction",
+    "value": {
+      "data_collections": null,
+      "event_count": null,
+      "id": "080020005e020000",
+      "status": "BEGIN",
+      "ts_ms": 1795208784000
+    }
+  },
+  "descricao": "Uma transacao Oracle (1 obra + 2 fonogramas): BEGIN, eventos nos topicos de tabela (ordenados por transaction.total_order) e END; ordem entre topicos nao e garantida",
+  "end": {
+    "key": {
+      "id": "080020005e020000"
+    },
+    "offset": 23,
+    "partition": 0,
+    "timestamp": 1795208787568,
+    "topic": "kf.transaction",
+    "value": {
+      "data_collections": [
+        {
+          "data_collection": "FREEPDB1.BDAD.OBRA_MUSICAL",
+          "event_count": 1
+        },
+        {
+          "data_collection": "FREEPDB1.BDAD.FONOGRAMA",
+          "event_count": 2
+        }
+      ],
+      "event_count": 3,
+      "id": "080020005e020000",
+      "status": "END",
+      "ts_ms": 1795208784000
+    }
+  },
+  "eventos": [
+    {
+      "key": {
+        "CODIGO": "900002"
+      },
+      "offset": 1,
+      "partition": 13,
+      "timestamp": 1795208787565,
+      "topic": "kf.BDAD.OBRA_MUSICAL",
+      "value": {
+        "after": {
+          "CODIGO": "900002",
+          "EXCLUIDO": "0",
+          "GENERO": "ROCK",
+          "ISWC": "T-456",
+          "SITUACAO": "ATIVO",
+          "TITULO": "Obra Multi",
+          "UPDATED_AT": 1795208784651943
+        },
+        "before": null,
+        "op": "c",
+        "source": {
+          "commit_scn": "2301137",
+          "commit_ts_ms": 1795208784000,
+          "connector": "oracle",
+          "db": "FREEPDB1",
+          "lcr_position": null,
+          "name": "kf",
+          "redo_sql": null,
+          "redo_thread": 1,
+          "row_id": "AAAR6DAAYAAAABZABH",
+          "rs_id": "0x00000e.000046a0.0010",
+          "schema": "BDAD",
+          "scn": "2301136",
+          "sequence": null,
+          "snapshot": "false",
+          "ssn": 0,
+          "start_scn": "2301136",
+          "start_ts_ms": 1795208784000,
+          "table": "OBRA_MUSICAL",
+          "ts_ms": 1795208784000,
+          "ts_ns": 1795208784000000000,
+          "ts_us": 1795208784000000,
+          "txId": "080020005e020000",
+          "txSeq": 1,
+          "user_name": "BDAD",
+          "version": "3.7.1.Final"
+        },
+        "transaction": {
+          "data_collection_order": 1,
+          "id": "080020005e020000",
+          "total_order": 1
+        },
+        "ts_ms": 1795208787200,
+        "ts_ns": 1795208787200967370,
+        "ts_us": 1795208787200967
+      }
+    },
+    {
+      "key": {
+        "CODIGO": "900002"
+      },
+      "offset": 1,
+      "partition": 13,
+      "timestamp": 1795208787566,
+      "topic": "kf.BDAD.FONOGRAMA",
+      "value": {
+        "after": {
+          "CODIGO": "900002",
+          "DURACAO_SEG": "180",
+          "EXCLUIDO": "0",
+          "ISRC": "BR-AAA-26-00002",
+          "OBRA_CODIGO": "900002",
+          "TITULO": "Fono A",
+          "UPDATED_AT": 1795208784653568
+        },
+        "before": null,
+        "op": "c",
+        "source": {
+          "commit_scn": "2301137",
+          "commit_ts_ms": 1795208784000,
+          "connector": "oracle",
+          "db": "FREEPDB1",
+          "lcr_position": null,
+          "name": "kf",
+          "redo_sql": null,
+          "redo_thread": 1,
+          "row_id": "AAAR6FAAYAAAAClAB1",
+          "rs_id": "0x00000e.000046a2.017c",
+          "schema": "BDAD",
+          "scn": "2301136",
+          "sequence": null,
+          "snapshot": "false",
+          "ssn": 0,
+          "start_scn": "2301136",
+          "start_ts_ms": 1795208784000,
+          "table": "FONOGRAMA",
+          "ts_ms": 1795208784000,
+          "ts_ns": 1795208784000000000,
+          "ts_us": 1795208784000000,
+          "txId": "080020005e020000",
+          "txSeq": 2,
+          "user_name": "BDAD",
+          "version": "3.7.1.Final"
+        },
+        "transaction": {
+          "data_collection_order": 1,
+          "id": "080020005e020000",
+          "total_order": 2
+        },
+        "ts_ms": 1795208787202,
+        "ts_ns": 1795208787202768573,
+        "ts_us": 1795208787202768
+      }
+    },
+    {
+      "key": {
+        "CODIGO": "900003"
+      },
+      "offset": 1,
+      "partition": 14,
+      "timestamp": 1795208787567,
+      "topic": "kf.BDAD.FONOGRAMA",
+      "value": {
+        "after": {
+          "CODIGO": "900003",
+          "DURACAO_SEG": "200",
+          "EXCLUIDO": "0",
+          "ISRC": "BR-AAA-26-00003",
+          "OBRA_CODIGO": "900002",
+          "TITULO": "Fono B",
+          "UPDATED_AT": 1795208784655099
+        },
+        "before": null,
+        "op": "c",
+        "source": {
+          "commit_scn": "2301137",
+          "commit_ts_ms": 1795208784000,
+          "connector": "oracle",
+          "db": "FREEPDB1",
+          "lcr_position": null,
+          "name": "kf",
+          "redo_sql": null,
+          "redo_thread": 1,
+          "row_id": "AAAR6FAAYAAAAClAB2",
+          "rs_id": "0x00000e.000046a4.01d4",
+          "schema": "BDAD",
+          "scn": "2301136",
+          "sequence": null,
+          "snapshot": "false",
+          "ssn": 0,
+          "start_scn": "2301136",
+          "start_ts_ms": 1795208784000,
+          "table": "FONOGRAMA",
+          "ts_ms": 1795208784000,
+          "ts_ns": 1795208784000000000,
+          "ts_us": 1795208784000000,
+          "txId": "080020005e020000",
+          "txSeq": 3,
+          "user_name": "BDAD",
+          "version": "3.7.1.Final"
+        },
+        "transaction": {
+          "data_collection_order": 2,
+          "id": "080020005e020000",
+          "total_order": 3
+        },
+        "ts_ms": 1795208787204,
+        "ts_ns": 1795208787204438068,
+        "ts_us": 1795208787204438
+      }
+    }
+  ],
+  "transacao": "080020005e020000"
+}

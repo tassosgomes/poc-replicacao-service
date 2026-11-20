@@ -1,0 +1,39 @@
+{
+  "before": null,
+  "after": {
+    "CODIGO": 7,
+    "NOME": "Beto",
+    "TIPO": "PF",
+    "DOCUMENTO": "12345678901",
+    "SITUACAO": "ATIVO",
+    "EXCLUIDO": 0,
+    "UPDATED_AT": 1795077000000000
+  },
+  "source": {
+    "version": "3.2.0.Final",
+    "connector": "oracle",
+    "name": "kf",
+    "ts_ms": 1795176001000,
+    "snapshot": "true",
+    "db": "FREEPDB1",
+    "sequence": null,
+    "ts_us": 1795176001000000,
+    "ts_ns": 1795176001000000000,
+    "schema": "BDAD",
+    "table": "TITULAR",
+    "txId": "0a001b00e1020000",
+    "scn": "50",
+    "commit_scn": "53",
+    "lcr_position": null,
+    "rs_id": "0x000012.00000a2b.0010",
+    "ssn": 0,
+    "redo_thread": 1,
+    "user_name": "BDAD",
+    "redo_sql": null
+  },
+  "transaction": null,
+  "op": "r",
+  "ts_ms": 1795176001040,
+  "ts_us": 1795176001040000,
+  "ts_ns": 1795176001040000000
+}

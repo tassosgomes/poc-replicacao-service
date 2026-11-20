@@ -1,0 +1,42 @@
+{
+  "before": null,
+  "after": {
+    "CODIGO": 900,
+    "OBRA_CODIGO": 55,
+    "TITULO": "Faixa 1",
+    "ISRC": "BRABC2600001",
+    "DURACAO_SEG": {
+      "scale": 0,
+      "value": "ALQ="
+    },
+    "EXCLUIDO": 0,
+    "UPDATED_AT": 1795176002000001
+  },
+  "source": {
+    "version": "3.2.0.Final",
+    "connector": "oracle",
+    "name": "kf",
+    "ts_ms": 1795176003000,
+    "snapshot": "false",
+    "db": "FREEPDB1",
+    "sequence": null,
+    "ts_us": 1795176003000000,
+    "ts_ns": 1795176003000000000,
+    "schema": "BDAD",
+    "table": "FONOGRAMA",
+    "txId": "0a001b00e1020000",
+    "scn": "150",
+    "commit_scn": "153",
+    "lcr_position": null,
+    "rs_id": "0x000012.00000a2b.0010",
+    "ssn": 0,
+    "redo_thread": 1,
+    "user_name": "BDAD",
+    "redo_sql": null
+  },
+  "transaction": null,
+  "op": "c",
+  "ts_ms": 1795176003040,
+  "ts_us": 1795176003040000,
+  "ts_ns": 1795176003040000000
+}
