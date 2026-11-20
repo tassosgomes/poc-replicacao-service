@@ -58,7 +58,7 @@ for step in cfg["degraus"]:
         ph.update(linhas=int(m[1]), transacoes=int(m[2]), taxa=taxa, transacao_media_ms=float(m[5]), valido=taxa >= step["alvo"] * .98)
         ph["validade"] = "VALIDO" if ph["valido"] else ("GERADOR_SATURADO" if cen == "c3" else "INVALIDO")
     ph["dir"] = step["dir"]
-    for k in ("captura", "repeticao", "modo", "supplemental"):
+    for k in ("captura", "repeticao", "modo", "supplemental", "posicao"):
         if k in step:
             ph[k] = step[k]
     if lat.get("n"):
@@ -260,7 +260,35 @@ elif cen == "c10":
             cpu[nome] = round(statistics.mean(v), 1)
     medidas.update(custo_legado=custo, cpu_media_gg_legado_pct=cpu, ordem_das_fases=[(p["dir"], p.get("captura"), p.get("transacao_media_ms")) for p in degraus],
                    comparacao_java={"overhead_percentual": 19.998608792431824, "overhead_absoluto_ms": 0.958333333333333, "observacao": "triggers de captura no legado Java (resultados/c10): captura ligada 5,750 ms x desligada 4,792 ms"})
-    special = {"carga": {"taxa": cfg.get("taxa"), "duracao_seg_por_fase": cfg.get("dur_s"), "semente": 1, "threads": 8, "pct_insert": 0, "pct_delete": 0, "hot_pct": 10, "tx_max": 5, "mix": "40,40,20 (padrao do gerador)"},
+    # pares (ligada - desligada) e tendencia por posicao na sequencia
+    por_rep = {}
+    for p in pr:
+        if ok_ph(p):
+            por_rep.setdefault(p.get("repeticao"), {})[bool(p["captura"])] = p
+    pares = [{"repeticao": r, "ligada_ms": d[True]["transacao_media_ms"], "desligada_ms": d[False]["transacao_media_ms"],
+              "diferenca_ms": d[True]["transacao_media_ms"] - d[False]["transacao_media_ms"],
+              "diferenca_pct": 100 * (d[True]["transacao_media_ms"] - d[False]["transacao_media_ms"]) / d[False]["transacao_media_ms"],
+              "ordem": "LD" if d[True].get("posicao", 0) < d[False].get("posicao", 0) else "DL"} for r, d in sorted(por_rep.items()) if len(d) == 2]
+    seq = sorted((p for p in pr if ok_ph(p) and p.get("posicao")), key=lambda p: p["posicao"])
+    tend = None
+    if len(seq) >= 4:
+        h = len(seq) // 2
+        n = len(seq); xs = list(range(n)); ys = [p["transacao_media_ms"] for p in seq]
+        mx, my = statistics.mean(xs), statistics.mean(ys)
+        incl = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sum((x - mx) ** 2 for x in xs)
+        tend = {"sequencia": [(p["posicao"], "L" if p["captura"] else "D", p["transacao_media_ms"]) for p in seq],
+                "media_por_posicao_ms": {str(p["posicao"]): p["transacao_media_ms"] for p in seq},
+                "media_primeira_metade_ms": statistics.mean(ys[:h]), "media_segunda_metade_ms": statistics.mean(ys[h:]),
+                "inclinacao_ms_por_fase_todas": incl,
+                "ligada_primeira_metade_ms": statistics.mean([p["transacao_media_ms"] for p in seq[:h] if p["captura"]] or [float("nan")]),
+                "ligada_segunda_metade_ms": statistics.mean([p["transacao_media_ms"] for p in seq[h:] if p["captura"]] or [float("nan")]),
+                "desligada_primeira_metade_ms": statistics.mean([p["transacao_media_ms"] for p in seq[:h] if not p["captura"]] or [float("nan")]),
+                "desligada_segunda_metade_ms": statistics.mean([p["transacao_media_ms"] for p in seq[h:] if not p["captura"]] or [float("nan")])}
+    if custo:
+        custo["pares"] = pares
+        custo["diferenca_media_dos_pares_ms"] = statistics.mean(x["diferenca_ms"] for x in pares) if pares else None
+        custo["tendencia_temporal"] = tend
+    special = {"aquecimento": cfg.get("aquecimento"), "ordem": cfg.get("ordem"), "carga": {"taxa": cfg.get("taxa"), "duracao_seg_por_fase": cfg.get("dur_s"), "semente": 1, "threads": 8, "pct_insert": 0, "pct_delete": 0, "hot_pct": 10, "tx_max": 5, "mix": "40,40,20 (padrao do gerador)"},
                "criterio": "segundo criterio proposto; Q-T3 pendente", "limite_pct": 15, "limite_ms": 5, "limite_ativo": True, "repeticoes": reps,
                "consulta_metricas": "nao aplicavel", "captura_desligada": "Extract EXTBDAD parado; FORCE LOGGING e supplemental logging (ALLCOLS) continuam ativos: o custo do supplemental nao e isolado",
                "variante_supplemental": cfg.get("variante_supplemental"), "supplemental_inicial": (D / "supplemental-inicial.txt").read_text().strip() if (D / "supplemental-inicial.txt").exists() else None,
@@ -332,6 +360,8 @@ if cen == "c7":
     meta["adaptacao"] = special.get("adaptacao")
 if cen == "c10":
     meta["parametros"]["repeticoes"] = cfg.get("repeticoes")
+    meta["parametros"]["aquecimento"] = cfg.get("aquecimento")
+    meta["parametros"]["ordem"] = cfg.get("ordem")
 if cen in ("c6", "c7"):
     meta["parametros"]["variante"] = cfg.get("variante")
 if cen == "c3":

@@ -598,7 +598,36 @@ diferença dentro do que uma única execução não separa de ruído; o p95 do o
 BATCHSQL e GROUPTRANSOPS 100, autostart/autorestart intactos). Java C9 comparava modos de threads do worker (todos INVALIDO por TAXA): não comparável.
 Falha do script: o `c9-comparacao.sh` apanhou `meta.json` em vez do diretório da execução ao montar o `modos.jsonl`; corrigido, e o `modos.jsonl`/`meta.json` do C9 foram regerados dos dados existentes (sem repetir medição).
 
-### C10 custo no legado: APROVADO com ressalva (`resultados/gg/c10/20261120T065625Z-REPBDAD/`)
+### C10 custo no legado, repeticao sem ressalva de aquecimento: APROVADO (`resultados/gg/c10/20261120T075952Z-REPBDAD-rev2-aquecimento/`)
+
+Ajustes do runner (`scripts/gg/c10-custo.sh`, sem mudar a metrica `transacao_media_ms`): **aquecimento de 300 s** com captura ligada, descartado (fora de `degraus.jsonl`, registrado no meta como `aquecimento`; tx média do aquecimento 5,556 ms); **600 s por fase** (igual ao C10 Java, `resultados/c10/meta.json`); **4 pares em ordem balanceada** `LD,DL,LD,DL`
+(sequência L D D L L D D L, registrada em `ordem`); mesma taxa 1.000 ev/s, semente 1, 8 threads, só updates, HOT_PCT 10, mix 40/40/20 (taxas 999,94 a 999,97, todas válidas). Antes de cada fase "desligada" o pipeline é drenado (fora da janela), o Extract é parado com autostart desabilitado (`parar_extract`) e o status é amostrado a cada 30 s (`p0N-desligada/status-extract.csv`, 23 a 24 amostras por fase):
+**todas `stopped`**, nenhuma amostra diferente. Ao fim de cada desligada o Extract é religado (`religar_extract`) e a drenagem da fase seguinte ocorre fora da janela. A variante sem supplemental logging não foi repetida (abendaria o Replicat).
+
+| Pos. | Fase | tx média (ms) | | Par | Ordem | Ligada | Desligada | Diferença (ms) | % |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | ligada | 5,894 | | 1 | LD | 5,894 | 5,636 | +0,258 | +4,58 |
+| 2 | desligada | 5,636 | | 2 | DL | 5,592 | 5,650 | -0,058 | -1,03 |
+| 3 | desligada | 5,650 | | 3 | LD | 5,705 | 6,512 | -0,807 | -12,39 |
+| 4 | ligada | 5,592 | | 4 | DL | 6,630 | 5,615 | +1,015 | +18,08 |
+| 5 | ligada | 5,705 | | | | | | | |
+| 6 | desligada | 6,512 | | | | | | | |
+| 7 | desligada | 5,615 | | | | | | | |
+| 8 | ligada | 6,630 | | | | | | | |
+
+(Pares 1 e 3: ligada antes de desligada; pares 2 e 4: desligada antes de ligada. O `meta.json` foi regerado após a carga só para incluir `posicao` (ordem e tendência); nenhuma medição foi repetida.)
+
+Média ligada **5,955 ms** (desvio amostral 0,467; min 5,592; max 6,630), desligada **5,853 ms** (desvio 0,439; min 5,615; max 6,512): diferença média dos pares **+0,102 ms, +1,74%**, contra o critério proposto <= 15% E <= 5 ms (Q-T3 pendente): **APROVADO** com folga ampla. Os pares individuais variam de -12,4% a +18,1% (sinal trocando), isto é, o ruído entre fases (desvio ~0,45 ms, ~8%) é maior que o efeito medido;
+o resultado correto de leitura é "o custo do Extract no legado é pequeno, da ordem de 0 a 1 ms, e não distinguível do ruído com 4 pares". CPU média do gg-legado: 108,7% ligada x 95,0% desligada (+13,7 pontos de 200%).
+Tendência temporal: média por posição na sequência 5,89; 5,64; 5,65; 5,59; 5,71; 6,51; 5,62; 6,63. Não há queda monotônica: a primeira fase ligada (5,89) já não é outlier (antes 7,11), então o **aquecimento foi eliminado**. Há uma leve subida na segunda metade (média 5,69 -> 6,12 ms; desligadas 5,64 -> 6,06 e ligadas 5,74 -> 6,17, os dois modos sobem juntos; inclinação +0,09 ms/fase),
+que a ordem balanceada distribui igualmente entre os modos e que não favorece nenhum deles.
+Comparação: execução anterior (3 pares, 300 s, sempre L antes de D, sem aquecimento) +0,726 ms / +13,04% (ligada 6,292, desligada 5,566); agora +0,102 ms / +1,74%. O número anterior estava inflado pelo aquecimento da primeira fase ligada. Java (triggers): +0,958 ms / +19,99% (REPROVADO).
+Integridade: drenado com Extract ligado (17 s), reconciliação SQL e jar Java 0 divergências, 0 UUIDs alterados de 2.011.552; EXTBDAD e REPBDAD RUNNING com autostart/autorestart conferidos.
+Ressalva restante: FORCE LOGGING e supplemental ALLCOLS seguem ativos nos dois modos, então o custo do supplemental logging continua não isolado.
+
+#### Execucao anterior (preservada)
+
+##### C10 custo no legado: APROVADO com ressalva de aquecimento (`resultados/gg/c10/20261120T065625Z-REPBDAD/`)
 
 3 pares alternados (ligada, desligada) a 1.000 ev/s, **300 s por fase** (o C10 Java usou 600 s por fase), só updates, semente 1, 8 threads, HOT_PCT 10, mix 40/40/20, taxa 999,97 a 999,55 (todas válidas). "Ligada" = Extract RUNNING (drenado antes da fase); "desligada" = Extract PARADO
 (confirmado); **FORCE LOGGING e supplemental logging ALLCOLS continuam ativos nas duas: o custo do supplemental logging não é isolado**. Métrica = `transacao_media_ms` do gerador (igual ao Java). Consulta de métricas com/sem: não aplicável (sem worker nem `evento_replicacao`).

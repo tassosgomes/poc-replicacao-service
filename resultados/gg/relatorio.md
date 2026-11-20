@@ -12,7 +12,7 @@ Fonte: última execução em cada `<cenario>/meta.json`; históricos não são c
 | Estabilidade de identidade | 0 UUIDs alterados em C1–C9; C10 não aplicável | C1/uuids_alterados: 0; C2/uuids_alterados: 0; C3/uuids_alterados: 0; C4/uuids_alterados: 0; C5/uuids_alterados: 0; C6/uuids_alterados: 0; C7/uuids_alterados: 0; C8/uuids_alterados: 0; C9/uuids_alterados: 0 | APROVADO | [C1](c1/meta.json), [C2](c2/meta.json), [C3](c3/meta.json), [C4](c4/meta.json), [C5](c5/meta.json), [C6](c6/meta.json), [C7](c7/meta.json), [C8](c8/meta.json), [C9](c9/meta.json) |
 | Failover (C7) | ≤ 20 s | C7/failover_s: 25.84 | REPROVADO | [C7](c7/meta.json) |
 | Correção da captura desligada (C8) | 100% das linhas afetadas corrigidas | 100.00% (55904/55904); C8/linhas_afetadas: 55904; C8/linhas_corrigidas: 55904 | APROVADO | [C8](c8/meta.json) |
-| Custo no legado (C10) | Alvo efetivo: <=15% E <=5 ms; segundo criterio proposto (Q-T3 pendente); segundo critério configurado, Q5/Q-T3 pendentes | C10/overhead_captura: {"absoluto_ms": 0.726, "percentual": 13.044259447804993} | APROVADO | [C10](c10/meta.json) |
+| Custo no legado (C10) | Alvo efetivo: <=15% E <=5 ms; segundo criterio proposto (Q-T3 pendente); segundo critério configurado, Q5/Q-T3 pendentes | C10/overhead_captura: {"absoluto_ms": 0.10199999999999942, "percentual": 1.742621620467252} | APROVADO | [C10](c10/meta.json) |
 | Rajada (C4) | ≤ 120 s após commit de 50.000 linhas; sem perda/divergência | C4/recuperacao_rajada_s: 17.894; C4/divergencias: 0; C4/pendentes_final: 0 | APROVADO | [C4](c4/meta.json) |
 | Transação longa (C5) | 30 s aberta; p95 das demais ≤ 5 s; aplicação após commit ≤ 5 s | C5/p95_demais_durante_aberta_ms: 2884; C5/aplicacao_apos_commit_ms: 1837.3 | APROVADO | [C5](c5/meta.json) |
 | Validade dos cenários | 100%; taxa ≥ 98% do alvo e diferença de relógios ≤ 100 ms | 10/10 válidos (100%) | APROVADO | Inventário abaixo |
@@ -32,7 +32,7 @@ Resultados parciais válidos aparecem no detalhamento; uma métrica composta exi
 | C7 | 20261120T052037Z-REPBDAD | REPROVADO |  | [meta](c7/meta.json) |
 | C8 | 20261120T054117Z-REPBDAD | APROVADO |  | [meta](c8/meta.json) |
 | C9 | 20261120T054721Z-REPBDAD | APROVADO |  | [meta](c9/meta.json) |
-| C10 | 20261120T065625Z-REPBDAD | APROVADO |  | [meta](c10/meta.json) |
+| C10 | 20261120T075952Z-REPBDAD-rev2-aquecimento | APROVADO |  | [meta](c10/meta.json) |
 
 ## Medições e diagnóstico por cenário
 
@@ -166,13 +166,13 @@ Comparação de threads: SEM_CRITERIO (nenhum alvo de superioridade).
 
 ### C10
 
-Janela UTC: 2026-11-20T06:56:26Z → 2026-11-20T07:56:09Z. Artefatos: `resultados/gg/c10/20261120T065625Z-REPBDAD`; caminhos internos relativos à execução.
+Janela UTC: 2026-11-20T07:59:52Z → 2026-11-20T09:51:43Z. Artefatos: `resultados/gg/c10/20261120T075952Z-REPBDAD-rev2-aquecimento`; caminhos internos relativos à execução.
 
 | Critério | Valor | Alvo | Veredito | Causa provável (a investigar) | Ajuste proposto |
 | --- | --- | --- | --- | --- | --- |
-| repeticoes_alternadas | 6 | 6 | APROVADO |  |  |
+| repeticoes_alternadas | 8 | 8 | APROVADO |  |  |
 | taxa_valida_todos_modos | true | true | APROVADO |  |  |
-| overhead_captura | {"absoluto_ms": 0.726, "percentual": 13.044259447804993} | <=15% E <=5 ms; segundo criterio proposto (Q-T3 pendente) | APROVADO |  |  |
+| overhead_captura | {"absoluto_ms": 0.10199999999999942, "percentual": 1.742621620467252} | <=15% E <=5 ms; segundo criterio proposto (Q-T3 pendente) | APROVADO |  |  |
 | divergencias | 0 | 0 | APROVADO |  |  |
 | uuids_alterados | 0 | 0 | APROVADO |  |  |
 | pendentes_final | 0 | 0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s) | APROVADO |  |  |
@@ -181,9 +181,11 @@ Médias, dispersão e custo das consultas (ms; transporte SSH incluído nas cons
 
 | Modo | Medição |
 | --- | --- |
-| sem_metricas | {"captura_desligada": {"amostras_ms": [5.679, 5.526, 5.492], "desvio_padrao_ms": 0.09961090971039956, "max_ms": 5.679, "media_ms": 5.565666666666667, "min_ms": 5.492, "repeticoes": 3}, "captura_ligada": {"amostras_ms": [7.113, 6.103, 5.659], "desvio_padrao_ms": 0.74513443977133, "max_ms": 7.113, "media_ms": 6.291666666666667, "min_ms": 5.659, "repeticoes": 3}, "overhead_captura": {"absoluto_ms": 0.726, "percentual": 13.044259447804993}} |
+| sem_metricas | {"captura_desligada": {"amostras_ms": [5.636, 5.65, 6.512, 5.615], "desvio_padrao_ms": 0.4394021506547274, "max_ms": 6.512, "media_ms": 5.85325, "min_ms": 5.615, "repeticoes": 4}, "captura_ligada": {"amostras_ms": [5.894, 5.592, 5.705, 6.63], "desvio_padrao_ms": 0.4667671617983996, "max_ms": 6.63, "media_ms": 5.9552499999999995, "min_ms": 5.592, "repeticoes": 4}, "overhead_captura": {"absoluto_ms": 0.10199999999999942, "percentual": 1.742621620467252}} |
 | com_metricas | nao aplicavel (nao ha worker nem evento_replicacao no lab GG; nao ha consulta de metricas no legado) |
-| variante_sem_supplemental | {"captura": "Extract parado e DELETE SCHEMATRANDATA (supplemental removido; FORCE LOGGING mantido)", "descritiva": true, "diretorio": "p07-desligada-sem-supplemental", "overhead_desligada_vs_sem_supplemental": {"absoluto_ms": -1.7143333333333333, "percentual": -23.5485347985348}, "overhead_ligada_vs_sem_supplemental": {"absoluto_ms": -0.9883333333333333, "percentual": -13.576007326007325}, "taxa": 999.97, "transacao_media_ms": 7.28} |
+| pares | [{"desligada_ms": 5.636, "diferenca_ms": 0.258, "diferenca_pct": 4.577714691270405, "ligada_ms": 5.894, "ordem": "LD", "repeticao": 1}, {"desligada_ms": 5.65, "diferenca_ms": -0.05800000000000072, "diferenca_pct": -1.0265486725663844, "ligada_ms": 5.592, "ordem": "DL", "repeticao": 2}, {"desligada_ms": 6.512, "diferenca_ms": -0.8069999999999995, "diferenca_pct": -12.392506142506136, "ligada_ms": 5.705, "ordem": "LD", "repeticao": 3}, {"desligada_ms": 5.615, "diferenca_ms": 1.0149999999999997, "diferenca_pct": 18.076580587711483, "ligada_ms": 6.63, "ordem": "DL", "repeticao": 4}] |
+| diferenca_media_dos_pares_ms | 0.10199999999999987 |
+| tendencia_temporal | {"desligada_primeira_metade_ms": 5.643000000000001, "desligada_segunda_metade_ms": 6.0634999999999994, "inclinacao_ms_por_fase_todas": 0.09221428571428568, "ligada_primeira_metade_ms": 5.743, "ligada_segunda_metade_ms": 6.1675, "media_por_posicao_ms": {"1": 5.894, "2": 5.636, "3": 5.65, "4": 5.592, "5": 5.705, "6": 6.512, "7": 5.615, "8": 6.63}, "media_primeira_metade_ms": 5.693, "media_segunda_metade_ms": 6.1155, "sequencia": [[1, "L", 5.894], [2, "D", 5.636], [3, "D", 5.65], [4, "L", 5.592], [5, "L", 5.705], [6, "D", 6.512], [7, "D", 5.615], [8, "L", 6.63]]} |
 
 ## Ambiente e carga dos servidores
 

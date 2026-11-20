@@ -15,8 +15,14 @@ ROOT=$(cd "$(dirname "$0")/../.." && pwd); cd "$ROOT"
 ROT=${1:-}
 set -a; source scripts/lab-gg.env; set +a
 source gg/lib.sh; source scripts/gg/comum-cenario.sh
-TAXA=${TAXA:-1000}; DUR=${DURACAO_SEG:-300}; REPS=${C10_REPETICOES:-3}; (( REPS >= 3 )) || { echo "C10_REPETICOES minimo 3" >&2; exit 2; }
-VARSUP=${C10_VARIANTE_SUPPLEMENTAL:-true}
+# Revisao 2026-11-20 (remove a ressalva de aquecimento): fase de AQUECIMENTO descartada (captura ligada, nao entra na media), 600 s por fase (igual ao Java),
+# ORDEM alternada balanceada por par (C10_ORDEM, padrao "LD,DL,LD,DL" = 4 pares; L=ligada, D=desligada), amostragem do status do Extract a cada 30 s nas fases
+# desligadas (status-extract.csv; qualquer amostra diferente de stopped invalida a execucao). A variante sem supplemental NAO e repetida (padrao false).
+TAXA=${TAXA:-1000}; DUR=${DURACAO_SEG:-600}; AQUEC=${C10_AQUECIMENTO_SEG:-300}
+ORDEM=${C10_ORDEM:-LD,DL,LD,DL}; IFS=, read -ra PARES <<< "$ORDEM"; REPS=${#PARES[@]}
+(( REPS >= 3 )) || { echo "C10 exige >= 3 pares" >&2; exit 2; }
+for pr in "${PARES[@]}"; do [[ $pr == LD || $pr == DL ]] || { echo "C10_ORDEM invalida: $pr" >&2; exit 2; }; done
+VARSUP=${C10_VARIANTE_SUPPLEMENTAL:-false}
 EXE=$(date -u +%Y%m%dT%H%M%SZ)-REPBDAD${ROT:+-$ROT}; D=resultados/gg/c10/$EXE; mkdir -p "$D"
 exigir_ambiente
 ORIG=OracleGoldenGate.ggorigem
@@ -29,6 +35,13 @@ supp > "$D/supplemental-inicial.txt"; cat "$D/supplemental-inicial.txt"
 scripts/gg/limpar-archive.sh > "$D/archive-antes.json" || { cat "$D/archive-antes.json"; exit 2; }
 scripts/gg/drenar.sh 1800 | tee "$D/drenagem-inicial.txt"
 printf "truncate table aplicacao_log;\nexit\n" | scripts/gg/q.sh novo >/dev/null
+if (( AQUEC > 0 )); then  # aquecimento: mesma carga, captura ligada, descartado (fora do degraus.jsonl, nao entra em nenhuma media)
+  echo "=== aquecimento ${AQUEC} s (captura ligada, descartado)"; mkdir -p "$D/aquecimento"
+  [[ $(st extracts/EXTBDAD) == running ]] || religar_extract
+  AQ_INI=$(date -u +%FT%TZ)
+  PCT_INSERT=0 PCT_DELETE=0 scripts/gg/gerar.sh "$TAXA" "$AQUEC" "$D/aquecimento" > "$D/aquecimento/gerar.txt"; cat "$D/aquecimento/gerar.txt"
+  scripts/gg/drenar.sh 3600 | tee "$D/aquecimento/drenagem.txt"; printf "truncate table aplicacao_log;\nexit\n" | scripts/gg/q.sh novo >/dev/null
+fi
 N=0
 fase() { # nome captura(true|false) repeticao [supplemental(true|false)]
   local nome=$1 cap=$2 rep=$3 sup=${4:-true}; N=$((N+1)); local S; S=$(printf 'p%02d-%s' "$N" "$nome"); local SD=$D/$S; mkdir -p "$SD"
@@ -37,21 +50,34 @@ fase() { # nome captura(true|false) repeticao [supplemental(true|false)]
     [[ $(st extracts/EXTBDAD) == running ]] || religar_extract
     scripts/gg/drenar.sh 3600 | tee "$SD/drenagem-previa.txt"; printf "truncate table aplicacao_log;\nexit\n" | scripts/gg/q.sh novo >/dev/null
   else
+    [[ $(st extracts/EXTBDAD) == running ]] && scripts/gg/drenar.sh 3600 | tee "$SD/drenagem-previa.txt"   # fora da janela medida
     [[ $(st extracts/EXTBDAD) == stopped ]] || parar_extract
+    : > "$SD/status-extract.csv"
   fi
   [[ $N == 1 ]] && rel > "$SD/relogio-inicio.json"
   scripts/gg/limpar-archive.sh > "$SD/archive.json" || { cat "$SD/archive.json"; exit 2; }
   echo "extract=$(st extracts/EXTBDAD) replicat=$(st replicats/REPBDAD) $(supp)" | tee "$SD/estado-antes.txt"
+  local AMO=
+  if [[ $cap == false ]]; then  # amostra o status do Extract (antes, a cada 30 s e depois); fica parado a fase inteira ou a execucao e invalida
+    echo "$(date -u +%FT%TZ),$(st extracts/EXTBDAD)" >> "$SD/status-extract.csv"
+    ( while :; do sleep 30; echo "$(date -u +%FT%TZ),$(st extracts/EXTBDAD)" >> "$SD/status-extract.csv"; done ) & AMO=$!
+  fi
   PCT_INSERT=0 PCT_DELETE=0 scripts/gg/gerar.sh "$TAXA" "$DUR" "$SD" > "$SD/gerar.txt"; cat "$SD/gerar.txt"
+  if [[ -n $AMO ]]; then
+    kill "$AMO" 2>/dev/null || true; wait "$AMO" 2>/dev/null || true
+    echo "$(date -u +%FT%TZ),$(st extracts/EXTBDAD)" >> "$SD/status-extract.csv"
+    echo "status do Extract na fase: $(wc -l < "$SD/status-extract.csv") amostras, nao-stopped=$(grep -vc ',stopped$' "$SD/status-extract.csv" || true)"
+    [[ $(grep -vc ',stopped$' "$SD/status-extract.csv" || true) == 0 ]] || { echo "Extract NAO ficou parado em $S: execucao invalida" >&2; exit 2; }
+  fi
   echo "extract=$(st extracts/EXTBDAD) replicat=$(st replicats/REPBDAD) $(supp)" | tee "$SD/estado-depois.txt"
   local ini fim; ini=$(sed -n 's/.*inicio_carga=//p' "$SD/gerador.log"); fim=$(sed -n 's/.*fim_carga=//p' "$SD/gerador.log")
-  jq -nc --arg dir "$S" --argjson alvo "$TAXA" --arg ini "$ini" --arg fim "$fim" --argjson cap "$cap" --argjson rep "$rep" --arg nome "$nome" --argjson sup "$sup" \
-    '{dir:$dir,alvo:$alvo,inicio_iso:$ini,fim_iso:$fim,drenagem_s:null,captura:$cap,repeticao:$rep,modo:$nome,supplemental:$sup}' >> "$D/degraus.jsonl"
+  jq -nc --arg dir "$S" --argjson alvo "$TAXA" --arg ini "$ini" --arg fim "$fim" --argjson cap "$cap" --argjson rep "$rep" --arg nome "$nome" --argjson sup "$sup" --argjson pos "$N" \
+    '{dir:$dir,alvo:$alvo,inicio_iso:$ini,fim_iso:$fim,drenagem_s:null,captura:$cap,repeticao:$rep,modo:$nome,supplemental:$sup,posicao:$pos}' >> "$D/degraus.jsonl"
 }
 for r in $(seq 1 "$REPS"); do
-  fase ligada true "$r"
-  fase desligada false "$r"
-  religar_extract    # o Extract retoma pelo redo enquanto a proxima fase "ligada" espera a drenagem previa
+  for m in $(echo "${PARES[r-1]}" | fold -w1); do
+    if [[ $m == L ]]; then fase ligada true "$r"; else fase desligada false "$r"; religar_extract; fi   # religa apos cada desligada; a drenagem ocorre fora da janela
+  done
 done
 if [[ $VARSUP == true ]]; then
   # Variante DESCRITIVA. Sem supplemental logging o redo gerado nao e aplicavel pelo Replicat (OGG-30426, chave ausente no trail; ver
@@ -94,9 +120,9 @@ scripts/gg/verificar-archive-necessario.sh > "$D/archive-necessario-final.json" 
 echo "extract=$(st extracts/EXTBDAD) replicat=$(st replicats/REPBDAD) $(supp)" | tee "$D/estado-final.txt"
 gg GET /extracts/EXTBDAD | jq -c '.response.managedProcessSettings' > "$D/autostart-extract.json"; gg GET /replicats/REPBDAD | jq -c '.response.managedProcessSettings' > "$D/autostart-replicat.json"
 integridade_final "$D" c10 "$EXE"
-jq -n --arg e "$EXE" --arg i "$INI_RUN" --arg f "$(date -u +%FT%TZ)" --arg r "$(RDESC_OFICIAL)" --argjson d "$DUR" --argjson t "$TAXA" --argjson reps "$REPS" --arg vs "$VARSUP" \
+jq -n --arg e "$EXE" --arg i "$INI_RUN" --arg f "$(date -u +%FT%TZ)" --arg r "$(RDESC_OFICIAL)" --argjson d "$DUR" --argjson t "$TAXA" --argjson reps "$REPS" --arg vs "$VARSUP" --argjson aq "$AQUEC" --arg ordem "$ORDEM" --arg aqini "${AQ_INI:-}" \
   --argjson ps "$(psha)" --arg jar "$(sha256sum "$JAR" | cut -d' ' -f1)" --slurpfile st "$D/degraus.jsonl" \
-  '{cenario:"c10",execucao:$e,inicio:$i,fim:$f,replicat:$r,dur_s:$d,taxa:$t,taxas:[$t],repeticoes:$reps,variante_supplemental:($vs=="true"),params_sha256:$ps,jar_sha256:$jar,degraus:$st}' > "$D/cenario.json"
+  '{cenario:"c10",execucao:$e,inicio:$i,fim:$f,replicat:$r,dur_s:$d,taxa:$t,taxas:[$t],repeticoes:$reps,aquecimento:{duracao_s:$aq,captura:true,descartado:true,inicio:$aqini,dir:"aquecimento"},ordem:$ordem,variante_supplemental:($vs=="true"),params_sha256:$ps,jar_sha256:$jar,degraus:$st}' > "$D/cenario.json"
 trap - ERR
 RC=0; python3 -I scripts/gg/meta_gg.py "$D" | tee "$D/veredito.json" || RC=$?
 [[ -s $D/meta.json ]] || exit 2
