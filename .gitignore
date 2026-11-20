@@ -10,3 +10,5 @@ __pycache__/
 resultados/**/*.csv
 !resultados/**/diferencas.csv
 resultados/**/snapshots/
+
+demo-ui/.venv/

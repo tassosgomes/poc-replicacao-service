@@ -1,0 +1,16 @@
+{
+  "massa": "completa",
+  "scn_carga": "2322830",
+  "segundos": {
+    "bancos_saudaveis": 37.6,
+    "esquema_e_massa_legado": 121.8,
+    "esquema_novo": 2.2,
+    "hub_saudavel": 36.3,
+    "extract_running": 8.3,
+    "carga_inicial": 487.1,
+    "replicat_running": 2.2,
+    "pipeline_running_desde_hub": 497.5,
+    "total": 695.4
+  },
+  "relogio": "desenv-server (NTP), nao o do WSL2"
+}

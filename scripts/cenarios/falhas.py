@@ -4,10 +4,11 @@ import re
 import time
 
 from analise import instant
+from lab import *  # noqa: F403 (padroes do lab)
 from executor import Runner, number, pending, remote, sql
 
 
-def database_time(host="infra-server", container="poc-novo", user="replica"):
+def database_time(host=HOST_NOVO, container=CONTAINER_NOVO, user=USUARIO_NOVO):
     return sql(host, container, user,
                "select to_char(sys_extract_utc(systimestamp), 'YYYY-MM-DD\"T\"HH24:MI:SS.FF6\"Z\"') from dual;")
 
@@ -28,7 +29,7 @@ class FailureRunner(Runner):
 
     def kill_worker(self, entry):
         # Only an entry created by this runner can reach the destructive operation.
-        if entry not in self.workers or not entry["name"].startswith("poc-worker-"):
+        if entry not in self.workers or not entry["name"].startswith(PREFIXO + "worker-"):
             raise RuntimeError("worker da queda nao pertence a esta execucao")
         self.workers.remove(entry)
         if self.worker is entry:
@@ -91,7 +92,7 @@ class FailureRunner(Runner):
             self.finish_phase(phase)
 
     def ownership(self):
-        output = sql("infra-server", "poc-novo", "replica",
+        output = sql(*NOVO,
                      "select to_char(sys_extract_utc(systimestamp), 'YYYY-MM-DD\"T\"HH24:MI:SS.FF6\"Z\"') "
                      "|| ',' || dono || ',' || count(*) from lease_particao "
                      "where dono is not null and expira_em>sys_extract_utc(systimestamp) group by dono;")
@@ -109,12 +110,12 @@ class FailureRunner(Runner):
         # Mark before disable: if transport fails after DDL, cleanup must still restore capture.
         if not enabled:
             self.trigger_disabled = True
-        sql("desenv-server", "poc-legado", "bdad",
+        sql(*LEGADO,
             "alter trigger trg_obra_captura " + ("enable;" if enabled else "disable;"))
         self.trigger_disabled = not enabled
 
     def reconcile(self, mode, dry_run, **options):
-        entry = self.spawn("reconciliacao", "infra-server", {"MODO": mode, "DRY_RUN": dry_run} | options)
+        entry = self.spawn("reconciliacao", HOST_NOVO, {"MODO": mode, "DRY_RUN": dry_run} | options)
         entry["collected"] = True  # stdout is the reconciliation artifact
         self.wait_until(lambda: entry["process"].poll() is not None, 300, "reconciliacao excedeu limite")
         self.finish(entry)
@@ -132,17 +133,17 @@ class FailureRunner(Runner):
         duration = number("TRIGGER_DESLIGADO_SEG", 60)
         self.trigger(False)
         try:
-            self.special["trigger_desligado_inicio"] = database_time("desenv-server", "poc-legado", "bdad")
+            self.special["trigger_desligado_inicio"] = database_time(*LEGADO)
             phase = self.phase("c8", self.rate, duration, options={"MIX": "0,100,0", "PCT_INSERT": 0, "PCT_DELETE": 0})
             entry = phase["entry"]
             self.finish_phase(phase)
             affected = set()
-            for path in (self.directory / entry["name"].removeprefix("poc-")).glob("gerador-linhas-*.csv"):
+            for path in (self.directory / entry["name"].removeprefix(PREFIXO)).glob("gerador-linhas-*.csv"):
                 with path.open() as stream:
                     for row in csv.DictReader(stream):
                         if row["tabela"] == "OBRA_MUSICAL":
                             affected.add((row["tabela"], row["codigo"]))
-            self.special["trigger_desligado_fim"] = database_time("desenv-server", "poc-legado", "bdad")
+            self.special["trigger_desligado_fim"] = database_time(*LEGADO)
         finally:
             self.trigger(True)
         with (self.directory / "linhas-afetadas.csv").open("w") as stream:

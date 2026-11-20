@@ -21,7 +21,7 @@ SQL
 }
 fim=$((SECONDS + duracao))
 while (( SECONDS < fim )); do
-  coletar desenv-server poc-legado
-  coletar infra-server poc-novo
+  coletar "$LAB_HOST_LEGADO" "$LAB_CONTAINER_LEGADO"
+  coletar "$LAB_HOST_NOVO" "$LAB_CONTAINER_NOVO"
   (( SECONDS >= fim )) || sleep 5
 done

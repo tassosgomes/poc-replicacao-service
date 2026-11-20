@@ -167,3 +167,99 @@ Ressalvas para a Fase 1: (a) a latência base de ~2,4 s (p50) e ~3,3 s (p95) já
 com baixa carga; o regime a 1.000 ev/s é o risco principal e precisa ser medido cedo (Fase 3/C2); (b) `COMMITTIMESTAMP` tem resolução
 de 1 s, então use `origem_updated_at` para a latência por evento ou aceite ±1 s; (c) processos não sobem sozinhos
 depois de um `docker kill`: tratar no `subir.sh`; (d) o teto do Replicat clássico e do coordenado ainda é desconhecido.
+
+
+---
+
+## Fase 1: ambiente reprodutível (2026-11-19/20)
+
+Lab GG reconstruído do zero duas vezes com a massa completa (200k/500k/1M), processos com autostart/autorestart.
+`poc-legado`/`poc-novo` continuaram parados e com containers/volumes idênticos (inventário comparado no `derrubar.sh`).
+
+### Comandos
+
+| Comando | O que faz |
+|---|---|
+| `scripts/gg/subir.sh` | Pré-requisitos (`.env` ignorado, SSH, Docker, NTP, RAM ≥ 4 GB, disco ≥ 10 GB, portas 1523/1524/18443, relógios ≤ 100 ms, `poc-*` parados e volumes existentes, imagem do hub presente), inventário em `.tsg-flow/gg-inventario`, gg-legado e gg-novo (2 CPU/3 GiB), esquema + massa, hub (2 CPU/4 GiB), `gg/criar-pipeline.sh base`, carga por SCN, `gg/criar-pipeline.sh replicat <SCN>`, contagens e estado. `GG_MASSA_REDUZIDA=1` volta à massa do spike. Tempos em `resultados/gg/c1/subir-tempos.json` |
+| `scripts/gg/derrubar.sh` | Remove só `gg-legado`, `gg-novo`, `gg-hub` (`rm -fv`: leva o volume anônimo `/u01/ogg/scripts` do hub) e os volumes `gg-legado`, `gg-novo`, `gg-hub`, `gg-hub-tmp`; compara com o inventário (falha se `poc-*` mudou: container, id, instante de parada, volume) |
+| `scripts/gg/testar-autostart.sh restart\|kill` | Teste de autostart/autorestart (abaixo) |
+| `scripts/gg/reconciliar.sh` | Reconciliação completa por SQL (hash por faixa) |
+| `scripts/gg/snapshot-ids.sh [c1] [nome]` | Snapshot `(tabela,codigo,id)` do gg-novo |
+| `gg/criar-pipeline.sh base \| replicat <SCN> \| <SCN>` | O pipeline foi dividido em duas etapas para a carga entrar entre elas; `<SCN>` sozinho mantém o comportamento antigo |
+
+`criar-pipeline.sh` não aborta em erro REST (só imprime `ERROR`); o `subir.sh` verifica `RUNNING` do Extract e do Replicat e que o SCN da carga é ≥ o SCN de registro do Extract.
+
+### Autostart / autorestart (REST, sem adminclient)
+
+Propriedade `managedProcessSettings` do Extract/Replicat no Admin Service (descoberta em
+`/services/Local/adminsrvr/v2/metadata-catalog/extract`), aplicada na criação do Extract e por `PATCH` no Replicat depois do
+`START ... AFTERCSN` (um autostart antes dele iniciaria o Replicat sem o SCN):
+
+    {"managedProcessSettings":{"autoStart":{"enabled":true,"delay":0},
+      "autoRestart":{"enabled":true,"onSuccess":false,"delay":5,"retries":9,"window":60,"disableOnFailure":false}}}
+
+Teste (lab com massa completa, `scripts/gg/testar-autostart.sh`; tempo medido no infra-server, desde o retorno do comando docker):
+
+| Cenário | REST responde | EXTBDAD e REPBDAD RUNNING | Resultado |
+|---|---|---|---|
+| `docker restart gg-hub` com 100 updates (1 a cada ~0,1 s) cobrindo a queda | 6,7 s | 12,2 s | 100/100 aplicados, 1 linha de `aplicacao_log` por código, origem == destino |
+| `docker kill gg-hub`, 100 updates com o hub parado, `docker start gg-hub` | 5,6 s | 10,0 s | idem |
+
+Primeira bateria (lab da massa reduzida, antes do rebuild): restart 10,0 s, kill/start 9,9 s, mesmos resultados. Nenhum `START`
+manual. Fora do escopo: a política de restart do Docker (`--restart`) não foi ligada de propósito (um `docker kill` a
+reiniciaria sozinho e o teste deixaria de testar o autostart); se o host reiniciar, o container do hub precisa de `docker start`.
+
+### Tempos do `subir.sh` (massa completa, do zero; relógio do desenv-server, não do WSL2)
+
+| Etapa | Execução 1 | Execução 2 |
+|---|---|---|
+| gg-legado e gg-novo saudáveis | 53,2 s | 37,6 s |
+| legado: redo, archivelog/GG, esquema e massa 1,7 M linhas | 120,8 s | 121,8 s |
+| destino: GG + esquema | 2,4 s | 2,2 s |
+| hub saudável e REST | 36,7 s | 36,3 s |
+| EXTBDAD RUNNING (após criar credenciais, trandata, heartbeat) | 8,5 s | 8,3 s |
+| carga inicial por SCN (total) | 481,7 s | 487,1 s |
+| REPBDAD RUNNING após o SCN | 2,2 s | 2,2 s |
+| pipeline RUNNING (desde o hub pronto) | 492,4 s | 497,5 s |
+| total | 705,6 s | 695,4 s |
+
+O tempo da massa isolada não foi medido (a etapa do legado inclui reinício do CDB para ARCHIVELOG). Os archive logs
+ficaram em ~1,5 GB (`/opt/oracle/oradata/FREE/arch`) após a massa na execução 1; não há ainda política RMAN de limpeza.
+
+### Carga inicial por SCN (`INSERT ... AS OF SCN` via DB link, UUIDv7 por trigger; execução 2)
+
+| Tabela | Linhas | Tempo (`set timing`) | Linhas/s |
+|---|---|---|---|
+| titular | 200.000 | 55,9 s | 3.577 |
+| obra_musical | 500.000 | 139,5 s | 3.584 |
+| fonograma | 1.000.000 | 288,7 s | 3.464 |
+| total | 1.700.000 | 484,1 s | 3.511 |
+
+Execução 1: 54,6 s / 141,3 s / 280,5 s = 476,3 s (3.569 linhas/s). Referência Java (C1, `poc-carga-inicial`): 109,9 s. A carga
+GG por DB link com trigger de UUID e de log por linha é ~4,4x mais lenta que o C1 Java, não comparável como "carga do GG"
+em si (o GG Initial Load não foi usado e a trigger `aplicacao_log` dobra o custo por linha; `truncate` ao fim). Não foi
+tentado otimizar (paralelismo por faixa, `NOLOGGING`, desligar a trigger de log durante a carga). SCN da carga ≥ SCN de
+registro do Extract nas duas execuções (2322820 ≥ 2321844; 2322830 ≥ 2321849).
+
+### Integridade da massa completa
+
+- Contagens iguais nos dois lados: titular 200.000, obra_musical 500.000, fonograma 1.000.000.
+- **Java `reconciliacao`** (`MODO=completo DRY_RUN=true`, build `./mvnw -B -q -pl poc -am package -DskipTests`, jar rodado no
+  laptop com `LEGADO_URL=jdbc:oracle:thin:@//192.168.0.5:1523/FREEPDB1`, `NOVO_URL=jdbc:oracle:thin:@//192.168.0.11:1524/FREEPDB1`,
+  usuários padrão bdad/replica): funcionou no lab GG, **0 divergências** nas três tabelas, 19,8 s. Em dry-run ele não toca
+  `evento_replicacao` (só o modo não-dry reenfileira), por isso não falhou pela ausência da outbox. Ele compara
+  `updated_at` (legado) com `origem_updated_at` (réplica) e as colunas de negócio + `excluido`.
+- **`scripts/gg/reconciliar.sh`** (SQL, independente do jar): por faixa de 100.000 códigos, contagem + dois `ORA_HASH`
+  (sementes 0 e 1) somados das mesmas colunas: 20 faixas dos dois lados, **0 divergências**. Não é mais forte que o Java
+  (também é hash de 32 bits); vale como segunda verificação sem depender do jar. Não houve teste negativo (induzir divergência).
+- Snapshot de UUIDs (`scripts/gg/snapshot-ids.sh`): 1.700.000 linhas, 0 UUIDs duplicados, todos com versão 7/variante 10.
+  CSV em `resultados/gg/c1/snapshots/apos-carga.csv` (86 MB, ignorado pelo `.gitignore`); `resultados/gg/c1/meta.json`
+  guarda contagem, tamanho e sha256 (execução 2: `b401a261...5040`). Depois dos testes de autostart (200 titulares
+  atualizados) o snapshot é byte a byte idêntico: update não troca `id`.
+
+### Achados
+
+- `docker rm -f gg-hub` deixa um volume anônimo (`/u01/ogg/scripts`, da imagem) órfão; o `derrubar.sh` agora usa `rm -fv`.
+  Um órfão do lab do spike (criado em 2026-11-19 21:03, conteúdo `setup`/`startup` do GG) foi removido à mão.
+- Ressalvas ainda abertas para a Fase 4: a carga de 1,7 M linhas leva ~8 min; política RMAN/alarme de disco dos archive logs
+  não implementada; Distribution Path e Parallel Replicat não testados.

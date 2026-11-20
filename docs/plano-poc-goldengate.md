@@ -97,6 +97,8 @@ Se o item 2 ou 3 falhar, voltar com o problema antes da Fase 1.
 
 ### Fase 1: ambiente reprodutível
 
+**Status (2026-11-20): concluída, exceto a política RMAN de limpeza de archive logs com alarme de disco (pendente).** Evidência e tempos em `docs/spike-goldengate-notas.md`, seção "Fase 1". Desvio do plano: o esquema do legado/destino reaproveitou os arquivos do spike (`sql/gg/...`); o `00_redo.sql` foi reutilizado.
+
 - `scripts/gg/subir.sh` e `scripts/gg/derrubar.sh`, mesmos pré-requisitos do `subir.sh`
   (NTP, RAM ≥ 4 GB, disco, portas 1523/1524 livres, relógios ≤ 100 ms), inventário próprio,
   e verificação de que `poc-legado`/`poc-novo` estão **parados e com volume intacto**.

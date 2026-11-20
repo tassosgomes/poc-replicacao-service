@@ -1,5 +1,5 @@
 -- Carga inicial instanciada por SCN (executar como REPLICA em FREEPDB1 do gg-novo). Define &1 = SCN.
-set verify off
+set verify off timing on
 -- Le o legado AS OF SCN via DB link (ggadmin tem SELECT ANY TABLE + FLASHBACK ANY TABLE); o UUIDv7 nasce
 -- no trigger BEFORE INSERT do destino (id nao e informado). Requer destino vazio.
 whenever sqlerror exit sql.sqlcode

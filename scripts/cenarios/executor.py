@@ -15,10 +15,10 @@ import tempfile
 import time
 from datetime import datetime, timezone
 
+from lab import *  # noqa: F403 (padroes do lab)
 from analise import analyze, criteria, generator_summary, instant
 
 ROOT = Path(__file__).resolve().parents[2]
-HOSTS = ("desenv-server", "infra-server")
 IMAGE = "eclipse-temurin:25-jre"
 SSH = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=2"]
 
@@ -51,22 +51,22 @@ def sql(host, container, user, query):
     script = ("whenever sqlerror exit failure\nwhenever oserror exit failure\n"
               "set heading off feedback off pagesize 0 linesize 200 trimspool on verify off\n" + query + "\nexit\n")
     output = remote(host, ["docker", "exec", "-i", container, "sqlplus", "-s",
-                           f"{user}/{user}@localhost:1521/FREEPDB1"], script.encode()).decode().strip()
+                           f"{user}/{user}@localhost:{PORTA_INTERNA}/{SERVICO}"], script.encode()).decode().strip()
     if re.search(r"(^|\n)(ORA-|SP2-|ERROR)", output):
         raise RuntimeError("consulta SQL falhou")
     return output
 
 
 def pending():
-    return int(sql("desenv-server", "poc-legado", "bdad", "select count(*) from evento_replicacao;"))
+    return int(sql(*LEGADO, "select count(*) from evento_replicacao;"))
 
 
 def inventory(host):
     listed = remote(host, ["docker", "ps", "-a", "--format", "{{.ID}} {{.Names}}"]).decode().splitlines()
     # docker cp can lock its own stopped container. The watchdog inspects existing services,
     # not a container whose artifact is being prepared or transferred by this runner.
-    ids = [line.split()[0] for line in listed if not line.split()[1].startswith("poc-")
-           or line.split()[1] in ("poc-legado", "poc-novo")]
+    ids = [line.split()[0] for line in listed if not line.split()[1].startswith(PREFIXO)
+           or line.split()[1] in (CONTAINER_LEGADO, CONTAINER_NOVO)]
     # Explicit allowlist: never retrieve Config.Env or docker-inspect's full sensitive document.
     template = ('{"nome":{{json .Name}},"id":{{json .Id}},"imagem":{{json .Config.Image}},'
                 '"imagem_id":{{json .Image}},"cpu":{{.HostConfig.NanoCpus}},"memoria":{{.HostConfig.Memory}},'
@@ -85,7 +85,7 @@ def inventory(host):
 def unavailable(before, after):
     current = {c["id"]: c for c in after["containers"]}
     for old in before["containers"]:
-        if old["nome"].startswith("poc-") or not old["running"]:
+        if old["nome"].startswith(PREFIXO) or not old["running"]:
             continue
         new = current.get(old["id"])
         if not new or not new["running"] or new["reinicios"] != old["reinicios"] or new["inicio"] != old["inicio"]:
@@ -184,12 +184,12 @@ class Runner:
 
     def spawn(self, role, host, options):
         self.prepare_image(host)
-        name = f"poc-{role}-{self.execution.lower()}-{len(self.containers)}"
-        args = ["docker", "create", "--name", name, "--network", "poc-rede", "--cpus=2",
+        name = f"{PREFIXO}{role}-{self.execution.lower()}-{len(self.containers)}"
+        args = ["docker", "create", "--name", name, "--network", REDE, "--cpus=2",
                 "--memory=1g", "--memory-swap=1g", "-e", "RESULTADOS_DIR=/resultados"]
-        urls = {"LEGADO_URL": "jdbc:oracle:thin:@//poc-legado:1521/FREEPDB1" if host == "desenv-server"
-                else f"jdbc:oracle:thin:@//{self.legacy_address}:1521/FREEPDB1",
-                "NOVO_URL": "jdbc:oracle:thin:@//poc-novo:1521/FREEPDB1"}
+        urls = {"LEGADO_URL": f"jdbc:oracle:thin:@//{CONTAINER_LEGADO}:{PORTA_INTERNA}/{SERVICO}" if host == HOST_LEGADO
+                else f"jdbc:oracle:thin:@//{self.legacy_address}:{PORTA_LEGADO}/{SERVICO}",
+                "NOVO_URL": f"jdbc:oracle:thin:@//{CONTAINER_NOVO}:{PORTA_INTERNA}/{SERVICO}"}
         for key, value in (urls | options).items():
             args += ["-e", f"{key}={str(value).lower() if isinstance(value, bool) else value}"]
         args += [self.image, "java", "-Xmx512m", "-jar", "/app.jar", role]
@@ -212,7 +212,7 @@ class Runner:
         try:
             remote(host, ["docker", "image", "inspect", "--format", "{{.Id}}", self.image])
         except subprocess.CalledProcessError:
-            name = f"poc-artefato-{self.execution.lower()}"
+            name = f"{PREFIXO}artefato-{self.execution.lower()}"
             entry = {"name": name, "host": host, "role": "artefato", "process": None, "collected": True}
             self.containers.append(entry)
             remote(host, ["docker", "create", "--name", name, "--network", "none", "--cpus=2", "--memory=1g", IMAGE, "true"])
@@ -241,7 +241,7 @@ class Runner:
     def collect(self, entry):
         if entry["collected"]:
             return
-        destination = self.directory / entry["name"].removeprefix("poc-")
+        destination = self.directory / entry["name"].removeprefix(PREFIXO)
         destination.mkdir(exist_ok=True)
         with tempfile.TemporaryFile() as archive, tempfile.TemporaryFile() as errors:
             process = subprocess.Popen(SSH + [entry["host"], shlex.join(["docker", "cp", entry["name"] + ":/resultados/.", "-"])],
@@ -277,7 +277,7 @@ class Runner:
 
     def create_worker(self, virtual=True, options=None):
         worker_id = f"v11-{self.execution}-{len(self.containers)}"
-        entry = self.spawn("worker", "infra-server", {"WORKER_ID": worker_id, "VIRTUAL_THREADS": virtual,
+        entry = self.spawn("worker", HOST_NOVO, {"WORKER_ID": worker_id, "VIRTUAL_THREADS": virtual,
                                                       "EVENTOS_CSV": True} | (options or {}))
         entry["worker_id"] = worker_id
         self.workers.append(entry)
@@ -287,7 +287,7 @@ class Runner:
         self.worker = self.create_worker(virtual)
         worker_id = self.worker["worker_id"]
         def ready():
-            count = sql("infra-server", "poc-novo", "replica",
+            count = sql(*NOVO,
                         f"select count(*) from lease_particao where dono='{worker_id}' and expira_em>sys_extract_utc(systimestamp);")
             return count == "48"
         self.wait_until(ready, 90, "worker nao assumiu as 48 particoes")
@@ -299,7 +299,7 @@ class Runner:
         if os.environ.get("PREPARAR_REPLICA", "false").lower() != "true":
             return
         started = time.monotonic()
-        entry = self.spawn("carga-inicial", "infra-server", {"THREADS": number("PREPARAR_THREADS", 4)})
+        entry = self.spawn("carga-inicial", HOST_NOVO, {"THREADS": number("PREPARAR_THREADS", 4)})
         entry["collected"] = True  # the initial load writes no result directory
         timeout = number("PREPARAR_TIMEOUT_SEG", 3600)
         self.wait_until(lambda: entry["process"].poll() is not None, timeout, "carga inicial de preparo excedeu limite")
@@ -312,7 +312,7 @@ class Runner:
         self.clock("apos_preparo")
 
     def phase(self, group, rate, duration, virtual=True, options=None):
-        generator = self.spawn("gerador", "desenv-server", {"TAXA": rate, "DURACAO_SEG": duration,
+        generator = self.spawn("gerador", HOST_LEGADO, {"TAXA": rate, "DURACAO_SEG": duration,
                                "THREADS": number("THREADS", 8), "SEMENTE": number("SEMENTE", 1),
                                "PCT_INSERT": number("PCT_INSERT", 5, 0), "PCT_DELETE": number("PCT_DELETE", 1, 0),
                                "HOT_PCT": number("HOT_PCT", 10, 0)} | (options or {}))
@@ -366,7 +366,7 @@ class Runner:
                 extra = {"RAJADA_LINHAS": number("RAJADA_LINHAS", 50000)}
             else:
                 extra = {"TX_ABERTA_SEG": hold}
-            generator = self.spawn("gerador", "desenv-server", extra)
+            generator = self.spawn("gerador", HOST_LEGADO, extra)
             self.wait_until(lambda: generator["process"].poll() is not None, hold + 180, "operacao especial nao encerrou")
             destination = self.finish(generator)
             log = generator["log"].read_text()
@@ -412,7 +412,7 @@ class Runner:
         with path.open("a") as stream:
             if path.stat().st_size == 0:
                 stream.write("ts,container,cpu_percent,memoria,sessoes_ativas\n")
-            for host, container in zip(HOSTS, ("poc-legado", "poc-novo")):
+            for host, container in zip(HOSTS, (CONTAINER_LEGADO, CONTAINER_NOVO)):
                 stats = remote(host, ["docker", "stats", "--no-stream", "--format", "{{.CPUPerc}};{{.MemUsage}}", container]).decode().strip()
                 sessions = remote(host, ["docker", "exec", "-i", container, "sqlplus", "-s", "/ as sysdba"],
                                   b"whenever sqlerror exit failure\nset heading off feedback off pages 0\nselect count(*) from v$session where status='ACTIVE' and type='USER';\nexit\n").decode().strip()
@@ -429,20 +429,20 @@ class Runner:
         if not self.jar.is_file():
             raise RuntimeError("jar ausente; execute ./mvnw -B -q package (gera poc/target/...)")
         self.jar_sha = hashlib.sha256(self.jar.read_bytes()).hexdigest()
-        self.image = "poc-cenarios:" + self.jar_sha
+        self.image = f"{PREFIXO}cenarios:" + self.jar_sha
         self.baseline = [inventory(h) for h in HOSTS]
         self.loads.append({"etapa": "antes", "ts": utc(), "hosts": self.baseline})
-        self.environment = {"hosts": list(HOSTS), "containers": [c for h in self.baseline for c in h["containers"] if c["nome"].startswith("poc-")],
+        self.environment = {"hosts": list(HOSTS), "containers": [c for h in self.baseline for c in h["containers"] if c["nome"].startswith(PREFIXO)],
                             "imagem_aplicacao": self.image, "imagem_base": IMAGE, "jar": self.jar.name,
                             "jar_sha256": self.jar_sha,
                             "limites_aplicacao": {"cpu": 2, "memoria": 1073741824}}
         # Existing PoC processes would change worker quota and invalidate the one-worker scenario.
         for host in self.baseline:
-            active = remote(host["host"], ["docker", "ps", "--filter", "name=^/poc-", "--format", "{{.Names}}"])
-            unexpected = [name for name in active.decode().splitlines() if name not in ("poc-legado", "poc-novo")]
+            active = remote(host["host"], ["docker", "ps", "--filter", f"name=^/{PREFIXO}", "--format", "{{.Names}}"])
+            unexpected = [name for name in active.decode().splitlines() if name not in (CONTAINER_LEGADO, CONTAINER_NOVO)]
             if unexpected:
                 raise RuntimeError("processos PoC preexistentes; encerre seus cenarios antes de executar")
-        config = command(["ssh", "-G", "desenv-server"]).decode()
+        config = command(["ssh", "-G", HOST_LEGADO]).decode()
         self.legacy_address = re.search(r"^hostname (.+)$", config, re.M)[1]
         self.clock("inicio")
         self.next_watch = time.monotonic() + self.interval
@@ -461,7 +461,7 @@ class Runner:
         self.workload()
         self.wait_until(lambda: pending() == 0, self.drain_timeout, "pendentes finais nao zeraram")
         self.integrity["pendentes_final"] = pending()
-        recon = self.spawn("reconciliacao", "infra-server", {"MODO": "completo", "DRY_RUN": True} | self.reconciliation_options())
+        recon = self.spawn("reconciliacao", HOST_NOVO, {"MODO": "completo", "DRY_RUN": True} | self.reconciliation_options())
         self.wait_until(lambda: recon["process"].poll() is not None, 300, "reconciliacao excedeu limite")
         # Reconciliation has no result directory; the complete stdout is its evidence.
         process = recon["process"]
