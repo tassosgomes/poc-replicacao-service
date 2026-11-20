@@ -1,0 +1,20 @@
+-- Replicat classico (nonintegrated) bdad -> replica. Free nao suporta Parallel Replicat com Oracle Free.
+REPLICAT REPBDAD
+USERIDALIAS ggdestino DOMAIN OracleGoldenGate
+-- Triggers do destino (UUIDv7, replicado_em, aplicacao_log) precisam disparar.
+DBOPTIONS NOSUPPRESSTRIGGERS
+REPERROR (DEFAULT, ABEND)
+-- DELETE fisico na origem vira UPDATE (excluido = 1): a replica nunca apaga linha.
+UPDATEDELETES
+MAP bdad.titular, TARGET replica.titular, KEYCOLS (codigo), &
+  COLMAP (USEDEFAULTS, origem_updated_at = updated_at, &
+    excluido = @IF(@STREQ(@GETENV('GGHEADER','OPTYPE'),'DELETE'), 1, excluido), &
+    origem_commit_ts = @GETENV('GGHEADER','COMMITTIMESTAMP'));
+MAP bdad.obra_musical, TARGET replica.obra_musical, KEYCOLS (codigo), &
+  COLMAP (USEDEFAULTS, origem_updated_at = updated_at, &
+    excluido = @IF(@STREQ(@GETENV('GGHEADER','OPTYPE'),'DELETE'), 1, excluido), &
+    origem_commit_ts = @GETENV('GGHEADER','COMMITTIMESTAMP'));
+MAP bdad.fonograma, TARGET replica.fonograma, KEYCOLS (codigo), &
+  COLMAP (USEDEFAULTS, origem_updated_at = updated_at, &
+    excluido = @IF(@STREQ(@GETENV('GGHEADER','OPTYPE'),'DELETE'), 1, excluido), &
+    origem_commit_ts = @GETENV('GGHEADER','COMMITTIMESTAMP'));

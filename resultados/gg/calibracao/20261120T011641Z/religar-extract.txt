@@ -1,0 +1,2 @@
+drenado em 243 s (aplicacao_log=361243, lag reportado do replicat=3 s)
+religar+drenar: 243 s (relogio do laptop)

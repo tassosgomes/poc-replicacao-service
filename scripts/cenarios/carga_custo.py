@@ -7,6 +7,7 @@ import threading
 import time
 
 from analise import criterion
+from lab import *  # noqa: F403 (padroes do lab)
 from executor import Runner, number, pending, sql
 
 TABLES = ("TITULAR", "OBRA_MUSICAL", "FONOGRAMA")
@@ -30,7 +31,7 @@ def limit(key, default):
 
 def trigger_states():
     names = ",".join("'" + name + "'" for name in CAPTURE + UPDATED)
-    output = sql("desenv-server", "poc-legado", "bdad",
+    output = sql(*LEGADO,
                  f"select trigger_name || ',' || status from user_triggers where trigger_name in ({names});")
     return dict(line.split(",") for line in output.splitlines())
 
@@ -90,7 +91,7 @@ def sample_backlog(entry, stopped, queries, errors):
                 origin = time.monotonic()
             started = time.monotonic()
             if started >= next_sample:
-                value = sql("desenv-server", "poc-legado", "bdad",
+                value = sql(*LEGADO,
                             "select count(*) || ',' || nvl(to_char(min(criado_em), 'YYYY-MM-DD HH24:MI:SS.FF6'), 'VAZIO') from evento_replicacao;")
                 queries.append({"apos_inicio_s": started - origin, "duracao_ms": (time.monotonic() - started) * 1000,
                                 "resultado": value})
@@ -123,7 +124,7 @@ class LoadCostRunner(Runner):
         if not enabled:
             self.restore_capture = True
         for name in CAPTURE:
-            sql("desenv-server", "poc-legado", "bdad", f"alter trigger {name} " + ("enable;" if enabled else "disable;"))
+            sql(*LEGADO, f"alter trigger {name} " + ("enable;" if enabled else "disable;"))
         self.require_triggers(enabled)
         self.restore_capture = not enabled
 
@@ -135,9 +136,9 @@ class LoadCostRunner(Runner):
         self.special["escopo"] = {"codigo_min_inclusivo": 0, "codigo_max_exclusivo": self.maximum,
                                  "completo": self.maximum == 9223372036854775807}
         for table in TABLES:
-            sql("infra-server", "poc-novo", "replica", f"truncate table {table};")
-        self.special["contagens_apos_truncate"] = self.counts("infra-server", "poc-novo", "replica")
-        entry = self.spawn("carga-inicial", "infra-server", {"THREADS": number("PREPARAR_THREADS", 4),
+            sql(*NOVO, f"truncate table {table};")
+        self.special["contagens_apos_truncate"] = self.counts(*NOVO)
+        entry = self.spawn("carga-inicial", HOST_NOVO, {"THREADS": number("PREPARAR_THREADS", 4),
                                                            "CODIGO_MAX": self.maximum})
         entry["collected"] = True
         self.wait_until(lambda: entry["process"].poll() is not None, number("PREPARAR_TIMEOUT_SEG", 3600),
@@ -158,8 +159,8 @@ class LoadCostRunner(Runner):
 
     def workload(self):
         # Initial copy already ran before the worker started; no synthetic writes are needed.
-        self.integrity["contagens_legado"] = self.counts("desenv-server", "poc-legado", "bdad")
-        self.integrity["contagens_novo"] = self.counts("infra-server", "poc-novo", "replica")
+        self.integrity["contagens_legado"] = self.counts(*LEGADO)
+        self.integrity["contagens_novo"] = self.counts(*NOVO)
 
     def execute(self):
         if self.scenario == "c1":

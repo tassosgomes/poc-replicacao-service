@@ -1,0 +1,10 @@
+-- Extract integrado do schema bdad (PDB FREEPDB1). Conexao no PDB com ggadmin (role OGG_CAPTURE).
+EXTRACT EXTBDAD
+USERIDALIAS ggorigem DOMAIN OracleGoldenGate
+EXTTRAIL ea
+-- Limita a memoria do log mining server (streams pool do gg-legado = 256M).
+TRANLOGOPTIONS INTEGRATEDPARAMS (MAX_SGA_SIZE 128)
+-- Latencia de base (Fase 3): intervalo de espera no fim do redo, 0,01 s (padrao 1 s). Medido: p50 2,56 -> 1,2 s a 60 ev/s
+-- (ver docs/spike-goldengate-notas.md, Fase 3). Custo: mais CPU de polling no hub (~10% -> ~17% em repouso).
+EOFDELAYCSECS 1
+TABLE bdad.*;

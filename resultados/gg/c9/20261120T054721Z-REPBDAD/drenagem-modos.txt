@@ -1,0 +1,3 @@
+drenado em 15 s (aplicacao_log=60014, lag reportado do replicat=1 s)
+drenado em 17 s (aplicacao_log=600010, lag reportado do replicat=2 s)
+drenado em 17 s (aplicacao_log=599969, lag reportado do replicat=1 s)

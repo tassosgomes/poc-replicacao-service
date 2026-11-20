@@ -1,0 +1,65 @@
+container=gg-gerador-1795159511 exit=0
+INFO: log_linhas=gerador-linhas-20261120T072513Z-1-3c2e4832fc91.csv
+INFO: inicio_carga=2026-11-20T07:25:15.892622812Z
+INFO: janela_linhas=5006 taxa=1001.20
+INFO: janela_linhas=5006 taxa=1001.20
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=5003 taxa=1000.60
+INFO: janela_linhas=4991 taxa=998.20
+INFO: janela_linhas=5006 taxa=1001.20
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=5000 taxa=1000.00
+INFO: janela_linhas=4991 taxa=998.20
+INFO: janela_linhas=5016 taxa=1003.20
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=4992 taxa=998.40
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=4995 taxa=999.00
+INFO: janela_linhas=5000 taxa=1000.00
+INFO: janela_linhas=5003 taxa=1000.60
+INFO: janela_linhas=4994 taxa=998.80
+INFO: janela_linhas=5010 taxa=1002.00
+INFO: janela_linhas=4998 taxa=999.60
+INFO: janela_linhas=4993 taxa=998.60
+INFO: janela_linhas=5006 taxa=1001.20
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=4998 taxa=999.60
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=5005 taxa=1001.00
+INFO: janela_linhas=5005 taxa=1001.00
+INFO: janela_linhas=5003 taxa=1000.60
+INFO: janela_linhas=4987 taxa=997.40
+INFO: janela_linhas=5012 taxa=1002.40
+INFO: janela_linhas=4990 taxa=998.00
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=4998 taxa=999.60
+INFO: janela_linhas=5000 taxa=1000.00
+INFO: janela_linhas=5008 taxa=1001.60
+INFO: janela_linhas=4995 taxa=999.00
+INFO: janela_linhas=4990 taxa=998.00
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=5003 taxa=1000.60
+INFO: janela_linhas=5004 taxa=1000.80
+INFO: janela_linhas=4995 taxa=999.00
+INFO: janela_linhas=5006 taxa=1001.20
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=5010 taxa=1002.00
+INFO: janela_linhas=4993 taxa=998.60
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=5000 taxa=1000.00
+INFO: janela_linhas=4995 taxa=999.00
+INFO: janela_linhas=5001 taxa=1000.20
+INFO: janela_linhas=5007 taxa=1001.40
+INFO: janela_linhas=4989 taxa=997.80
+INFO: janela_linhas=5001 taxa=1000.20
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=5006 taxa=1001.20
+INFO: janela_linhas=4990 taxa=998.00
+INFO: janela_linhas=4994 taxa=998.80
+INFO: janela_linhas=4860 taxa=972.00
+INFO: fim_carga=2026-11-20T07:30:15.904660659Z
+INFO: linhas=299876 transacoes=100104 taxa=999.55 alvo=1000 transacao_media_ms=5.659 VALIDO

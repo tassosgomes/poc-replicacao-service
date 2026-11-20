@@ -1,0 +1,6 @@
+INFO OGG-14034 Heartbeat entries with [REPBDAD] deleted.
+INFO OGG-08100 Replicat group REPBDAD deleted.
+INFO OGG-08100 Replicat added.
+INFO OGG-10183 Parameter file REPBDAD.prm passed validity check.
+INFO OGG-06594 Replicat REPBDAD has been altered. Even the start up position might be updated, duplicate suppression remains active in next startup. To override duplicate suppression, start REPBDAD with NOFILTERDUPTRANSACTIONS option.
+INFO OGG-08100 Replicat altered.

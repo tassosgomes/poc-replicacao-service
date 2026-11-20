@@ -1,0 +1,1 @@
+drenado em 18 s (aplicacao_log=599975, lag reportado do replicat=0 s)

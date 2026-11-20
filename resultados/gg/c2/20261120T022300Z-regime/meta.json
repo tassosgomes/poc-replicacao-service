@@ -1,0 +1,95 @@
+{
+ "execucao": "20261120T022300Z-regime",
+ "alvo_ev_s": 1000,
+ "duracao_s": 300,
+ "replicat": "REPBDAD classico",
+ "gerador": {
+  "linhas": 300008,
+  "transacoes": 100137,
+  "taxa_efetiva": 1000.02,
+  "transacao_media_ms": 7.623
+ },
+ "latencia_s": {
+  "n": 300008,
+  "min_s": 0.35,
+  "p50_s": 1.854,
+  "p95_s": 2.89,
+  "p99_s": 3.198,
+  "max_s": 5.242,
+  "media_s": 1.873,
+  "metodo": "nearest-rank; aplicado_em - origem_updated_at; eventos com origem_updated_at na janela de geracao"
+ },
+ "relogios": {
+  "inicio": {
+   "offset_ms": 1.362,
+   "incerteza_ms": 4.754
+  },
+  "fim": {
+   "offset_ms": 1.348,
+   "incerteza_ms": 5.038
+  }
+ },
+ "cpu_docker_stats": {
+  "gg-legado": {
+   "media_pct": 107.4,
+   "max_pct": 177.43,
+   "amostras": 64
+  },
+  "gerador": {
+   "media_pct": 29.5,
+   "max_pct": 205.11,
+   "amostras": 64
+  },
+  "gg-novo": {
+   "media_pct": 17.2,
+   "max_pct": 40.42,
+   "amostras": 64
+  },
+  "gg-hub": {
+   "media_pct": 20.8,
+   "max_pct": 78.26,
+   "amostras": 64
+  }
+ },
+ "criterios": {
+  "p95_ate_5s": {
+   "valor_s": 2.89,
+   "alvo_s": 5,
+   "veredito": "APROVADO"
+  },
+  "lag_sem_tendencia_de_alta": {
+   "inclinacao_max_ms_s": -3.487074620334619,
+   "crescimento_sustentado_max": false,
+   "inclinacao_media_ms_s": -4.242471042741893,
+   "crescimento_sustentado_media": false,
+   "janela_s": 175.5,
+   "veredito": "APROVADO"
+  },
+  "taxa_ate_98pct": {
+   "valor": 1000.02,
+   "alvo": 1000,
+   "minimo": 980.0,
+   "veredito": "APROVADO"
+  },
+  "relogios_ate_100ms": {
+   "pior_offset_mais_incerteza_ms": 6.386,
+   "veredito": "APROVADO"
+  },
+  "integridade": {
+   "reconciliacao_sql_divergencias": "0",
+   "reconciliacao_java_exit": 0,
+   "uuids": {
+    "preexistentes_comparados": 1700000,
+    "uuids_alterados": 0
+   },
+   "veredito": "APROVADO"
+  }
+ },
+ "params_sha256": {
+  "REPCO.prm": "c8775a3d294dfa00",
+  "REPBDAD.prm": "8e90c308d824c054",
+  "EXTBDAD.prm": "54011670fd1b8a3c",
+  "REPBDAD.sem-cdr.prm": "7e8b794e141c5204"
+ },
+ "veredito": "APROVADO"
+}

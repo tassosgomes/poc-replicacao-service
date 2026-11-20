@@ -1,0 +1,2 @@
+INFO OGG-01792 SCHEMATRANDATA has been deleted on schema "bdad".
+INFO OGG-01979 SCHEMATRANDATA for scheduling columns has been deleted on schema "bdad".

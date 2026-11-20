@@ -1,0 +1,100 @@
+{
+  "cenario": "c10",
+  "execucao": "20261120T065625Z-REPBDAD",
+  "inicio": "2026-11-20T06:56:26Z",
+  "fim": "2026-11-20T07:56:09Z",
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "dur_s": 300,
+  "taxa": 1000,
+  "taxas": [
+    1000
+  ],
+  "repeticoes": 3,
+  "variante_supplemental": true,
+  "params_sha256": {
+    "EXTBDAD.prm": "54011670fd1b8a3c",
+    "REPBDAD.prm": "8e90c308d824c054",
+    "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+    "REPCO.prm": "7abada0cf861f222"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "degraus": [
+    {
+      "dir": "p01-ligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-20T06:57:44.006568962Z",
+      "fim_iso": "2026-11-20T07:02:44.007178898Z",
+      "drenagem_s": null,
+      "captura": true,
+      "repeticao": 1,
+      "modo": "ligada",
+      "supplemental": true
+    },
+    {
+      "dir": "p02-desligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-20T07:04:06.361009656Z",
+      "fim_iso": "2026-11-20T07:09:06.361728878Z",
+      "drenagem_s": null,
+      "captura": false,
+      "repeticao": 1,
+      "modo": "desligada",
+      "supplemental": true
+    },
+    {
+      "dir": "p03-ligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-20T07:11:49.947313868Z",
+      "fim_iso": "2026-11-20T07:16:49.947996179Z",
+      "drenagem_s": null,
+      "captura": true,
+      "repeticao": 2,
+      "modo": "ligada",
+      "supplemental": true
+    },
+    {
+      "dir": "p04-desligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-20T07:17:48.012020523Z",
+      "fim_iso": "2026-11-20T07:22:48.012989480Z",
+      "drenagem_s": null,
+      "captura": false,
+      "repeticao": 2,
+      "modo": "desligada",
+      "supplemental": true
+    },
+    {
+      "dir": "p05-ligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-20T07:25:15.892622812Z",
+      "fim_iso": "2026-11-20T07:30:15.904660659Z",
+      "drenagem_s": null,
+      "captura": true,
+      "repeticao": 3,
+      "modo": "ligada",
+      "supplemental": true
+    },
+    {
+      "dir": "p06-desligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-20T07:31:06.901274604Z",
+      "fim_iso": "2026-11-20T07:36:06.902664376Z",
+      "drenagem_s": null,
+      "captura": false,
+      "repeticao": 3,
+      "modo": "desligada",
+      "supplemental": true
+    },
+    {
+      "dir": "p07-desligada-sem-supplemental",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-20T07:39:11.596168302Z",
+      "fim_iso": "2026-11-20T07:44:11.596958744Z",
+      "drenagem_s": null,
+      "captura": false,
+      "repeticao": 1,
+      "modo": "desligada-sem-supplemental",
+      "supplemental": false
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+INFO OGG-08100 Sending STOP request to Replicat group REPBDAD.
+INFO OGG-02965 Replicat group REPBDAD is down (gracefully).
+INFO OGG-10183 Parameter file REPBDAD.prm passed validity check.
+INFO OGG-00975 Replicat group REPBDAD starting.
+INFO OGG-15445 Replicat group REPBDAD started.
+REPBDAD running com /home/tsgomes/github-tassosgomes/poc-replicacao-service/gg/params/REPBDAD.prm

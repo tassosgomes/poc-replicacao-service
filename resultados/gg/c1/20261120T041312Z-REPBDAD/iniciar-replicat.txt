@@ -1,0 +1,15 @@
+Oracle GoldenGate Free Administration Client for Oracle
+Version 23.26.3.0.6 Free OGGCORE_23.26.3.0.0OGGRU_LINUX.X64_260911.1206_FBO
+
+Copyright (C) 1995, 2026, Oracle and/or its affiliates. All rights reserved.
+
+Linux, x64, 64bit (optimized) on Sep 11 2026 18:14:59
+Operating system character set identified as US-ASCII.
+
+OGG (not connected) 1> CONNECT https://localhost:8443 DEPLOYMENT Local AS oggadmin PASSWORD **** !
+
+OGG (https://localhost:8443 Local) 2> START REPLICAT REPBDAD AFTERCSN 9779205
+2026-11-20T04:23:57Z  INFO    OGG-00975  Replicat group REPBDAD starting.
+2026-11-20T04:23:57Z  INFO    OGG-15445  Replicat group REPBDAD started.
+
+

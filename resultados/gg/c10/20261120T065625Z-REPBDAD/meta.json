@@ -1,0 +1,644 @@
+{
+ "cenario": "c10",
+ "execucao": "20261120T065625Z-REPBDAD",
+ "inicio": "2026-11-20T06:56:26Z",
+ "fim": "2026-11-20T07:56:09Z",
+ "diretorio": "resultados/gg/c10/20261120T065625Z-REPBDAD",
+ "ambiente": {
+  "lab": "goldengate",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "gg-legado",
+    "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:51:55.461509857Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-novo",
+    "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:52:06.858681453Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-hub",
+    "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+    "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+    "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+    "cpu": 2000000000,
+    "memoria": 4294967296,
+    "running": true,
+    "inicio": "2026-11-20T05:26:44.427008679Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   }
+  ],
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "EXTBDAD.prm": "54011670fd1b8a3c",
+   "REPBDAD.prm": "8e90c308d824c054",
+   "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+   "REPCO.prm": "7abada0cf861f222"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "APROVADO",
+ "skew_ms": {
+  "inicio": 0.764,
+  "fim": 0.509
+ },
+ "skew_incerteza_ms": {
+  "inicio": 4.904,
+  "fim": 4.742
+ },
+ "relogios": [
+  {
+   "etapa": "p01-ligada-inicio",
+   "ts": "2026-11-20T06:57:44.006568962Z",
+   "skew_ms": 0.764,
+   "incerteza_ms": 4.904
+  },
+  {
+   "etapa": "p07-desligada-sem-supplemental-fim",
+   "ts": "2026-11-20T07:44:11.596958744Z",
+   "skew_ms": 0.509,
+   "incerteza_ms": 4.742
+  }
+ ],
+ "carga_servidores": [],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "snapshot_antes": "../../c1/snapshots/apos-carga.csv",
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "divergencias_sql": 0,
+  "divergencias_java": 0,
+  "reconciliacao": "reconciliacao-java.log",
+  "reconciliacao_sql": "reconciliacao-sql.txt",
+  "snapshot_depois": "snapshots/apos.csv",
+  "uuids_alterados": 0,
+  "uuids": {
+   "preexistentes_comparados": 2011552,
+   "uuids_alterados": 0
+  },
+  "diferencas": "reconciliacao-sql.txt"
+ },
+ "criterios": [
+  {
+   "nome": "repeticoes_alternadas",
+   "valor": 6,
+   "alvo": 6,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "taxa_valida_todos_modos",
+   "valor": true,
+   "alvo": true,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "overhead_captura",
+   "valor": {
+    "absoluto_ms": 0.726,
+    "percentual": 13.044259447804993
+   },
+   "alvo": "<=15% E <=5 ms; segundo criterio proposto (Q-T3 pendente)",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s)",
+   "veredito": "APROVADO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c10",
+   "linhas": 299992,
+   "transacoes": 100137,
+   "taxa": 999.97,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T06:57:44.006568962Z",
+   "fim": "2026-11-20T07:02:44.007178898Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 109.7,
+     "max_pct": 201.39,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 25.6,
+     "max_pct": 160.12,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 18.6,
+     "max_pct": 193.68,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 17.5,
+     "max_pct": 34.12,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 7.113,
+   "dir": "p01-ligada",
+   "captura": true,
+   "repeticao": 1,
+   "modo": "ligada",
+   "supplemental": true
+  },
+  {
+   "grupo": "c10",
+   "linhas": 299992,
+   "transacoes": 100137,
+   "taxa": 999.97,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T07:04:06.361009656Z",
+   "fim": "2026-11-20T07:09:06.361728878Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 93.7,
+     "max_pct": 125.15,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 28.0,
+     "max_pct": 137.5,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 7.3,
+     "max_pct": 37.21,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 16.6,
+     "max_pct": 19.45,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 5.679,
+   "dir": "p02-desligada",
+   "captura": false,
+   "repeticao": 1,
+   "modo": "desligada",
+   "supplemental": true
+  },
+  {
+   "grupo": "c10",
+   "linhas": 299992,
+   "transacoes": 100137,
+   "taxa": 999.97,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T07:11:49.947313868Z",
+   "fim": "2026-11-20T07:16:49.947996179Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 97.1,
+     "max_pct": 142.75,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 27.7,
+     "max_pct": 191.97,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 19.0,
+     "max_pct": 80.6,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 19.9,
+     "max_pct": 72.49,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 6.103,
+   "dir": "p03-ligada",
+   "captura": true,
+   "repeticao": 2,
+   "modo": "ligada",
+   "supplemental": true
+  },
+  {
+   "grupo": "c10",
+   "linhas": 299992,
+   "transacoes": 100137,
+   "taxa": 999.97,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T07:17:48.012020523Z",
+   "fim": "2026-11-20T07:22:48.012989480Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 95.3,
+     "max_pct": 128.69,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 27.1,
+     "max_pct": 176.73,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 5.3,
+     "max_pct": 14.94,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 18.0,
+     "max_pct": 36.45,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 5.526,
+   "dir": "p04-desligada",
+   "captura": false,
+   "repeticao": 2,
+   "modo": "desligada",
+   "supplemental": true
+  },
+  {
+   "grupo": "c10",
+   "linhas": 299876,
+   "transacoes": 100104,
+   "taxa": 999.55,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T07:25:15.892622812Z",
+   "fim": "2026-11-20T07:30:15.904660659Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 106.3,
+     "max_pct": 133.96,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 26.8,
+     "max_pct": 184.74,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 18.9,
+     "max_pct": 43.76,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 18.3,
+     "max_pct": 71.44,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 5.659,
+   "dir": "p05-ligada",
+   "captura": true,
+   "repeticao": 3,
+   "modo": "ligada",
+   "supplemental": true
+  },
+  {
+   "grupo": "c10",
+   "linhas": 299992,
+   "transacoes": 100137,
+   "taxa": 999.97,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T07:31:06.901274604Z",
+   "fim": "2026-11-20T07:36:06.902664376Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 94.1,
+     "max_pct": 128.51,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 28.1,
+     "max_pct": 125.88,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 5.4,
+     "max_pct": 18.14,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 19.0,
+     "max_pct": 70.38,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 5.492,
+   "dir": "p06-desligada",
+   "captura": false,
+   "repeticao": 3,
+   "modo": "desligada",
+   "supplemental": true
+  },
+  {
+   "grupo": "c10",
+   "linhas": 299992,
+   "transacoes": 100137,
+   "taxa": 999.97,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T07:39:11.596168302Z",
+   "fim": "2026-11-20T07:44:11.596958744Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 89.9,
+     "max_pct": 138.43,
+     "amostras": 64
+    },
+    "gerador": {
+     "media_pct": 27.2,
+     "max_pct": 88.98,
+     "amostras": 64
+    },
+    "gg-novo": {
+     "media_pct": 4.4,
+     "max_pct": 8.01,
+     "amostras": 64
+    },
+    "gg-hub": {
+     "media_pct": 15.9,
+     "max_pct": 49.23,
+     "amostras": 64
+    }
+   },
+   "transacao_media_ms": 7.28,
+   "dir": "p07-desligada-sem-supplemental",
+   "captura": false,
+   "repeticao": 1,
+   "modo": "desligada-sem-supplemental",
+   "supplemental": false
+  }
+ ],
+ "medidas": {
+  "eventos_medidos": 0,
+  "relogios_validos": true,
+  "custo_legado": {
+   "sem_metricas": {
+    "captura_ligada": {
+     "repeticoes": 3,
+     "media_ms": 6.291666666666667,
+     "desvio_padrao_ms": 0.74513443977133,
+     "min_ms": 5.659,
+     "max_ms": 7.113,
+     "amostras_ms": [
+      7.113,
+      6.103,
+      5.659
+     ]
+    },
+    "captura_desligada": {
+     "repeticoes": 3,
+     "media_ms": 5.565666666666667,
+     "desvio_padrao_ms": 0.09961090971039956,
+     "min_ms": 5.492,
+     "max_ms": 5.679,
+     "amostras_ms": [
+      5.679,
+      5.526,
+      5.492
+     ]
+    },
+    "overhead_captura": {
+     "absoluto_ms": 0.726,
+     "percentual": 13.044259447804993
+    }
+   },
+   "com_metricas": "nao aplicavel (nao ha worker nem evento_replicacao no lab GG; nao ha consulta de metricas no legado)",
+   "variante_sem_supplemental": {
+    "descritiva": true,
+    "captura": "Extract parado e DELETE SCHEMATRANDATA (supplemental removido; FORCE LOGGING mantido)",
+    "transacao_media_ms": 7.28,
+    "taxa": 999.97,
+    "overhead_ligada_vs_sem_supplemental": {
+     "absoluto_ms": -0.9883333333333333,
+     "percentual": -13.576007326007325
+    },
+    "overhead_desligada_vs_sem_supplemental": {
+     "absoluto_ms": -1.7143333333333333,
+     "percentual": -23.5485347985348
+    },
+    "diretorio": "p07-desligada-sem-supplemental"
+   }
+  },
+  "cpu_media_gg_legado_pct": {
+   "ligada": 104.4,
+   "desligada": 94.4,
+   "desligada_sem_supplemental": 89.9
+  },
+  "ordem_das_fases": [
+   [
+    "p01-ligada",
+    true,
+    7.113
+   ],
+   [
+    "p02-desligada",
+    false,
+    5.679
+   ],
+   [
+    "p03-ligada",
+    true,
+    6.103
+   ],
+   [
+    "p04-desligada",
+    false,
+    5.526
+   ],
+   [
+    "p05-ligada",
+    true,
+    5.659
+   ],
+   [
+    "p06-desligada",
+    false,
+    5.492
+   ],
+   [
+    "p07-desligada-sem-supplemental",
+    false,
+    7.28
+   ]
+  ],
+  "comparacao_java": {
+   "overhead_percentual": 19.998608792431824,
+   "overhead_absoluto_ms": 0.958333333333333,
+   "observacao": "triggers de captura no legado Java (resultados/c10): captura ligada 5,750 ms x desligada 4,792 ms"
+  }
+ },
+ "operacao_especial": {
+  "carga": {
+   "taxa": 1000,
+   "duracao_seg_por_fase": 300,
+   "semente": 1,
+   "threads": 8,
+   "pct_insert": 0,
+   "pct_delete": 0,
+   "hot_pct": 10,
+   "tx_max": 5,
+   "mix": "40,40,20 (padrao do gerador)"
+  },
+  "criterio": "segundo criterio proposto; Q-T3 pendente",
+  "limite_pct": 15,
+  "limite_ms": 5,
+  "limite_ativo": true,
+  "repeticoes": 3,
+  "consulta_metricas": "nao aplicavel",
+  "captura_desligada": "Extract EXTBDAD parado; FORCE LOGGING e supplemental logging (ALLCOLS) continuam ativos: o custo do supplemental nao e isolado",
+  "variante_supplemental": true,
+  "supplemental_inicial": "grupos_tabela=0 schemas_preparados=1 force_logging=YES supplemental_min=YES",
+  "supplemental_removido": "grupos_tabela=0 schemas_preparados=0 force_logging=YES supplemental_min=YES",
+  "supplemental_restaurado": "grupos_tabela=0 schemas_preparados=1 force_logging=YES supplemental_min=YES",
+  "estado_final": "extract=running replicat=running grupos_tabela=0 schemas_preparados=1 force_logging=YES supplemental_min=YES",
+  "integridade": "aplicavel aqui (diferente do Java): o Extract retoma pelo redo, nada fica sem replicacao; drenado com Extract ligado e reconciliado",
+  "archive_antes": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 17298681,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1435796480,
+   "archive_bytes_depois": 1435796480,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  },
+  "archive_depois": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 19290913,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1470006272,
+   "archive_bytes_depois": 1470006272,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  }
+ },
+ "parametros": {
+  "taxa": 1000,
+  "duracao_seg": 300,
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "repeticoes": 3
+ }
+}

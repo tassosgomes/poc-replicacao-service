@@ -1,0 +1,1 @@
+extract=running replicat=running grupos_tabela=0 schemas_preparados=1 force_logging=YES supplemental_min=YES

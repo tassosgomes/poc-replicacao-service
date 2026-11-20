@@ -1,0 +1,29 @@
+-- Replicat coordenado (THREADS 4) para o teste de vazao: classico x coordenado.
+REPLICAT REPCO
+USERIDALIAS ggdestino DOMAIN OracleGoldenGate
+-- Triggers do destino (UUIDv7, replicado_em, aplicacao_log) precisam disparar.
+DBOPTIONS NOSUPPRESSTRIGGERS
+REPERROR (DEFAULT, ABEND)
+-- DELETE fisico na origem vira UPDATE (excluido = 1): a replica nunca apaga linha.
+-- ATENCAO (Fase 4): o coordenado com THREADRANGE pode dividir uma transacao de origem entre threads (docs.oracle.com, "About
+-- Coordinated Replicat": a integridade da transacao de origem inteira nao e mantida entre threads). Nao e elegivel como configuracao
+-- da PoC (consistencia vence velocidade) e nao foi medido no C3: o classico atingiu 2.000 ev/s. Sem EOFDELAYCSECS/GROUPTRANSOPS/BATCHSQL: nao testado.
+UPDATEDELETES
+MAP bdad.titular, TARGET replica.titular, KEYCOLS (codigo), THREADRANGE (1-4, codigo), &
+  COMPARECOLS (ON UPDATE KEYINCLUDING (origem_updated_at)), &
+  RESOLVECONFLICT (UPDATEROWEXISTS, (DEFAULT, USEMAX (origem_updated_at))), &
+  COLMAP (USEDEFAULTS, origem_updated_at = updated_at, &
+    excluido = @IF(@STREQ(@GETENV('GGHEADER','OPTYPE'),'DELETE'), 1, excluido), &
+    origem_commit_ts = @GETENV('GGHEADER','COMMITTIMESTAMP'));
+MAP bdad.obra_musical, TARGET replica.obra_musical, KEYCOLS (codigo), THREADRANGE (1-4, codigo), &
+  COMPARECOLS (ON UPDATE KEYINCLUDING (origem_updated_at)), &
+  RESOLVECONFLICT (UPDATEROWEXISTS, (DEFAULT, USEMAX (origem_updated_at))), &
+  COLMAP (USEDEFAULTS, origem_updated_at = updated_at, &
+    excluido = @IF(@STREQ(@GETENV('GGHEADER','OPTYPE'),'DELETE'), 1, excluido), &
+    origem_commit_ts = @GETENV('GGHEADER','COMMITTIMESTAMP'));
+MAP bdad.fonograma, TARGET replica.fonograma, KEYCOLS (codigo), THREADRANGE (1-4, codigo), &
+  COMPARECOLS (ON UPDATE KEYINCLUDING (origem_updated_at)), &
+  RESOLVECONFLICT (UPDATEROWEXISTS, (DEFAULT, USEMAX (origem_updated_at))), &
+  COLMAP (USEDEFAULTS, origem_updated_at = updated_at, &
+    excluido = @IF(@STREQ(@GETENV('GGHEADER','OPTYPE'),'DELETE'), 1, excluido), &
+    origem_commit_ts = @GETENV('GGHEADER','COMMITTIMESTAMP'));

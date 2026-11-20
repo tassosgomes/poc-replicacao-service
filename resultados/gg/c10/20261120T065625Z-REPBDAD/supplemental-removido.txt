@@ -1,0 +1,1 @@
+grupos_tabela=0 schemas_preparados=0 force_logging=YES supplemental_min=YES

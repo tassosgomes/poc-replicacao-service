@@ -2,7 +2,12 @@
 """Midpoint/half-RTT clock evidence after the SSH handshake, using the least RTT of five samples."""
 import select
 import subprocess
+import sys
 import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "cenarios"))
+from lab import HOST_LEGADO, HOST_NOVO  # noqa: E402
 
 
 def monotonic_ns():
@@ -47,6 +52,6 @@ def clock(host):
 
 
 if __name__ == "__main__":
-    a, uncertainty_a = clock("desenv-server")
-    b, uncertainty_b = clock("infra-server")
+    a, uncertainty_a = clock(HOST_LEGADO)
+    b, uncertainty_b = clock(HOST_NOVO)
     print(a - b, uncertainty_a + uncertainty_b)

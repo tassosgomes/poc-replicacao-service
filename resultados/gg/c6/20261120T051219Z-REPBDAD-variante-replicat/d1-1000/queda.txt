@@ -1,0 +1,1 @@
+{"eventos": [{"nome": "kill_processo_replicat", "desde_queda_s": 12.38, "desde_reinicio_s": 6.67, "rest_desde_reinicio_s": -5.51, "extract_running_desde_reinicio_s": -5.51, "replicat_running_desde_reinicio_s": 0.0, "estavel_apos_normalizar": true, "pico_lag_s": 7.6}]}

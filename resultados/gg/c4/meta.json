@@ -1,0 +1,266 @@
+{
+ "cenario": "c4",
+ "execucao": "20261120T034630Z-REPBDAD",
+ "inicio": "2026-11-20T03:46:30Z",
+ "fim": "2026-11-20T03:59:43Z",
+ "diretorio": "resultados/gg/c4/20261120T034630Z-REPBDAD",
+ "ambiente": {
+  "lab": "goldengate",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "gg-legado",
+    "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:51:55.461509857Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-novo",
+    "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:52:06.858681453Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-hub",
+    "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+    "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+    "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+    "cpu": 2000000000,
+    "memoria": 4294967296,
+    "running": true,
+    "inicio": "2026-11-20T01:05:15.109487246Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   }
+  ],
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "EXTBDAD.prm": "54011670fd1b8a3c",
+   "REPBDAD.prm": "8e90c308d824c054",
+   "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+   "REPCO.prm": "7abada0cf861f222"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "APROVADO",
+ "skew_ms": {
+  "inicio": -0.301,
+  "fim": 0.093
+ },
+ "skew_incerteza_ms": {
+  "inicio": 4.713,
+  "fim": 4.687
+ },
+ "relogios": [
+  {
+   "etapa": "d1-1000-inicio",
+   "ts": "2026-11-20T03:47:05.508404285Z",
+   "skew_ms": -0.301,
+   "incerteza_ms": 4.713
+  },
+  {
+   "etapa": "d1-1000-fim",
+   "ts": "2026-11-20T03:57:05.509077284Z",
+   "skew_ms": 0.093,
+   "incerteza_ms": 4.687
+  }
+ ],
+ "carga_servidores": [],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "snapshot_antes": "../../c1/snapshots/apos-carga.csv",
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "divergencias_sql": 0,
+  "divergencias_java": 0,
+  "reconciliacao": "reconciliacao-java.log",
+  "reconciliacao_sql": "reconciliacao-sql.txt",
+  "snapshot_depois": "snapshots/apos.csv",
+  "uuids_alterados": 0,
+  "uuids": {
+   "preexistentes_comparados": 1700000,
+   "uuids_alterados": 0
+  },
+  "diferencas": "reconciliacao-sql.txt"
+ },
+ "criterios": [
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s)",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "recuperacao_rajada_s",
+   "valor": 17.894,
+   "alvo": "<=120 apos commit",
+   "veredito": "APROVADO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c4",
+   "linhas": 600012,
+   "transacoes": 200327,
+   "taxa": 1000.02,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T03:47:05.508404285Z",
+   "fim": "2026-11-20T03:57:05.509077284Z",
+   "validade": "VALIDO",
+   "p95_ms": 2893,
+   "eventos_medidos": 599851,
+   "tendencia_lag": {
+    "inclinacao_ms_s": -1.3230513987671888,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "drenagem_s": 18,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 108.1,
+     "max_pct": 166.58,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 25.8,
+     "max_pct": 96.89,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 21.5,
+     "max_pct": 85.4,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 21.2,
+     "max_pct": 77.92,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 5.892,
+   "latencia_s": {
+    "min_s": 0.312,
+    "p50_s": 1.869,
+    "p95_s": 2.893,
+    "p99_s": 4.545,
+    "max_s": 9.901,
+    "media_s": 1.911
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -1.3954745643149589,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "lag_final_s": 2.714
+  }
+ ],
+ "medidas": {
+  "eventos_medidos": 599851,
+  "relogios_validos": true,
+  "p95_ms": 2893,
+  "recuperacao_s": 17.894,
+  "janela_recuperacao_s": 473.403,
+  "patamar_lag_ms": 3708.2,
+  "patamar": {
+   "metodo": "maximo da latencia por balde de 5 s (eventos de fundo, por aplicado_em) nos baldes inteiros que terminam no commit da rajada",
+   "janela_s": 60,
+   "amostras": 11,
+   "mediana_ms": 3230.8,
+   "maximo_ms": 3708.2
+  },
+  "rajada": {
+   "linhas_esperadas": 50000,
+   "linhas_classificadas": 50161,
+   "excesso_ambiguo": 161,
+   "completa": true,
+   "commit_ts_origem": "20261120034912",
+   "commit_ts_confere": true,
+   "aplicada_ini_apos_commit_s": 0.124,
+   "aplicada_fim_apos_commit_s": 8.109,
+   "latencia_s": {
+    "p50": 5.253,
+    "p95": 7.577,
+    "max": 7.807
+   }
+  },
+  "pico_lag_fundo_apos_commit_ms": 9900.8,
+  "pico_lag_fundo_apos_commit_s": 5.4
+ },
+ "operacao_especial": {
+  "rajada_commit": 1795146552.106414,
+  "rajada_linhas": 50000,
+  "commit_iso": "2026-11-20T03:49:12.106414Z",
+  "metodo": "primeiro balde de 5 s inteiro apos o commit, regime ativo e completo, rajada inteira aplicada, lag maximo <= patamar e p95 <= 5000 ms; tempo = fim do balde - commit",
+  "archive_antes": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 8643644,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1428783616,
+   "archive_bytes_depois": 1428783616,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  },
+  "archive_depois": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 9211047,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1430873600,
+   "archive_bytes_depois": 1430873600,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  }
+ },
+ "parametros": {
+  "taxa": 1000,
+  "duracao_seg": 600,
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "delay_s": 120,
+  "hold_s": null,
+  "rajada_linhas": 50000
+ }
+}

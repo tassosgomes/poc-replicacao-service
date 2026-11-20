@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Demo de replicação BDAD → MAESTRO</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#f5f6f8; --card:#fff; --bd:#d9dde3; --tx:#1d2733; --mut:#6b7684; --ok:#1a7f37; --pend:#b26a00; --exc:#6b7684; --div:#c62828; --pri:#1f5fbf; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px system-ui, sans-serif; background:var(--bg); color:var(--tx); }
+  header { background:#16202c; color:#fff; padding:10px 16px; display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+  header h1 { font-size:16px; margin:0 12px 0 0; }
+  .pill { padding:2px 8px; border-radius:10px; font-size:12px; background:#2c3a4a; }
+  .pill.ok { background:#1a7f37; } .pill.erro { background:#c62828; }
+  main { padding:12px 16px; }
+  nav { display:flex; gap:4px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+  nav button.tab { border:1px solid var(--bd); background:#e8ebf0; padding:6px 14px; border-radius:6px 6px 0 0; cursor:pointer; }
+  nav button.tab.ativa { background:var(--card); font-weight:600; border-bottom-color:var(--card); }
+  .barra { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+  button, input, select { font:inherit; }
+  button.b { border:1px solid var(--bd); background:var(--card); padding:4px 10px; border-radius:5px; cursor:pointer; }
+  button.b:hover { background:#eef2f8; }
+  button.pri { background:var(--pri); color:#fff; border-color:var(--pri); }
+  input, select { padding:4px 6px; border:1px solid var(--bd); border-radius:4px; }
+  .aviso { background:#fff4e0; border:1px solid #f0c36d; padding:6px 10px; border-radius:5px; margin-bottom:8px; display:none; }
+  .aviso.erro { background:#fdeaea; border-color:#e49a9a; display:block; }
+  .scroll { overflow-x:auto; background:var(--card); border:1px solid var(--bd); }
+  table { border-collapse:collapse; width:100%; }
+  th, td { padding:4px 8px; border-bottom:1px solid #eceff3; text-align:left; white-space:nowrap; max-width:260px; overflow:hidden; text-overflow:ellipsis; }
+  th { background:#eef1f5; font-size:12px; position:sticky; top:0; }
+  th.o { background:#e3edfb; } th.r { background:#e6f4ea; }
+  td.sep, th.sep { border-left:3px solid var(--bd); }
+  .st { font-weight:600; padding:1px 8px; border-radius:10px; color:#fff; }
+  .st.replicado { background:var(--ok); } .st.pendente { background:var(--pend); }
+  .st.excluído { background:var(--exc); } .st.divergente { background:var(--div); }
+  tr.flash { animation: flash 3s ease-out; }
+  @keyframes flash { 0% { background:#9be7ac; } 100% { background:transparent; } }
+  tr.excl td { color:var(--mut); text-decoration:line-through; }
+  tr.excl td.nostrike { text-decoration:none; }
+  .mono { font-family:ui-monospace, monospace; font-size:12px; }
+  .acoes button { margin-right:3px; padding:1px 6px; }
+  #acomp { background:var(--card); border:1px solid var(--bd); border-radius:6px; padding:10px; margin-top:12px; display:none; }
+  #acomp table td { max-width:none; }
+  dialog { border:1px solid var(--bd); border-radius:8px; padding:16px; width:min(680px, 94vw); }
+  dialog label { display:block; margin:6px 0 2px; font-size:12px; color:var(--mut); }
+  dialog input, dialog select { width:100%; }
+  fieldset { border:1px solid var(--bd); border-radius:6px; margin:10px 0; }
+  .fono { display:grid; grid-template-columns: 3fr 2fr 1fr auto; gap:6px; margin-bottom:4px; }
+  .rodape { color:var(--mut); font-size:12px; margin-top:8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Replicação BDAD → MAESTRO (GoldenGate)</h1>
+  <span id="hLegado" class="pill">origem …</span>
+  <span id="hReplica" class="pill">réplica …</span>
+  <span id="hCont" class="pill" title="Contagens totais (cache de 30 s): origem / réplica">contagens …</span>
+</header>
+<main>
+  <nav id="abas">
+    <button class="tab ativa" data-t="titulares">Titulares</button>
+    <button class="tab" data-t="obras">Obras</button>
+    <button class="tab" data-t="fonogramas">Fonogramas</button>
+  </nav>
+  <div class="barra">
+    <input id="busca" placeholder="Buscar por código" size="16">
+    <button class="b" id="bBuscar">Buscar</button>
+    <button class="b" id="bLimpar">Limpar</button>
+    <button class="b" id="bPausa">Pausar atualização</button>
+    <button class="b pri" id="bNova">Nova obra…</button>
+    <span id="atualizado" class="rodape"></span>
+  </div>
+  <div id="aviso" class="aviso"></div>
+  <div class="scroll"><table id="tab"></table></div>
+  <div class="rodape">Últimas 50 linhas da origem por updated_at (mais recentes primeiro). A réplica é somente leitura; as ações abaixo escrevem DIRETO no legado.</div>
+
+  <section id="acomp">
+    <b>Acompanhando replicação</b> <span id="acompInfo" class="rodape"></span>
+    <table><thead><tr><th>Tabela</th><th>Código</th><th>UUIDv7 no destino</th><th>Tempo até aparecer</th></tr></thead><tbody id="acompCorpo"></tbody></table>
+  </section>
+</main>
+
+<dialog id="dlg">
+  <form id="form" method="dialog">
+    <h3 style="margin-top:0">Nova obra (uma única transação no legado)</h3>
+    <label>Título da obra *</label><input id="fTitulo" required maxlength="200">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:6px">
+      <div><label>ISWC</label><input id="fIswc" maxlength="30"></div>
+      <div><label>Gênero</label><input id="fGenero" maxlength="50"></div>
+      <div><label>Situação</label><select id="fSit"><option>ATIVA</option><option>INATIVA</option></select></div>
+    </div>
+    <fieldset><legend>Titular novo (opcional)</legend>
+      <div style="display:grid;grid-template-columns:3fr 1fr 2fr;gap:6px">
+        <div><label>Nome</label><input id="tNome" maxlength="200"></div>
+        <div><label>Tipo</label><select id="tTipo"><option>PF</option><option>PJ</option></select></div>
+        <div><label>Documento</label><input id="tDoc" maxlength="30"></div>
+      </div>
+    </fieldset>
+    <fieldset><legend>Fonogramas (1 ou mais)</legend>
+      <div id="fonos"></div>
+      <button type="button" class="b" id="bAddFono">+ fonograma</button>
+    </fieldset>
+    <div id="dlgErro" class="aviso"></div>
+    <div style="text-align:right">
+      <button type="button" class="b" id="bCancela">Cancelar</button>
+      <button type="submit" class="b pri" id="bGravar">Gravar no legado (COMMIT)</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const COLS = {
+  titulares:  { nome:"TITULAR",       campos:["nome","tipo","documento","situacao"], rotulo:"nome" },
+  obras:      { nome:"OBRA_MUSICAL",  campos:["titulo","iswc","genero","situacao"], rotulo:"título" },
+  fonogramas: { nome:"FONOGRAMA",     campos:["obra_codigo","titulo","isrc","duracao_seg"], rotulo:"título" },
+};
+let aba = "titulares", pausado = false, busca = "", carregando = false;
+const anterior = new Map();   // "aba:codigo" -> status anterior
+
+async function api(url, opts) {
+  const r = await fetch(url, opts);
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error((j && j.detail) || ("HTTP " + r.status));
+  return j;
+}
+function aviso(msg, erro) { const a = $("aviso"); a.textContent = msg || ""; a.className = "aviso" + (msg && erro ? " erro" : ""); a.style.display = msg ? "block" : "none"; }
+
+function renderTabela(linhas) {
+  const c = COLS[aba];
+  let h = "<thead><tr><th class='o'>cód. origem</th>" + c.campos.map(f => `<th class='o'>${f}</th>`).join("")
+        + "<th class='o'>updated_at</th>"
+        + "<th class='r sep'>UUID (réplica)</th>" + c.campos.map(f => `<th class='r'>${f}</th>`).join("")
+        + "<th class='r'>replicado_em</th><th class='sep'>latência (s)</th><th>status</th><th>ações</th></tr></thead><tbody>";
+  for (const l of linhas) {
+    const o = l.origem || {}, r = l.replica || {};
+    const chave = aba + ":" + l.codigo;
+    const mudou = anterior.get(chave) === "pendente" && l.status === "replicado";
+    anterior.set(chave, l.status);
+    const excl = o.excluido == 1;
+    h += `<tr class="${mudou ? "flash" : ""} ${excl ? "excl" : ""}"><td class="mono">${l.codigo}</td>`
+       + c.campos.map(f => `<td>${esc(o[f])}</td>`).join("") + `<td class="mono">${esc(o.updated_at)}</td>`
+       + `<td class="mono sep">${esc(r.id || "—")}</td>`
+       + c.campos.map(f => `<td>${l.replica ? esc(r[f]) : "—"}</td>`).join("")
+       + `<td class="mono">${esc(r.replicado_em || "—")}</td>`
+       + `<td class="sep nostrike">${l.latencia == null ? "—" : l.latencia.toFixed(2)}</td>`
+       + `<td class="nostrike"><span class="st ${l.status}">${l.status}</span></td>`
+       + `<td class="acoes nostrike"><button class="b" data-a="editar" data-c="${l.codigo}">Editar</button>`
+       + `<button class="b" data-a="logico" data-c="${l.codigo}">Excluir (lógico)</button>`
+       + `<button class="b" data-a="fisico" data-c="${l.codigo}">Excluir (físico)</button></td></tr>`;
+  }
+  if (!linhas.length) h += "<tr><td colspan='20'>Nenhuma linha.</td></tr>";
+  $("tab").innerHTML = h + "</tbody>";
+}
+
+async function carregar() {
+  if (carregando) return; carregando = true;
+  const minha = aba;
+  try {
+    const j = await api(`/api/linhas/${aba}` + (busca ? "?q=" + encodeURIComponent(busca) : ""));
+    if (minha !== aba) return;
+    renderTabela(j.linhas); aviso("");
+    $("atualizado").textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR");
+  } catch (e) { aviso("Não foi possível carregar: " + e.message, true); }
+  finally { carregando = false; }
+}
+
+async function saude() {
+  try {
+    const j = await api("/api/saude");
+    for (const [id, k, nome] of [["hLegado","legado","origem (BDAD)"],["hReplica","replica","réplica (MAESTRO)"]]) {
+      const s = j[k], el = $(id);
+      el.className = "pill " + (s.ok ? "ok" : "erro");
+      el.textContent = nome + ": " + (s.ok ? "OK " + s.ms + " ms" : "ERRO");
+      el.title = s.erro || "";
+    }
+    const v = j.contagens.valores, n = x => (x == null ? "?" : Number(x).toLocaleString("pt-BR"));
+    $("hCont").textContent = "tit " + n(v["legado.titulares"]) + "/" + n(v["replica.titulares"])
+      + " · obras " + n(v["legado.obras"]) + "/" + n(v["replica.obras"])
+      + " · fono " + n(v["legado.fonogramas"]) + "/" + n(v["replica.fonogramas"]);
+  } catch (e) { $("hLegado").className = $("hReplica").className = "pill erro"; $("hLegado").textContent = "servidor da demo indisponível"; }
+}
+
+// ---- ações por linha ----
+$("tab").addEventListener("click", async ev => {
+  const b = ev.target.closest("button[data-a]"); if (!b) return;
+  const cod = b.dataset.c, c = COLS[aba], base = `/api/linhas/${aba}/${cod}`;
+  try {
+    if (b.dataset.a === "editar") {
+      const v = prompt(`Novo valor de ${c.rotulo} (código ${cod}):`); if (v == null) return;
+      await api(base, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ valor:v }) });
+    } else if (b.dataset.a === "logico") {
+      if (!confirm(`Excluir logicamente (excluido=1) ${c.nome} ${cod} na origem?`)) return;
+      await api(base + "/excluir-logico", { method:"POST" });
+    } else {
+      if (!confirm(`DELETE físico de ${c.nome} ${cod} na origem.\n\nATENÇÃO: na réplica a linha NÃO some; ela vira excluído lógico (excluido=1).`)) return;
+      await api(base, { method:"DELETE" });
+      acompanhar([{ tabela:c.nome, codigo:+cod, espera:"excluido" }]);
+    }
+    carregar();
+  } catch (e) { aviso(e.message, true); }
+});
+
+// ---- abas, busca, pausa ----
+$("abas").addEventListener("click", ev => {
+  const b = ev.target.closest("button.tab"); if (!b) return;
+  document.querySelectorAll("button.tab").forEach(x => x.classList.toggle("ativa", x === b));
+  aba = b.dataset.t; busca = ""; $("busca").value = ""; $("tab").innerHTML = ""; carregar();
+});
+$("bBuscar").onclick = () => { busca = $("busca").value.trim(); carregar(); };
+$("busca").onkeydown = e => { if (e.key === "Enter") $("bBuscar").click(); };
+$("bLimpar").onclick = () => { busca = ""; $("busca").value = ""; carregar(); };
+$("bPausa").onclick = () => { pausado = !pausado; $("bPausa").textContent = pausado ? "Retomar atualização" : "Pausar atualização"; };
+
+// ---- cadastro ----
+function addFono() {
+  const d = document.createElement("div"); d.className = "fono";
+  d.innerHTML = "<input placeholder='título *' maxlength='200' class='fT'><input placeholder='ISRC' maxlength='30' class='fI'>"
+              + "<input placeholder='seg' type='number' min='0' class='fD'><button type='button' class='b'>x</button>";
+  d.querySelector("button").onclick = () => { if (document.querySelectorAll(".fono").length > 1) d.remove(); };
+  $("fonos").appendChild(d);
+}
+$("bNova").onclick = () => { $("form").reset(); $("fonos").innerHTML = ""; addFono(); $("dlgErro").style.display = "none"; $("dlg").showModal(); };
+$("bAddFono").onclick = addFono;
+$("bCancela").onclick = () => $("dlg").close();
+$("form").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const corpo = {
+    titulo: $("fTitulo").value, iswc: $("fIswc").value, genero: $("fGenero").value, situacao: $("fSit").value,
+    titular: $("tNome").value.trim() ? { nome:$("tNome").value, tipo:$("tTipo").value, documento:$("tDoc").value } : null,
+    fonogramas: [...document.querySelectorAll(".fono")].map(d => ({
+      titulo: d.querySelector(".fT").value, isrc: d.querySelector(".fI").value, duracao_seg: d.querySelector(".fD").value })),
+  };
+  $("bGravar").disabled = true;
+  try {
+    const j = await api("/api/cadastro-obra", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(corpo) });
+    $("dlg").close();
+    acompanhar(j.criadas.map(c => ({ ...c, espera:"existe" })));
+    carregar();
+  } catch (e) { const a = $("dlgErro"); a.textContent = e.message; a.className = "aviso erro"; }
+  finally { $("bGravar").disabled = false; }
+});
+
+// ---- acompanhamento (polling 500 ms, até 60 s) ----
+let acompTimer = null, itensAc = [];
+function acompanhar(novos) {
+  const t0 = performance.now();
+  for (const n of novos) itensAc.push({ ...n, t0, tempo:null, uuid:null, falhou:false });
+  $("acomp").style.display = "block";
+  if (!acompTimer) acompTimer = setInterval(tickAc, 500);
+  renderAc();
+}
+async function tickAc() {
+  const abertos = itensAc.filter(i => i.tempo == null && !i.falhou);
+  if (!abertos.length) { clearInterval(acompTimer); acompTimer = null; return; }
+  try {
+    const j = await api("/api/acompanhar", { method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ itens: abertos.map(i => ({ tabela:i.tabela, codigo:i.codigo })) }) });
+    const agora = performance.now();
+    for (const i of abertos) {
+      const r = j.itens.find(x => x.tabela === i.tabela && x.codigo === i.codigo);
+      if (r && r.existe) i.uuid = r.uuid;
+      if (r && r.existe && (i.espera !== "excluido" || r.excluido)) i.tempo = (agora - i.t0) / 1000;
+      else if (agora - i.t0 > 60000) i.falhou = true;
+    }
+  } catch (e) { /* tenta de novo no próximo ciclo */ }
+  renderAc();
+}
+function renderAc() {
+  $("acompCorpo").innerHTML = itensAc.map(i => {
+    const t = i.tempo != null ? `<b style="color:var(--ok)">${i.tempo.toFixed(1)} s</b> ${i.espera === "excluido" ? "(virou excluído)" : "(replicado)"}`
+      : i.falhou ? `<b style="color:var(--div)">não apareceu em 60 s</b>`
+      : `aguardando… ${((performance.now() - i.t0) / 1000).toFixed(1)} s`;
+    return `<tr><td>${i.tabela}</td><td class="mono">${i.codigo}</td><td class="mono">${esc(i.uuid || "—")}</td><td>${t}</td></tr>`;
+  }).join("");
+  $("acompInfo").textContent = "(tempo medido no navegador desde o COMMIT; consulta a cada 500 ms, até 60 s)";
+}
+
+carregar(); saude();
+setInterval(() => { if (!pausado) carregar(); }, 2000);
+setInterval(saude, 5000);
+</script>
+</body>
+</html>

@@ -177,3 +177,27 @@ desligado. Confere os números contra os logs e o veredito contra os dois limite
 a medição curta em hosts compartilhados produza `REPROVADO`. Verifica também restauração dos
 triggers e ausência de containers abandonados. As evidências ficam em `.tsg-flow/v13-gate-*/`.
 A execução completa e sua consolidação pertencem à task 16.0.
+
+## Mirar outro lab
+
+Os nomes de containers, hosts, portas, usuários, serviço, rede e prefixo vêm de variáveis `LAB_*`
+(padrões em `scripts/comum.sh` e `scripts/cenarios/lab.py`); sem nenhuma definida o alvo é o lab
+Java. Para mirar o lab GoldenGate:
+
+```bash
+set -a; source scripts/lab-gg.env; set +a
+```
+
+| Variável | Padrão (lab Java) | `lab-gg.env` |
+|---|---|---|
+| `LAB_HOST_LEGADO` / `LAB_HOST_NOVO` | desenv-server / infra-server | iguais |
+| `LAB_CONTAINER_LEGADO` / `LAB_CONTAINER_NOVO` | poc-legado / poc-novo | gg-legado / gg-novo |
+| `LAB_PORTA_LEGADO` / `LAB_PORTA_NOVO` | 1521 / 1522 (publicadas no host) | 1523 / 1524 |
+| `LAB_PORTA_INTERNA` / `LAB_SERVICO` | 1521 / FREEPDB1 (listener no container) | iguais |
+| `LAB_USUARIO_LEGADO` / `LAB_USUARIO_NOVO` | bdad / replica (senha = usuário) | iguais |
+| `LAB_REDE` | poc-rede | gg-rede |
+| `LAB_PREFIXO` | poc- | gg- (containers temporários, filtros e nomes de resultado) |
+
+`lab-gg.env` também define `RESULTADOS_BASE=resultados/gg`. Só a parametrização foi feita: os cenários
+continuam dependendo de `evento_replicacao`, dos triggers `*_captura` e do worker Java, que só
+existem no lab Java.

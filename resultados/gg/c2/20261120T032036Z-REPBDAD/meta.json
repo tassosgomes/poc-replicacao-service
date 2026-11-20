@@ -1,0 +1,243 @@
+{
+ "cenario": "c2",
+ "execucao": "20261120T032036Z-REPBDAD",
+ "inicio": "2026-11-20T03:20:37Z",
+ "fim": "2026-11-20T03:33:37Z",
+ "diretorio": "resultados/gg/c2/20261120T032036Z-REPBDAD",
+ "ambiente": {
+  "lab": "goldengate",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "gg-legado",
+    "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:51:55.461509857Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-novo",
+    "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:52:06.858681453Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-hub",
+    "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+    "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+    "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+    "cpu": 2000000000,
+    "memoria": 4294967296,
+    "running": true,
+    "inicio": "2026-11-20T01:05:15.109487246Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   }
+  ],
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "EXTBDAD.prm": "54011670fd1b8a3c",
+   "REPBDAD.prm": "8e90c308d824c054",
+   "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+   "REPCO.prm": "7abada0cf861f222"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "APROVADO",
+ "skew_ms": {
+  "inicio": 1.034,
+  "fim": -0.342
+ },
+ "skew_incerteza_ms": {
+  "inicio": 4.705,
+  "fim": 4.744
+ },
+ "relogios": [
+  {
+   "etapa": "d1-1000-inicio",
+   "ts": "2026-11-20T03:21:10.633799848Z",
+   "skew_ms": 1.034,
+   "incerteza_ms": 4.705
+  },
+  {
+   "etapa": "d1-1000-fim",
+   "ts": "2026-11-20T03:31:10.634608659Z",
+   "skew_ms": -0.342,
+   "incerteza_ms": 4.744
+  }
+ ],
+ "carga_servidores": [],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "snapshot_antes": "../../c1/snapshots/apos-carga.csv",
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "divergencias_sql": 0,
+  "divergencias_java": 0,
+  "reconciliacao": "reconciliacao-java.log",
+  "reconciliacao_sql": "reconciliacao-sql.txt",
+  "snapshot_depois": "snapshots/apos.csv",
+  "uuids_alterados": 0,
+  "uuids": {
+   "preexistentes_comparados": 1700000,
+   "uuids_alterados": 0
+  },
+  "diferencas": "reconciliacao-sql.txt"
+ },
+ "criterios": [
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s)",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "p95_ms",
+   "valor": 2819,
+   "alvo": "<=5000",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "tendencia_lag",
+   "valor": {
+    "inclinacao_ms_s": 2.007899905168326,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "alvo": "sem crescimento sustentado",
+   "veredito": "APROVADO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c2",
+   "linhas": 600012,
+   "transacoes": 200327,
+   "taxa": 1000.02,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T03:21:10.633799848Z",
+   "fim": "2026-11-20T03:31:10.634608659Z",
+   "validade": "VALIDO",
+   "p95_ms": 2819,
+   "eventos_medidos": 600012,
+   "tendencia_lag": {
+    "inclinacao_ms_s": 2.007899905168326,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "drenagem_s": 19,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 107.5,
+     "max_pct": 147.0,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 27.7,
+     "max_pct": 177.78,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 20.3,
+     "max_pct": 65.62,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 20.2,
+     "max_pct": 71.21,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 6.412,
+   "latencia_s": {
+    "min_s": 0.339,
+    "p50_s": 1.848,
+    "p95_s": 2.819,
+    "p99_s": 3.11,
+    "max_s": 4.275,
+    "media_s": 1.85
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": 2.1552919126512013,
+    "crescimento_sustentado": true,
+    "janela_s": 180,
+    "amostras": 37
+   },
+   "lag_final_s": 4.275
+  }
+ ],
+ "medidas": {
+  "eventos_medidos": 600012,
+  "relogios_validos": true,
+  "p95_ms": 2819
+ },
+ "operacao_especial": {
+  "archive_antes": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 7823931,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1475064832,
+   "archive_bytes_depois": 1475064832,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  },
+  "archive_depois": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 8386060,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1443574272,
+   "archive_bytes_depois": 1443574272,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  }
+ },
+ "parametros": {
+  "taxa": 1000,
+  "duracao_seg": 600,
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )"
+ }
+}

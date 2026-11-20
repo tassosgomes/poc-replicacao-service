@@ -1,0 +1,1 @@
+{"eventos": [{"nome": "kill_hub_e_start", "desde_queda_s": 112.71, "desde_reinicio_s": 52.55, "rest_desde_reinicio_s": 4.83, "extract_running_desde_reinicio_s": 9.93, "replicat_running_desde_reinicio_s": 9.94, "estavel_apos_normalizar": true, "pico_lag_s": 77.45}]}

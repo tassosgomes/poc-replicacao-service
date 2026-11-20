@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Executar no infra-server; em outro host, a consulta usa SSH para poc-novo.
 set -euo pipefail
+LAB_HOST_NOVO=${LAB_HOST_NOVO:-infra-server}
+LAB_CONTAINER_NOVO=${LAB_CONTAINER_NOVO:-poc-novo}
+LAB_USUARIO_NOVO=${LAB_USUARIO_NOVO:-replica}
+LAB_PORTA_INTERNA=${LAB_PORTA_INTERNA:-1521}
+LAB_SERVICO=${LAB_SERVICO:-FREEPDB1}
+conexao="$LAB_USUARIO_NOVO/$LAB_USUARIO_NOVO@localhost:$LAB_PORTA_INTERNA/$LAB_SERVICO"
 [[ $# == 1 ]] || { echo "Uso: $0 <diretorio-destino>" >&2; exit 2; }
 dest=$1
 [[ ! -e $dest ]] || { echo "Destino já existe: $dest" >&2; exit 2; }
@@ -11,9 +17,9 @@ inicio=$(date +%s)
 for tabela in titular obra_musical fonograma; do
   query=$(printf "whenever sqlerror exit failure\nwhenever oserror exit failure\nset heading off feedback off pagesize 0 linesize 200 trimspool on verify off echo off\nselect to_char(codigo, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''') || ',' || rawtohex(id) from %s order by codigo;\nexit\n" "$tabela")
   if [[ ${POC_SNAPSHOT_LOCAL:-0} == 1 ]]; then
-    printf '%s\n' "$query" | docker exec -i poc-novo sqlplus -s replica/replica@localhost:1521/FREEPDB1 > "$tmp/$tabela.csv"
+    printf '%s\n' "$query" | docker exec -i "$LAB_CONTAINER_NOVO" sqlplus -s "$conexao" > "$tmp/$tabela.csv"
   else
-    printf '%s\n' "$query" | ssh -o BatchMode=yes -o ConnectTimeout=10 infra-server 'docker exec -i poc-novo sqlplus -s replica/replica@localhost:1521/FREEPDB1' > "$tmp/$tabela.csv"
+    printf '%s\n' "$query" | ssh -o BatchMode=yes -o ConnectTimeout=10 "$LAB_HOST_NOVO" "docker exec -i $LAB_CONTAINER_NOVO sqlplus -s $conexao" > "$tmp/$tabela.csv"
   fi
   # SQL*Plus pode sinalizar erros de comando sem retornar erro do SQL.
   if LC_ALL=C grep -Eq '^(SP2-|ORA-|ERROR)' "$tmp/$tabela.csv"; then

@@ -1,0 +1,803 @@
+{
+ "cenario": "c10",
+ "execucao": "20261120T075952Z-REPBDAD-rev2-aquecimento",
+ "inicio": "2026-11-20T07:59:52Z",
+ "fim": "2026-11-20T09:51:43Z",
+ "diretorio": "resultados/gg/c10/20261120T075952Z-REPBDAD-rev2-aquecimento",
+ "ambiente": {
+  "lab": "goldengate",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "gg-legado",
+    "id": "ec8dd0bf5dcbc293dbaa09e585b3d4216f534cf255831ad9163ca79168ca7991",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:51:55.461509857Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-novo",
+    "id": "b46201caa76697895c07a880da36b6bf6b2e8cdc1f3754a56206e7354474e3a8",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "running": true,
+    "inicio": "2026-11-20T00:52:06.858681453Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   },
+   {
+    "nome": "gg-hub",
+    "id": "87e8c4a74323a5519c3e3328366a138ebab1f855a2e8399195a5881c2d789279",
+    "imagem": "container-registry.oracle.com/goldengate/goldengate-oracle-free:latest",
+    "imagem_id": "sha256:259252f26280e211dbd812955f9d2a72a2b7867165ae0178df34e3df0ffd094f",
+    "cpu": 2000000000,
+    "memoria": 4294967296,
+    "running": true,
+    "inicio": "2026-11-20T05:26:44.427008679Z",
+    "reinicios": 0,
+    "saudavel": "healthy"
+   }
+  ],
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "EXTBDAD.prm": "54011670fd1b8a3c",
+   "REPBDAD.prm": "8e90c308d824c054",
+   "REPBDAD.sem-cdr.prm": "7e8b794e141c5204",
+   "REPCO.prm": "7abada0cf861f222"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "APROVADO",
+ "skew_ms": {
+  "inicio": -1.009,
+  "fim": -0.003
+ },
+ "skew_incerteza_ms": {
+  "inicio": 4.698,
+  "fim": 4.733
+ },
+ "relogios": [
+  {
+   "etapa": "p01-ligada-inicio",
+   "ts": "2026-11-20T08:06:56.126186817Z",
+   "skew_ms": -1.009,
+   "incerteza_ms": 4.698
+  },
+  {
+   "etapa": "p08-ligada-fim",
+   "ts": "2026-11-20T09:48:41.264703969Z",
+   "skew_ms": -0.003,
+   "incerteza_ms": 4.733
+  }
+ ],
+ "carga_servidores": [],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "snapshot_antes": "../../c1/snapshots/apos-carga.csv",
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "divergencias_sql": 0,
+  "divergencias_java": 0,
+  "reconciliacao": "reconciliacao-java.log",
+  "reconciliacao_sql": "reconciliacao-sql.txt",
+  "snapshot_depois": "snapshots/apos.csv",
+  "uuids_alterados": 0,
+  "uuids": {
+   "preexistentes_comparados": 2011552,
+   "uuids_alterados": 0
+  },
+  "diferencas": "reconciliacao-sql.txt"
+ },
+ "criterios": [
+  {
+   "nome": "repeticoes_alternadas",
+   "valor": 8,
+   "alvo": 8,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "taxa_valida_todos_modos",
+   "valor": true,
+   "alvo": true,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "overhead_captura",
+   "valor": {
+    "absoluto_ms": 0.10199999999999942,
+    "percentual": 1.742621620467252
+   },
+   "alvo": "<=15% E <=5 ms; segundo criterio proposto (Q-T3 pendente)",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado: Replicat RUNNING, aplicacao_log estavel, lag<=2s)",
+   "veredito": "APROVADO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c10",
+   "linhas": 599964,
+   "transacoes": 200327,
+   "taxa": 999.94,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T08:06:56.126186817Z",
+   "fim": "2026-11-20T08:16:56.126685034Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 109.0,
+     "max_pct": 160.81,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 26.8,
+     "max_pct": 189.35,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 16.7,
+     "max_pct": 52.93,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 20.6,
+     "max_pct": 76.22,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 5.894,
+   "dir": "p01-ligada",
+   "captura": true,
+   "repeticao": 1,
+   "modo": "ligada",
+   "supplemental": true,
+   "posicao": 1
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599964,
+   "transacoes": 200327,
+   "taxa": 999.94,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T08:18:26.511348449Z",
+   "fim": "2026-11-20T08:28:26.513145054Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 96.0,
+     "max_pct": 129.65,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 25.9,
+     "max_pct": 190.37,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 5.5,
+     "max_pct": 14.44,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 18.6,
+     "max_pct": 70.72,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 5.636,
+   "dir": "p02-desligada",
+   "captura": false,
+   "repeticao": 1,
+   "modo": "desligada",
+   "supplemental": true,
+   "posicao": 2
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599964,
+   "transacoes": 200327,
+   "taxa": 999.94,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T08:32:31.438693162Z",
+   "fim": "2026-11-20T08:42:31.444126355Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 93.6,
+     "max_pct": 148.1,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 25.6,
+     "max_pct": 154.64,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 6.8,
+     "max_pct": 16.34,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 18.3,
+     "max_pct": 61.11,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 5.65,
+   "dir": "p03-desligada",
+   "captura": false,
+   "repeticao": 2,
+   "modo": "desligada",
+   "supplemental": true,
+   "posicao": 3
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599964,
+   "transacoes": 200327,
+   "taxa": 999.94,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T08:46:38.510929628Z",
+   "fim": "2026-11-20T08:56:38.512842779Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 109.8,
+     "max_pct": 141.37,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 26.5,
+     "max_pct": 176.63,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 22.1,
+     "max_pct": 49.47,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 19.9,
+     "max_pct": 70.98,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 5.592,
+   "dir": "p04-ligada",
+   "captura": true,
+   "repeticao": 2,
+   "modo": "ligada",
+   "supplemental": true,
+   "posicao": 4
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599964,
+   "transacoes": 200327,
+   "taxa": 999.94,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T08:57:45.373636324Z",
+   "fim": "2026-11-20T09:07:45.374939478Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 107.6,
+     "max_pct": 173.69,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 27.4,
+     "max_pct": 173.5,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 18.7,
+     "max_pct": 202.07,
+     "amostras": 124
+    },
+    "gg-hub": {
+     "media_pct": 19.0,
+     "max_pct": 69.24,
+     "amostras": 124
+    }
+   },
+   "transacao_media_ms": 5.705,
+   "dir": "p05-ligada",
+   "captura": true,
+   "repeticao": 3,
+   "modo": "ligada",
+   "supplemental": true,
+   "posicao": 5
+  },
+  {
+   "grupo": "c10",
+   "linhas": 598494,
+   "transacoes": 199841,
+   "taxa": 997.36,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T09:09:36.573770994Z",
+   "fim": "2026-11-20T09:19:36.657329232Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 92.2,
+     "max_pct": 134.33,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 25.0,
+     "max_pct": 100.25,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 4.3,
+     "max_pct": 9.61,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 17.1,
+     "max_pct": 51.36,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 6.512,
+   "dir": "p06-desligada",
+   "captura": false,
+   "repeticao": 3,
+   "modo": "desligada",
+   "supplemental": true,
+   "posicao": 6
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599964,
+   "transacoes": 200327,
+   "taxa": 999.94,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T09:24:26.079583756Z",
+   "fim": "2026-11-20T09:34:26.084303238Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 98.1,
+     "max_pct": 139.38,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 26.2,
+     "max_pct": 189.05,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 7.1,
+     "max_pct": 22.44,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 17.9,
+     "max_pct": 70.89,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 5.615,
+   "dir": "p07-desligada",
+   "captura": false,
+   "repeticao": 4,
+   "modo": "desligada",
+   "supplemental": true,
+   "posicao": 7
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599964,
+   "transacoes": 200327,
+   "taxa": 999.94,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-20T09:38:41.263942626Z",
+   "fim": "2026-11-20T09:48:41.264703969Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "gg-legado": {
+     "media_pct": 108.5,
+     "max_pct": 181.0,
+     "amostras": 124
+    },
+    "gerador": {
+     "media_pct": 26.4,
+     "max_pct": 145.71,
+     "amostras": 124
+    },
+    "gg-novo": {
+     "media_pct": 19.1,
+     "max_pct": 39.08,
+     "amostras": 123
+    },
+    "gg-hub": {
+     "media_pct": 18.8,
+     "max_pct": 74.72,
+     "amostras": 123
+    }
+   },
+   "transacao_media_ms": 6.63,
+   "dir": "p08-ligada",
+   "captura": true,
+   "repeticao": 4,
+   "modo": "ligada",
+   "supplemental": true,
+   "posicao": 8
+  }
+ ],
+ "medidas": {
+  "eventos_medidos": 0,
+  "relogios_validos": true,
+  "custo_legado": {
+   "sem_metricas": {
+    "captura_ligada": {
+     "repeticoes": 4,
+     "media_ms": 5.9552499999999995,
+     "desvio_padrao_ms": 0.4667671617983996,
+     "min_ms": 5.592,
+     "max_ms": 6.63,
+     "amostras_ms": [
+      5.894,
+      5.592,
+      5.705,
+      6.63
+     ]
+    },
+    "captura_desligada": {
+     "repeticoes": 4,
+     "media_ms": 5.85325,
+     "desvio_padrao_ms": 0.4394021506547274,
+     "min_ms": 5.615,
+     "max_ms": 6.512,
+     "amostras_ms": [
+      5.636,
+      5.65,
+      6.512,
+      5.615
+     ]
+    },
+    "overhead_captura": {
+     "absoluto_ms": 0.10199999999999942,
+     "percentual": 1.742621620467252
+    }
+   },
+   "com_metricas": "nao aplicavel (nao ha worker nem evento_replicacao no lab GG; nao ha consulta de metricas no legado)",
+   "pares": [
+    {
+     "repeticao": 1,
+     "ligada_ms": 5.894,
+     "desligada_ms": 5.636,
+     "diferenca_ms": 0.258,
+     "diferenca_pct": 4.577714691270405,
+     "ordem": "LD"
+    },
+    {
+     "repeticao": 2,
+     "ligada_ms": 5.592,
+     "desligada_ms": 5.65,
+     "diferenca_ms": -0.05800000000000072,
+     "diferenca_pct": -1.0265486725663844,
+     "ordem": "DL"
+    },
+    {
+     "repeticao": 3,
+     "ligada_ms": 5.705,
+     "desligada_ms": 6.512,
+     "diferenca_ms": -0.8069999999999995,
+     "diferenca_pct": -12.392506142506136,
+     "ordem": "LD"
+    },
+    {
+     "repeticao": 4,
+     "ligada_ms": 6.63,
+     "desligada_ms": 5.615,
+     "diferenca_ms": 1.0149999999999997,
+     "diferenca_pct": 18.076580587711483,
+     "ordem": "DL"
+    }
+   ],
+   "diferenca_media_dos_pares_ms": 0.10199999999999987,
+   "tendencia_temporal": {
+    "sequencia": [
+     [
+      1,
+      "L",
+      5.894
+     ],
+     [
+      2,
+      "D",
+      5.636
+     ],
+     [
+      3,
+      "D",
+      5.65
+     ],
+     [
+      4,
+      "L",
+      5.592
+     ],
+     [
+      5,
+      "L",
+      5.705
+     ],
+     [
+      6,
+      "D",
+      6.512
+     ],
+     [
+      7,
+      "D",
+      5.615
+     ],
+     [
+      8,
+      "L",
+      6.63
+     ]
+    ],
+    "media_por_posicao_ms": {
+     "1": 5.894,
+     "2": 5.636,
+     "3": 5.65,
+     "4": 5.592,
+     "5": 5.705,
+     "6": 6.512,
+     "7": 5.615,
+     "8": 6.63
+    },
+    "media_primeira_metade_ms": 5.693,
+    "media_segunda_metade_ms": 6.1155,
+    "inclinacao_ms_por_fase_todas": 0.09221428571428568,
+    "ligada_primeira_metade_ms": 5.743,
+    "ligada_segunda_metade_ms": 6.1675,
+    "desligada_primeira_metade_ms": 5.643000000000001,
+    "desligada_segunda_metade_ms": 6.0634999999999994
+   }
+  },
+  "cpu_media_gg_legado_pct": {
+   "ligada": 108.7,
+   "desligada": 95.0
+  },
+  "ordem_das_fases": [
+   [
+    "p01-ligada",
+    true,
+    5.894
+   ],
+   [
+    "p02-desligada",
+    false,
+    5.636
+   ],
+   [
+    "p03-desligada",
+    false,
+    5.65
+   ],
+   [
+    "p04-ligada",
+    true,
+    5.592
+   ],
+   [
+    "p05-ligada",
+    true,
+    5.705
+   ],
+   [
+    "p06-desligada",
+    false,
+    6.512
+   ],
+   [
+    "p07-desligada",
+    false,
+    5.615
+   ],
+   [
+    "p08-ligada",
+    true,
+    6.63
+   ]
+  ],
+  "comparacao_java": {
+   "overhead_percentual": 19.998608792431824,
+   "overhead_absoluto_ms": 0.958333333333333,
+   "observacao": "triggers de captura no legado Java (resultados/c10): captura ligada 5,750 ms x desligada 4,792 ms"
+  }
+ },
+ "operacao_especial": {
+  "aquecimento": {
+   "duracao_s": 300,
+   "captura": true,
+   "descartado": true,
+   "inicio": "2026-11-20T08:00:28Z",
+   "dir": "aquecimento"
+  },
+  "ordem": "LD,DL,LD,DL",
+  "carga": {
+   "taxa": 1000,
+   "duracao_seg_por_fase": 600,
+   "semente": 1,
+   "threads": 8,
+   "pct_insert": 0,
+   "pct_delete": 0,
+   "hot_pct": 10,
+   "tx_max": 5,
+   "mix": "40,40,20 (padrao do gerador)"
+  },
+  "criterio": "segundo criterio proposto; Q-T3 pendente",
+  "limite_pct": 15,
+  "limite_ms": 5,
+  "limite_ativo": true,
+  "repeticoes": 4,
+  "consulta_metricas": "nao aplicavel",
+  "captura_desligada": "Extract EXTBDAD parado; FORCE LOGGING e supplemental logging (ALLCOLS) continuam ativos: o custo do supplemental nao e isolado",
+  "variante_supplemental": false,
+  "supplemental_inicial": "grupos_tabela=0 schemas_preparados=1 force_logging=YES supplemental_min=YES",
+  "supplemental_removido": null,
+  "supplemental_restaurado": null,
+  "estado_final": "extract=running replicat=running grupos_tabela=0 schemas_preparados=1 force_logging=YES supplemental_min=YES",
+  "integridade": "aplicavel aqui (diferente do Java): o Extract retoma pelo redo, nada fica sem replicacao; drenado com Extract ligado e reconciliado",
+  "archive_antes": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 19292439,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1470006272,
+   "archive_bytes_depois": 1470006272,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  },
+  "archive_depois": {
+   "modo": "limpar",
+   "apagados": 0,
+   "required_checkpoint_scn": 24114875,
+   "livre_gb_antes": 58,
+   "livre_gb_depois": 58,
+   "archive_bytes_antes": 1433801216,
+   "archive_bytes_depois": 1433801216,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  }
+ },
+ "parametros": {
+  "taxa": 1000,
+  "duracao_seg": 600,
+  "replicat": "REPBDAD classico (EOFDELAYCSECS 1 GROUPTRANSOPS 100 BATCHSQL )",
+  "repeticoes": 4,
+  "aquecimento": {
+   "duracao_s": 300,
+   "captura": true,
+   "descartado": true,
+   "inicio": "2026-11-20T08:00:28Z",
+   "dir": "aquecimento"
+  },
+  "ordem": "LD,DL,LD,DL"
+ }
+}
