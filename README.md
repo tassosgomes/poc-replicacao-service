@@ -11,6 +11,11 @@ degraus de 300 s, rajada de 50.000 linhas e transação aberta de 30 s. C1 recri
 de negócio da PoC; C10 alterna a captura e deve rodar por último, pois deixa alterações sem
 replicação por definição. Não execute cenários simultaneamente nos mesmos bancos.
 
+**Lab GoldenGate (alternativa D):** segunda parte da PoC, em lab paralelo (`gg-*`) com o lab Java parado.
+Suba com `scripts/gg/subir.sh`; plano em [docs/plano-poc-goldengate.md](docs/plano-poc-goldengate.md),
+resultados lado a lado em [resultados/comparativo-java-gg.md](resultados/comparativo-java-gg.md) e interface de demonstração em
+[demo-ui/README.md](demo-ui/README.md).
+
 ## Estrutura do projeto
 
 Build Maven multi-módulo (`pom.xml` da raiz é só agregador/pai):

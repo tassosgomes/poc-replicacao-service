@@ -1,6 +1,8 @@
 # Plano: PoC parte 2, alternativa D (Oracle GoldenGate Free)
 
-Status: rascunho para revisão. Data: 2026-11-19.
+Status (2026-11-20): Fases 0 a 5 concluídas; decisão humana pendente. Data: 2026-11-19.
+Fases: 0 spike concluída; 1 ambiente concluída; 2 ferramentas concluída; 3 calibração concluída; 4 cenários C1 a C10 concluídos (C7 adaptado REPROVADO, demais APROVADOS); 5 consolidação concluída.
+Comparativo Java x GG: [`resultados/comparativo-java-gg.md`](../resultados/comparativo-java-gg.md). Recomendação (rascunho, sem decisão): [`resultados/gg/recomendacao-humana.md`](../resultados/gg/recomendacao-humana.md).
 
 ## Objetivo
 
@@ -155,6 +157,8 @@ Registrar antes de seguir.
 Ordem: C1 → C2 → C3 → C4 → C5 → C6 → C7 → C8 → C9 → C10 (C10 por último, como no lab Java).
 
 ### Fase 5: consolidação
+
+**Status (2026-11-20): concluída, exceto o retorno do lab Java.** `resultados/gg/relatorio.md` regenerado (C1 a C10 válidos), comparativo em `resultados/comparativo-java-gg.md` e rascunho de recomendação em `resultados/gg/recomendacao-humana.md` (decisão PENDENTE; o autor decide). O retorno do lab Java (`docker start poc-legado poc-novo` e conferência de saúde e contagens) **não foi feito**: fica para quando o lab GG não for mais necessário.
 
 - `resultados/gg/relatorio.md` e uma tabela comparativa Java x GG por critério.
 - Ressalvas explícitas: Free sem Parallel Replicat, 2 CPUs/2 GB, hosts compartilhados,
