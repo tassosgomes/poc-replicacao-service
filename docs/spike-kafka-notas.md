@@ -199,3 +199,176 @@ depois de `kill` com 0 divergencias. Pendencias que ja sao das proximas fases: c
 (Fase 1), calibracao do gerador (Fase 2), atomicidade multi-tabela (Fase 4: durante a rajada o modo atual aplica por tabela e
 particao, entao um cadastro de obra com fonogramas pode aparecer parcial por instantes; nao foi medido ainda), `lag_ms` = 0 e skew
 medido contra o destino (ver notas do `MonitorMetricas`), e custo de redo do supplemental ALL COLUMNS (C10).
+
+---
+
+## Fase 1: ambiente reprodutivel (2026-11-20)
+
+Lab Kafka reconstruido do zero **quatro vezes** (ciclos 1, 2 e 4 com massa completa; ciclo 3 com massa reduzida, para o diagnostico da Fase 2; evidencias em `resultados/kf/c1/ciclo*/`). O ciclo 4 (estado final, 1 worker, sem DML): carga 177,1 s (jar 169,5 s), drenagem 28,3 s, reconciliacao 0 divergencias, total 474,6 s; snapshot de UUIDs `resultados/kf/c1/snapshots/apos-carga.csv` com 1.700.000 linhas, 0 duplicados (sha256 em `resultados/kf/c1/meta.json`). Lab deixado no ar nesse estado. Massa completa = 200k/500k/1M ( `sql/kf/legado/02_massa.sql`, a mesma dos labs Java e GG),
+incluindo carga inicial, workers, drenagem e reconciliacao dentro do proprio `subir.sh`. `poc-*` e `gg-*` continuaram parados e identicos
+(inventario comparado no `derrubar.sh`: containers, id, instante de parada e volumes). Imagens `kf-worker` antigas removidas (so `kf-`); o
+`derrubar.sh` remove as imagens `kf-worker:*` e `kf-poc:*` (o filtro antigo `docker images -q a b` era invalido e nunca removia).
+
+### Comandos
+
+| Comando | O que faz |
+|---|---|
+| `scripts/kf/subir.sh` | Pre-requisitos (igual aos outros labs; `poc-*`/`gg-*` parados), inventario em `.tsg-flow/kf-inventario`, kf-legado/kf-novo (2 CPU/3 GiB), kf-kafka, kf-connect, esquema + massa completa, topicos (incl. heartbeat), conector em streaming, carga inicial, `KF_WORKERS` workers (padrao 1), drenagem, reconciliacao SQL, limpeza de archive. Tempos em `resultados/kf/c1/subir-tempos.json`. `KF_MASSA_REDUZIDA=1` volta a massa do spike; `KF_CARGA_DML_TAXA=300` roda o gerador durante a carga (teste de alinhamento) |
+| `scripts/kf/derrubar.sh` | Remove so `kf-*` (containers, volumes, rede, imagens `kf-worker`/`kf-poc`; sem prune) e compara o inventario |
+| `scripts/kf/carga-inicial.sh` | `CargaInicial` do jar da PoC (mesmo codigo do C1 Java) alinhada ao conector (abaixo) |
+| `scripts/kf/reconciliar.sh` | Reconciliacao SQL por faixa de 100.000 codigos (contagem + 2 hashes) com tratamento do delete fisico (abaixo) |
+| `scripts/kf/drenar.sh` | Drenado = lag do grupo de workers 0 e soma dos end offsets sem crescer por 15 s, com conector RUNNING |
+| `scripts/kf/lag.sh [GRUPO] [--fim]` | Lag do consumidor (e soma dos end offsets) |
+| `scripts/kf/gerar.sh TAXA DUR DIR` | Gerador da PoC no **desenv-server** (mesmo host do legado, como nos outros labs), com amostragem de `docker stats` dos dois hosts |
+| `scripts/kf/snapshot-ids.sh [cen] [nome]` | Snapshot `(tabela,codigo,id)` do kf-novo em `resultados/kf/<cen>/snapshots/` |
+| `scripts/kf/limpar-archive.sh [--verificar]`, `verificar-archive-necessario.sh` | Limpeza de archive guiada pelo offset do conector (abaixo) |
+| `scripts/kf/calibrar-gerador.sh` | Fase 2 |
+| `scripts/lab-kf.env` | `LAB_*` para `scripts/comum.sh`, `scripts/cenarios/lab.py`, `medir-relogios.py`, `coletar-recursos.sh` (mesmo formato do `lab-gg.env`; `RESULTADOS_BASE=resultados/kf`) |
+
+### Alinhamento da carga inicial ao conector (decisao)
+
+Fatos verificados na doc do Debezium 3.7 (pagina do conector Oracle) e no log do conector:
+
+- Nao existe propriedade de SCN inicial para o LogMiner (nenhum `log.mining.start.scn`). `snapshot.mode=no_data` roda o fluxo de snapshot
+  (so estrutura) e passa a transmitir **do SCN corrente no momento do snapshot**; o log diz `Snapshot ended ... OracleOffsetContext [scn=N]` e
+  `No in-progress transactions will be captured`.
+- `when_needed`/`recovery` nao servem para "comecar em S": o primeiro so faz snapshot se nao ha offset; o segundo e para recriar o
+  historico de schema. Posicionar o offset a mao (REST de offsets do Connect, KIP-875) funcionaria, mas e frágil e desnecessario.
+- `initial` faz o proprio snapshot (consistente, por flashback) e passa 1,85 M linhas pelo Kafka como eventos `r`.
+
+Alternativas avaliadas:
+
+1. **Conector antes da carga (escolhida).** Massa commitada, conector `no_data` registrado e em streaming (SCN S0 fixado), carga inicial com os
+   workers parados, depois os workers aplicam o topico desde o offset 0. Por que e correta: todo commit posterior a S0 esta no topico (nada se
+   perde); o `CargaInicial` le o legado no estado corrente e faz o mesmo `MERGE` guardado por versao do worker (`updated_at` > `origem_updated_at`),
+   entao uma linha lida na versao v so e sobrescrita por evento de versao maior, e um evento repetido (versao <= a do destino) e descartado; um
+   delete fisico convertido (`excluido=1`, versao do before + 1 us) nunca e desfeito por uma leitura anterior da carga; o UUID e do destino e
+   nao muda (guarda e `MERGE` sem tocar `id`). Eventos anteriores ao fim da carga nao perdem nada. Custo: o topico recebe os eventos de S0 ate o
+   fim da carga (poucos). A carga e a do C1 Java (comparavel: mesmo `CargaInicial`, mesmas 4 threads).
+2. `INSERT ... AS OF SCN S` por DB link (como no GG): instantaneo e consistente por construcao, mas exigiria DB link/grants no kf-novo e foi
+   4,4x mais lento no GG; tambem exigiria S >= S0 e o mesmo cuidado com o conector. Nao usada.
+3. `snapshot.mode=initial` do Debezium: mais simples operacionalmente e sem script de carga, mas gera 1,85 M eventos no Kafka e depende do
+   worker aplicar um evento por linha. **Nao medida nesta fase** (extra opcional para o C1; anotado como pendencia, requer lab novo).
+
+Armadilhas tratadas: (a) a API responde RUNNING antes de o conector fixar o SCN; `registrar-conector.sh` agora espera `Starting streaming`
+posterior ao PUT e imprime `SCN_INICIAL`; (b) `no_data` nao captura transacoes abertas no instante do start, por isso o conector e registrado
+com o legado sem DML em andamento (no `subir.sh`, antes da carga e do gerador); (c) o offset do Connect so e gravado quando ha registro emitido:
+sem heartbeat, um conector ocioso nao tem offset (o limpador de archive nao tem criterio e um reinicio refaria o snapshot no SCN corrente,
+perdendo o que veio depois do ultimo evento). Foi ligado `heartbeat.interval.ms=10000` (topico `__debezium-heartbeat.kf`, 1 particao), que faz o
+offset andar sem DML (mudanca de configuracao do conector, registrada aqui).
+
+### Resultados do `subir.sh` (massa completa, do zero; relogio do desenv-server)
+
+| Etapa | Ciclo 1 (sem DML, 1 worker) | Ciclo 2 (gerador 300 ev/s durante a carga, 2 workers) |
+|---|---|---|
+| bancos saudaveis | 96,0 s | 103,8 s |
+| legado: redo, archivelog, esquema e massa 1,7 M | 89,1 s | 89,2 s |
+| destino | 2,8 s | 2,8 s |
+| topicos + conector em streaming | 32,5 s | 35,3 s |
+| **carga inicial (CargaInicial, 4 threads)** | **183,1 s** (jar: 178,3 s) | 192,7 s (jar: 185,9 s) |
+| workers + drenagem | 32,1 s | 42,3 s (gerador terminou antes; drenagem 34 s) |
+| reconciliacao SQL | 7,7 s | 8,2 s |
+| total | 444,9 s | 590,0 s |
+
+Carga por tabela (ciclo 1): titular 200.000 a 10.026 linhas/s; obra_musical 500.000 a 11.255; fonograma 1.000.000 a 8.779; 1,7 M linhas. A massa
+tem 1,7 M linhas (200k+500k+1M), nao 1,85 M; o 1,85-2 M do C1 Java inclui as linhas inseridas nos ensaios (Java: 231.712+561.993+1.060.490 = 1,85 M em 109,9 s,
+~16.800 linhas/s; aqui ~9.500 linhas/s, 1,6x mais lento). Causas provaveis (nao isoladas): LogMiner do conector lendo o kf-legado durante a
+leitura da carga (10 a 25% de CPU em repouso), kf-kafka/kf-connect/kf-novo no mesmo host da carga, leitura do legado por rede. Nao foi tentada
+otimizacao (mais threads, faixas maiores).
+
+Ciclo 2 (alinhamento com DML concorrente): S0 = 2322429, SCN da carga = 2322567, gerador a 300 ev/s por 240 s (VALIDO, taxa 300,04, 72.010 linhas),
+iniciado 10 s depois do conector; **0 divergencias** na reconciliacao (contagem e hash em 20 faixas dos dois lados; linhas 1.001.392 / 501.394 /
+200.698), soma dos end offsets dos topicos de tabela = 72.010 = linhas do gerador (nenhum evento a menos nem a mais), lag 0 apos 34 s.
+
+### Reconciliacao e delete fisico
+
+`scripts/kf/reconciliar.sh` compara faixas (contagem + 2 hashes). Nas faixas que diferem desce a linha (`codigo|excluido|hash`) e classifica: linha
+**ausente no legado e com `excluido=1` no destino** e consistente (delete fisico convertido pelo worker) e e contada a parte; qualquer outra
+diferenca (ausente no destino, so-no-destino com `excluido<>1`, hash diferente) e divergencia real (exit 1). Nunca se apaga linha do destino.
+Teste (`resultados/kf/c1/teste-delete-fisico.txt`): 3 titulares e 2 fonogramas apagados no legado, apos drenar o destino tem as 5 linhas com
+`excluido=1` e a reconciliacao devolve exit 0 com "deletes fisicos convertidos: 5 (fonograma=2,titular=3)"; teste negativo (nome de um titular alterado
+no destino) devolve "1 DIVERGENCIAS REAIS" e exit 1, e volta a 0 depois de restaurar o valor. O subcomando Java `reconciliacao` (MODO=completo
+DRY_RUN=true) **nao** foi alterado (e do modulo `poc/`, compartilhado com os labs Java e GG): ele conta as mesmas 5 linhas como divergencia
+(`total=5`); no lab Kafka a verificacao oficial e o script SQL.
+
+### Limpeza de archive (criterio seguro)
+
+`scripts/kf/limpar-archive.sh` apaga so archive log com `NEXT_CHANGE# <= MIN(scn, numero de commit_scn)` do offset do conector (REST
+`GET /connectors/kf-oracle/offsets`), menos `MARGEM_SCN` (0), e nunca os 3 mais recentes. `scn` e o menor SCN que o LogMiner precisa ao reiniciar
+(inicio da transacao aberta mais antiga ou ultimo processado), o offset e gravado a cada ~60 s (so pode estar atrasado, logo mais conservador);
+sem offset nao apaga nada. O heartbeat mantem o offset andando. `verificar-archive-necessario.sh` confere que tudo com `NEXT_CHANGE# > scn` existe
+(vale com o conector parado). Alarme (exit 2): livre < 10 GB ou archive > 20 GB. Imagem slim sem `rman`: remocao por `rm`, como no GG. Teste: com a
+massa os archives somam ~1,49 GB (3 arquivos de 512 MB, todos mantidos pela regra dos 3 mais recentes).
+
+### Workers
+
+O lab Java usou **1 worker** nos C2-C5 e C8-C10 e 2 no C7 (no C6, um segundo e criado na queda); todos com 2 CPU / 1 GiB / `memory-swap` 1 GiB /
+`-Xmx512m`, `LEASE_SEG=12` no C6/C7. `subir-worker.sh` ja usa exatamente isso; `subir.sh` sobe `KF_WORKERS` (padrao 1; o ciclo 2 usou 2 e
+dividiu as 48 particoes 24/24).
+
+---
+
+## Fase 2: calibracao do gerador (2026-11-21)
+
+Lab com massa completa (ciclo 2 do `subir.sh`), 1 gerador (`scripts/kf/gerar.sh`, desenv-server, 2 CPU / 1 GiB, 8 threads, semente 1, mix e
+percentuais do C2) e os 2 workers rodando. Patamares dos labs Java/GG: **500, 1.000, 2.000 e 4.000 ev/s** (C3; C2 e C4-C10 usam 1.000). Medicao:
+`scripts/kf/calibrar-gerador.sh 120` (120 s por patamar; resultados em `resultados/kf/calibracao/20261121T010044Z/`, `resumo.json`). Primeiro com o
+conector **pausado** (`PUT /connectors/kf-oracle/pause`: nenhum LogMiner, custo puro do legado), depois religado (backlog drenado), depois com o
+LogMiner ligado. CPU = `docker stats` a cada ~3 s (100% = 1 CPU; limite de cada container = 200%).
+
+| Modo | Alvo | Taxa efetiva | % do alvo | Veredito | tx media | kf-legado CPU media / max | gerador media / max | Drenagem apos o patamar |
+|---|---|---|---|---|---|---|---|---|
+| conector pausado | 500 | 500,08 | 100% | VALIDO | 5,99 ms | 45,9% / 101,5% | 20,0% / 80,2% | n/a |
+| conector pausado | 1.000 | 999,99 | 100% | VALIDO | 8,42 ms | 73,7% / 118,5% | 30,9% / 181,1% | n/a |
+| conector pausado | 2.000 | 1.999,98 | 100% | VALIDO | 4,65 ms | 132,7% / 181,1% | 42,4% / 201,4% | n/a |
+| conector pausado | 4.000 | 3.707,52 | 92,7% | **INVALIDO** | 5,16 ms | 151,3% / 214,6% | 53,9% / 199,3% | n/a |
+| LogMiner ligado | 500 | 500,08 | 100% | VALIDO | 5,11 ms | 78,8% / 175,2% | 18,2% / 151,1% | 27,3 s |
+| LogMiner ligado | 1.000 | 999,99 | 100% | VALIDO | 4,62 ms | 113,2% / 152,6% | 26,6% / 192,9% | 27,8 s |
+| LogMiner ligado | 2.000 | 2.000,00 | 100% | VALIDO | 4,51 ms | 150,1% / 205,9% | 38,6% / 198,5% | 27,7 s |
+| LogMiner ligado | 4.000 | 3.484,77 | 87,1% | **INVALIDO** | 6,81 ms | 192,4% / 212,8% | 50,0% / 198,3% | 41,4 s |
+
+(A "drenagem" inclui os 15 s de estabilidade do criterio; e o tempo ate lag 0 apos o fim da carga, ou seja, o pipeline completo acompanha ate 3.485
+ev/s sem acumular backlog duradouro.)
+
+Conclusoes:
+
+- **2.000 ev/s e atingivel** com o LogMiner ligado, taxa efetiva 100,00% e kf-legado em 150% de CPU medio (75% do limite; picos de amostra de 206%).
+  O **teto do gerador contra o kf-legado e entre 2.000 e 4.000 ev/s**: 4.000 pedidos entregam 3.707 ev/s com o conector pausado e **3.485 ev/s
+  (87%) com o LogMiner ligado**, com o kf-legado em 192% de 200% (saturado). Registrado como resultado (como o 3.858 do GG e o 794 a 1.000 ev/s do lab
+  Java com triggers), nao como falha da fase. O C3 do lab Kafka devera tratar o degrau de 4.000 como GERADOR_SATURADO.
+- Custo do LogMiner no legado (descritivo, nao e o C10): +33, +40, +17 e +41 pontos de CPU media a 500/1.000/2.000/4.000 ev/s (parte e o polling
+  constante, que em repouso consome 10 a 25%); o tempo medio de transacao nao muda de forma consistente (4,5 a 6,0 ms; o 8,42 ms do patamar de 1.000
+  com o conector pausado e um outlier nao explicado, rodou logo apos a pausa).
+- **Nenhum evento perdido nem duplicado no Kafka**: a soma dos end offsets dos tres topicos de tabela cresceu exatamente o numero de linhas geradas
+  em cada patamar (por exemplo 864.926 linhas geradas com o conector pausado = 864.926 eventos depois de religar). Religar apos 4 patamares sem
+  conector (864.926 eventos de backlog) drenou em **207,8 s** (~4.200 ev/s de recuperacao, ~4.500 sem os 15 s de
+  estabilidade), sem reconciliacao: o LogMiner recuperou pelo redo. Reconciliacao SQL ao fim da calibracao: 0 divergencias (5 deletes fisicos
+  convertidos, os do teste da Fase 1).
+- Recursos nos outros containers, com o LogMiner ligado a 2.000 ev/s: kf-connect 36% / 110% (media / max), kf-novo 65% / 177%, cada worker 18-20% / 53%;
+  a 4.000: kf-connect 50% / 100%, kf-novo 88% / 202%, workers 21% / 50%. Memoria estavel (kf-connect ~0,76 GiB, kf-novo ~2,0 GiB, workers 0,3-0,45 GiB).
+- **Achado de recursos (para o C10/relatorio):** com os 2 workers ligados o kf-kafka gasta **~43% de CPU em repouso** (sem eventos), contra **2,3%** sem
+  workers (`repouso-infra.txt`): vem dos 48 consumers por (tabela, particao) com `assign()` manual fazendo poll; e custo do desenho do worker, nao do
+  Kafka. A coluna de CPU do kf-kafka nos patamares inclui tambem as JVMs de `kafka-get-offsets`/`kafka-consumer-groups` do `lag.sh`; nao leia o
+  numero do kf-kafka como custo do Kafka puro.
+- `lag.sh` durante a carga tem skew: lê os end offsets e depois os offsets commitados em chamadas de ~3 s cada, entao a diferenca pode ficar negativa
+  (milhares) sob 2.000+ ev/s. O criterio de drenado (lag 0 e end offsets estaveis por 15 s) nao e afetado; para tendencia de lag nos cenarios, usar o
+  metodo do worker (`pendentes`) em vez de `lag.sh`.
+- Limpeza de archive exercitada de verdade: 3 execucoes apagaram 1 e 2 archives (archive de 2,4 GB para 1,46 GB) conforme `scn` do offset;
+  `verificar-archive-necessario.sh` devolveu 0 faltando; livre no desenv-server 49-50 GB (alarme em 10 GB) sem alarme.
+
+### Causa do 500 ev/s invalido na Fase 0 (39 ev/s): NAO era o LogMiner nem o host
+
+Hipoteses testadas (`resultados/kf/calibracao/diagnostico-39-por-s/`): (1) gerador rodando no infra-server (`poc.sh` rodou la na Fase 0) em vez do desenv-server:
+com a massa completa, 500 ev/s VALIDO nos dois hosts (500,15 e 500,08 ev/s, conector ligado); (2) CPU do kf-legado com LogMiner: media 79% a 500 ev/s,
+longe do limite. **Reproduzido com a massa reduzida do spike (1k/2k/4k)**: 300 ev/s VALIDO (300,22), e logo em seguida 500 ev/s INVALIDO (44 ev/s, 2.668 linhas
+em 9.911 transacoes). Causa: o `02_massa.sql` reduzido carrega codigos 1..1.000, mas as sequences continuam em 200.001 / 500.001 / 1.000.001; o 1o
+patamar insere linhas (5%) com codigos ~200.499, e o gerador do patamar seguinte sorteia chaves uniformemente em `1..max(codigo)` (`Gerador.chave`),
+isto e, em ~200.000 codigos dos quais so ~1.500 existem em TITULAR (2.957 em OBRA_MUSICAL e 4.904 em FONOGRAMA, nas faixas 1..500.957 e 1..1.000.904 correspondentes): ~99% dos `UPDATE ... WHERE codigo=?` afetam 0 linhas, a transacao e contada e a linha nao. Nao e
+limite de ambiente. Na massa completa os codigos sao contiguos (1..n, depois as inserções pela sequence) e o efeito nao existe. Regra: nunca calibrar
+nem medir com `KF_MASSA_REDUZIDA=1` depois de uma rodada de inserts; reconstruir.
+
+### Ajustes feitos (todos registrados)
+
+Nenhum parametro do gerador ou do conector precisou ser mudado para a calibracao; o ambiente nao foi alterado (Oracles 2 CPU / 3 GiB). Mudancas de
+configuracao feitas na Fase 1: `heartbeat.interval.ms=10000` no conector (offset avanca sem DML). `log.mining.sleep.time.*` ficou em 100/300/500 ms
+(Fase 0) e `batch.size` no padrao.

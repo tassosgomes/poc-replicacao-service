@@ -34,3 +34,18 @@ kfq() {
   esac
 }
 connect_api() { ssh_poc infra-server "curl -s -m 30 $*"; }
+# SCN corrente do legado (PDB), pelo relogio logico do banco. Imprime so o numero.
+scn_legado() {
+  ssh_poc desenv-server 'docker exec -i kf-legado sqlplus -s / as sysdba' <<< "alter session set container=FREEPDB1;
+set heading off feedback off
+select current_scn from v\$database;
+exit" | tr -d ' \r' | grep -E '^[0-9]+$'
+}
+# Offset do conector (REST do Connect, KIP-875): JSON {scn, commit_scn, ...} ou vazio.
+offset_conector() { connect_api localhost:18083/connectors/kf-oracle/offsets | jq -c '.offsets[0].offset // empty'; }
+# Contagens por tabela do banco $1 (legado|novo): JSON {"TITULAR":n,...}
+contagens() {
+  local q="" t
+  for t in titular obra_musical fonograma; do q+="select '$t='||count(*) from $t;"$'\n'; done
+  printf "set heading off feedback off pagesize 0\n%sexit\n" "$q" | kfq "$1" | tr -d '\r ' | grep = | awk -F= '{printf "%s\"%s\":%s", (NR>1?",":"{"), toupper($1), $2} END{print "}"}'
+}

@@ -1,0 +1,338 @@
+{
+ "duracao_por_patamar_s": 120,
+ "gerador": "desenv-server, 8 threads, semente 1, mix padrao do C2",
+ "patamares": [
+  {
+   "modo": "com-conector",
+   "alvo": 500,
+   "linhas": 60010,
+   "transacoes": 19905,
+   "taxa_efetiva": 500.08,
+   "pct_do_alvo": 100.0,
+   "transacao_media_ms": 5.109,
+   "veredito": "VALIDO",
+   "cpu_pct_docker_stats_limite_200": {
+    "gerador": {
+     "media": 18.2,
+     "max": 151.1
+    },
+    "kf-connect": {
+     "media": 6.1,
+     "max": 41.3
+    },
+    "kf-kafka": {
+     "media": 125.6,
+     "max": 209.3
+    },
+    "kf-legado": {
+     "media": 78.8,
+     "max": 175.2
+    },
+    "kf-novo": {
+     "media": 36.5,
+     "max": 164.8
+    },
+    "kf-worker-1": {
+     "media": 10.7,
+     "max": 38.7
+    },
+    "kf-worker-2": {
+     "media": 9.4,
+     "max": 27.1
+    }
+   },
+   "drenagem_apos_s": 27.3
+  },
+  {
+   "modo": "com-conector",
+   "alvo": 1000,
+   "linhas": 119999,
+   "transacoes": 39928,
+   "taxa_efetiva": 999.99,
+   "pct_do_alvo": 100.0,
+   "transacao_media_ms": 4.623,
+   "veredito": "VALIDO",
+   "cpu_pct_docker_stats_limite_200": {
+    "gerador": {
+     "media": 26.6,
+     "max": 192.9
+    },
+    "kf-connect": {
+     "media": 20.3,
+     "max": 60.1
+    },
+    "kf-kafka": {
+     "media": 136.5,
+     "max": 206.6
+    },
+    "kf-legado": {
+     "media": 113.2,
+     "max": 152.6
+    },
+    "kf-novo": {
+     "media": 40.1,
+     "max": 82.7
+    },
+    "kf-worker-1": {
+     "media": 10.0,
+     "max": 24.8
+    },
+    "kf-worker-2": {
+     "media": 14.5,
+     "max": 30.7
+    }
+   },
+   "drenagem_apos_s": 27.8
+  },
+  {
+   "modo": "com-conector",
+   "alvo": 2000,
+   "linhas": 240000,
+   "transacoes": 80048,
+   "taxa_efetiva": 2000.0,
+   "pct_do_alvo": 100.0,
+   "transacao_media_ms": 4.505,
+   "veredito": "VALIDO",
+   "cpu_pct_docker_stats_limite_200": {
+    "gerador": {
+     "media": 38.6,
+     "max": 198.5
+    },
+    "kf-connect": {
+     "media": 35.5,
+     "max": 109.9
+    },
+    "kf-kafka": {
+     "media": 130.2,
+     "max": 203.8
+    },
+    "kf-legado": {
+     "media": 150.1,
+     "max": 205.9
+    },
+    "kf-novo": {
+     "media": 64.9,
+     "max": 176.7
+    },
+    "kf-worker-1": {
+     "media": 18.1,
+     "max": 53.4
+    },
+    "kf-worker-2": {
+     "media": 20.3,
+     "max": 53.5
+    }
+   },
+   "drenagem_apos_s": 27.7
+  },
+  {
+   "modo": "com-conector",
+   "alvo": 4000,
+   "linhas": 419345,
+   "transacoes": 139978,
+   "taxa_efetiva": 3484.77,
+   "pct_do_alvo": 87.1,
+   "transacao_media_ms": 6.807,
+   "veredito": "INVALIDO",
+   "cpu_pct_docker_stats_limite_200": {
+    "gerador": {
+     "media": 50.0,
+     "max": 198.3
+    },
+    "kf-connect": {
+     "media": 50.3,
+     "max": 100.1
+    },
+    "kf-kafka": {
+     "media": 132.3,
+     "max": 208.9
+    },
+    "kf-legado": {
+     "media": 192.4,
+     "max": 212.8
+    },
+    "kf-novo": {
+     "media": 88.1,
+     "max": 202.1
+    },
+    "kf-worker-1": {
+     "media": 20.9,
+     "max": 48.3
+    },
+    "kf-worker-2": {
+     "media": 21.4,
+     "max": 49.5
+    }
+   },
+   "drenagem_apos_s": 41.4
+  },
+  {
+   "modo": "sem-conector",
+   "alvo": 500,
+   "linhas": 60010,
+   "transacoes": 19905,
+   "taxa_efetiva": 500.08,
+   "pct_do_alvo": 100.0,
+   "transacao_media_ms": 5.987,
+   "veredito": "VALIDO",
+   "cpu_pct_docker_stats_limite_200": {
+    "gerador": {
+     "media": 20.0,
+     "max": 80.2
+    },
+    "kf-connect": {
+     "media": 0.8,
+     "max": 4.7
+    },
+    "kf-kafka": {
+     "media": 35.0,
+     "max": 201.0
+    },
+    "kf-legado": {
+     "media": 45.9,
+     "max": 101.5
+    },
+    "kf-novo": {
+     "media": 5.7,
+     "max": 12.6
+    },
+    "kf-worker-1": {
+     "media": 6.9,
+     "max": 10.6
+    },
+    "kf-worker-2": {
+     "media": 8.1,
+     "max": 38.0
+    }
+   },
+   "drenagem_apos_s": null
+  },
+  {
+   "modo": "sem-conector",
+   "alvo": 1000,
+   "linhas": 119999,
+   "transacoes": 39928,
+   "taxa_efetiva": 999.99,
+   "pct_do_alvo": 100.0,
+   "transacao_media_ms": 8.42,
+   "veredito": "VALIDO",
+   "cpu_pct_docker_stats_limite_200": {
+    "gerador": {
+     "media": 30.9,
+     "max": 181.1
+    },
+    "kf-connect": {
+     "media": 0.7,
+     "max": 1.4
+    },
+    "kf-kafka": {
+     "media": 40.0,
+     "max": 202.9
+    },
+    "kf-legado": {
+     "media": 73.7,
+     "max": 118.5
+    },
+    "kf-novo": {
+     "media": 5.7,
+     "max": 21.7
+    },
+    "kf-worker-1": {
+     "media": 6.5,
+     "max": 8.8
+    },
+    "kf-worker-2": {
+     "media": 6.8,
+     "max": 18.6
+    }
+   },
+   "drenagem_apos_s": null
+  },
+  {
+   "modo": "sem-conector",
+   "alvo": 2000,
+   "linhas": 239997,
+   "transacoes": 80048,
+   "taxa_efetiva": 1999.98,
+   "pct_do_alvo": 100.0,
+   "transacao_media_ms": 4.651,
+   "veredito": "VALIDO",
+   "cpu_pct_docker_stats_limite_200": {
+    "gerador": {
+     "media": 42.4,
+     "max": 201.4
+    },
+    "kf-connect": {
+     "media": 0.7,
+     "max": 0.9
+    },
+    "kf-kafka": {
+     "media": 30.5,
+     "max": 182.1
+    },
+    "kf-legado": {
+     "media": 132.7,
+     "max": 181.1
+    },
+    "kf-novo": {
+     "media": 5.6,
+     "max": 9.3
+    },
+    "kf-worker-1": {
+     "media": 7.7,
+     "max": 42.0
+    },
+    "kf-worker-2": {
+     "media": 6.2,
+     "max": 9.8
+    }
+   },
+   "drenagem_apos_s": null
+  },
+  {
+   "modo": "sem-conector",
+   "alvo": 4000,
+   "linhas": 444920,
+   "transacoes": 148491,
+   "taxa_efetiva": 3707.52,
+   "pct_do_alvo": 92.7,
+   "transacao_media_ms": 5.16,
+   "veredito": "INVALIDO",
+   "cpu_pct_docker_stats_limite_200": {
+    "gerador": {
+     "media": 53.9,
+     "max": 199.3
+    },
+    "kf-connect": {
+     "media": 0.8,
+     "max": 3.1
+    },
+    "kf-kafka": {
+     "media": 38.3,
+     "max": 200.6
+    },
+    "kf-legado": {
+     "media": 151.3,
+     "max": 214.6
+    },
+    "kf-novo": {
+     "media": 7.0,
+     "max": 14.7
+    },
+    "kf-worker-1": {
+     "media": 6.3,
+     "max": 13.2
+    },
+    "kf-worker-2": {
+     "media": 6.3,
+     "max": 9.3
+    }
+   },
+   "drenagem_apos_s": null
+  }
+ ],
+ "religar_conector_backlog": {
+  "eventos": 864926,
+  "drenagem_s": 207.8
+ }
+}

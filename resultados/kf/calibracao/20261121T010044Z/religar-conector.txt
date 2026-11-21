@@ -1,0 +1,2 @@
+drenado em 207.8 s (lag=0, end offsets=996955, conector=RUNNING)
+religar+drenar: 209.1 s (relogio do desenv-server)

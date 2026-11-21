@@ -1,0 +1,4 @@
+== massa reduzida, gerador desenv-server, 300 ev/s 60 s
+INFO: linhas=18013 transacoes=5958 taxa=300.22 alvo=300 transacao_media_ms=6.314 VALIDO
+== massa reduzida, gerador desenv-server, 500 ev/s 60 s
+INFO: linhas=2668 transacoes=9911 taxa=44.47 alvo=500 transacao_media_ms=3.998 INVALIDO

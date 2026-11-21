@@ -1,0 +1,5 @@
+faixas comparadas: legado=20 novo=20
+linhas fonograma=1035623
+linhas obra_musical=536345
+linhas titular=218105
+reconciliacao SQL: 0 divergencias; deletes fisicos convertidos (ausentes no legado, excluido=1 no destino): 5 (fonograma=2,titular=3)

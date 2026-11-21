@@ -17,6 +17,7 @@
   "log.mining.sleep.time.max.ms": "500",
   "log.mining.sleep.time.increment.ms": "100",
   "tombstones.on.delete": "false",
+  "heartbeat.interval.ms": "10000",
   "include.schema.changes": "false",
   "decimal.handling.mode": "__DECIMAL__",
   "time.precision.mode": "__TIME__",

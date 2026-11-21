@@ -1,0 +1,4 @@
+repouso kf-kafka CPU media=42.6%
+repouso kf-worker-1 CPU media=6.3%
+repouso kf-connect CPU media=1.5%
+repouso kf-kafka SEM workers CPU media=2.3%

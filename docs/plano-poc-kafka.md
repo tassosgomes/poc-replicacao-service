@@ -1,7 +1,7 @@
 # Plano: PoC parte 3, alternativa A (CDC + Kafka + worker)
 
-Status (2026-11-20): Fase 0 em andamento; **parte de infraestrutura concluida com GO** (Debezium 3.7.1 captura o Oracle Free 23ai;
-ver `docs/spike-kafka-notas.md`). Falta o worker `infra-kafka`/`bootstrap-kafka` aplicando ponta a ponta. Data: 2026-11-20.
+Status (2026-11-21): Fases 0, 1 e 2 **concluidas** (Debezium 3.7.1 captura o Oracle Free 23ai; worker aplicando ponta a ponta; ambiente
+reprodutivel com massa completa; gerador calibrado). Proxima: Fase 3 (C1 a C10). Detalhes em `docs/spike-kafka-notas.md`.
 
 ## Objetivo
 
@@ -87,11 +87,23 @@ capturando INSERT/UPDATE/DELETE das 3 tabelas e transacao multi-tabela; fixtures
   ponta com 0 divergências na reconciliação.
 
 ### Fase 1: ambiente reprodutível
+
+**Status (2026-11-21): concluída.** `subir.sh` (massa completa, conector, carga, workers, drenagem, reconciliação) e `derrubar.sh` testados do zero
+quatro vezes (massa completa sem DML, massa completa com gerador a 300 ev/s durante a carga, massa reduzida, massa completa de novo), inventário
+`poc-*`/`gg-*` idêntico em todas. Carga completa (1,7 M linhas, `CargaInicial`, 4 threads) em ~183 s (Java C1: 109,9 s para 1,85 M). Alinhamento
+carga x SCN: conector `no_data` em streaming **antes** da carga, workers depois; 0 divergências com DML concorrente. Reconciliação trata delete físico
+convertido. `scripts/lab-kf.env`, `snapshot-ids.sh`, `limpar-archive.sh` (critério: offset do conector), `drenar.sh`/`lag.sh`. Pendente para a Fase 3:
+`cenario.sh`/`meta_kf.py` (runner dos C1-C10 e contrato de `meta.json`).
 `scripts/kf/subir.sh`, `derrubar.sh` (só `kf-`, comparando inventário), carga inicial
 (`CargaInicial` + início do conector num SCN fixo), reconciliação. `scripts/lab-kf.env` para os
 runners parametrizados por `LAB_*`.
 
 ### Fase 2: calibração do gerador (como nos outros labs)
+
+**Status (2026-11-21): concluída.** Patamares 500/1.000/2.000 ev/s: taxa efetiva 100% com o LogMiner ligado e desligado (kf-legado 150% de CPU a
+2.000 ev/s); **4.000 ev/s não é atingível** (3.485 ev/s = 87% com LogMiner; 3.708 com o conector pausado; kf-legado saturado): registrado como teto,
+degrau do C3 será GERADOR_SATURADO. O 500 ev/s inválido da Fase 0 (39 ev/s) foi **reproduzido e explicado**: efeito da massa reduzida (espaço de chaves
+esparso depois de inserts), não do LogMiner nem do host. `scripts/kf/calibrar-gerador.sh`; resultados em `resultados/kf/calibracao/`.
 
 ### Fase 3: cenários C1–C10 com o modo atual do worker
 Mesmos números e critérios. C4/C6/C7 incluem também queda do broker e do Connect.

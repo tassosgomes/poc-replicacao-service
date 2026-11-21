@@ -1,0 +1,13 @@
+{
+  "snapshots": {
+    "apos-carga": {
+      "linhas": 1700000,
+      "bytes": 85766686,
+      "sha256": "636ced522fa07fa995a1f67baff80f427b7858e11f8299c28fa7aa0839944dbc",
+      "uuids_duplicados": 0,
+      "por_tabela": "fonograma=1000000,obra_musical=500000,titular=200000",
+      "gerado_em": "2026-11-21T01:46:32Z",
+      "arquivo": "resultados/kf/c1/snapshots/apos-carga.csv (ignorado pelo git)"
+    }
+  }
+}

@@ -14,7 +14,7 @@ ssh_poc infra-server 'docker rm -fv kf-connect kf-kafka kf-novo >/dev/null 2>&1 
 # Containers kf-* restantes (kf-worker-N, kf-poc-*, kf-artefato-*; filtro por prefixo, nunca prune) e imagens kf-worker/kf-poc.
 for host in "${KF_HOSTS[@]}"; do
   ssh_poc "$host" 'ids=$(docker ps -aq --filter name=^/kf-); [ -z "$ids" ] || docker rm -fv $ids >/dev/null 2>&1 || true
-    imgs=$(docker images -q kf-worker kf-poc | sort -u); [ -z "$imgs" ] || docker rmi $imgs >/dev/null 2>&1 || true'
+    imgs=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "^kf-(worker|poc):" || true); [ -z "$imgs" ] || docker rmi $imgs >/dev/null 2>&1 || true'
 done
 for host in "${KF_HOSTS[@]}"; do
   ssh_poc "$host" 'test -z "$(docker ps -aq --filter name=^/kf-; docker volume ls -q --filter name=^kf-; docker network ls -q --filter name=^kf-)"' || { echo "$host: sobraram recursos kf-" >&2; exit 1; }

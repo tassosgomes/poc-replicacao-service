@@ -1,0 +1,16 @@
+{"name":"kf-oracle","type":"source","tasks":[]}
+conector RUNNING e em streaming; SCN_INICIAL=2299696
+[22:32:14] conector em streaming (S0=2299696) em 37.6 s (inclui topicos)
+[22:32:28] carga inicial: {"scn_inicial_conector":2299696,"scn_carga":2299774,"threads":4,"tempo_s_relogio_desenv":11.4,"tempo_total_s_jar":3.464}
+[22:32:31] 1 worker(s) no ar; drenando
+drenado em 29.8 s (lag=0, end offsets=0, conector=RUNNING)
+faixas comparadas: legado=3 novo=3
+linhas fonograma=4000
+linhas obra_musical=2000
+linhas titular=1000
+reconciliacao SQL: 0 divergencias (contagem e hash iguais em todas as faixas); deletes fisicos convertidos: 0
+[22:33:05] total 226.3 s; tempos em /home/tsgomes/github-tassosgomes/poc-replicacao-service/resultados/kf/c1/subir-tempos.json
+/kf-legado NanoCpus=2000000000 Memory=3221225472
+/kf-novo NanoCpus=2000000000 Memory=3221225472
+/kf-kafka NanoCpus=2000000000 Memory=2147483648
+/kf-connect NanoCpus=2000000000 Memory=2147483648
