@@ -1,0 +1,2 @@
+drenado em 31.6 s (lag=0, end offsets=0, conector=RUNNING)
+drenado em 29.4 s (lag=0, end offsets=0, conector=RUNNING)

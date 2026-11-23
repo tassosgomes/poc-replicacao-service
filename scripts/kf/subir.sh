@@ -74,6 +74,8 @@ CARGA=$(KF_SCN_INICIAL=$REG "$ROOT/scripts/kf/carga-inicial.sh" "$R"); T5=$(agor
 log "carga inicial: $CARGA"
 [[ -z $GPID ]] || { wait "$GPID" || true; cat "$R/gerador-concorrente.txt"; }
 T6=$(agora)
+# C1 (scripts/kf/c1-carga.sh): snapshot de UUIDs com a carga feita e os workers ainda parados (antes x depois do replay do topico).
+[[ -z ${KF_SNAPSHOT_ANTES:-} ]] || "$ROOT/scripts/kf/snapshot-ids.sh" c1 antes-workers | tee "$R/snapshot-antes.txt"
 NW=${KF_WORKERS:-1}
 for ((w=1; w<=NW; w++)); do "$ROOT/scripts/kf/subir-worker.sh" "$w" > /dev/null; done
 log "$NW worker(s) no ar; drenando"

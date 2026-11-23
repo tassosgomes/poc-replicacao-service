@@ -1,0 +1,55 @@
+{
+ "mediana_eventos_por_balde_regime": 5470,
+ "lag_max_regime_antes_s": 6.076,
+ "baldes_regime": 32,
+ "metodo": "balde de 5 s de aplicado_em; lag = maximo da latencia (aplicado_em - origem_updated_at, corrigida pelo offset de relogios); completo >= 50% da mediana do regime; normalizado = primeiro balde completo com inicio >= reinicio, fim <= fim da carga, lag <= 5 s",
+ "eventos": [
+  {
+   "nome": "queda_broker_e_start",
+   "t_queda": 1795447176.1933877,
+   "t_reinicio": 1795447236.7187724,
+   "t_rest": 1795447270.7131987,
+   "t_ext": 1795447270.7131987,
+   "t_rep": null,
+   "t_kill_ret": 1795447176.5259469,
+   "t_start_cmd0": 1795447236.536516,
+   "ultima_aplicacao_antes_s": 1.536,
+   "primeira_aplicacao_apos_queda_apos_reinicio_s": 346.457,
+   "t_normalizado": null,
+   "desde_queda_s": null,
+   "desde_reinicio_s": null,
+   "rest_desde_reinicio_s": 33.99,
+   "rest_desde_queda_s": 94.52,
+   "extract_running_desde_reinicio_s": 33.99,
+   "extract_running_desde_queda_s": 94.52,
+   "replicat_running_desde_reinicio_s": null,
+   "replicat_running_desde_queda_s": null,
+   "baldes": [
+    {
+     "inicio_s": 403.8,
+     "n": 7354,
+     "lag_max_s": 411.98,
+     "completo": true
+    },
+    {
+     "inicio_s": 408.8,
+     "n": 20144,
+     "lag_max_s": 406.356,
+     "completo": true
+    },
+    {
+     "inicio_s": 413.8,
+     "n": 17782,
+     "lag_max_s": 395.24,
+     "completo": true
+    },
+    {
+     "inicio_s": 418.8,
+     "n": 18099,
+     "lag_max_s": 398.974,
+     "completo": true
+    }
+   ]
+  }
+ ]
+}

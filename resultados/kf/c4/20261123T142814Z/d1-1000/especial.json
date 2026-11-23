@@ -1,0 +1,37 @@
+{
+ "cenario": "c4",
+ "offset_relogio_ms": -3.925,
+ "rajada_commit": 1795444316.269846,
+ "rajada_commit_iso": "2026-11-23T14:31:56.269846Z",
+ "rajada": {
+  "linhas_esperadas": 50000,
+  "linhas_classificadas": 50206,
+  "excesso_ambiguo": 206,
+  "completa": true,
+  "commit_ts_origem": "20261123143156",
+  "commit_ts_confere": true,
+  "aplicada_ini_apos_commit_s": 2.218,
+  "aplicada_fim_apos_commit_s": 18.822,
+  "latencia_s": {
+   "p50": 14.246,
+   "p95": 17.075,
+   "max": 19.044
+  }
+ },
+ "patamar": {
+  "metodo": "maximo da latencia por balde de 5 s (eventos de fundo, por aplicado_em) nos baldes inteiros que terminam no commit da rajada",
+  "janela_s": 60,
+  "amostras": 11,
+  "mediana_ms": 4934.2,
+  "maximo_ms": 5629.0
+ },
+ "recuperacao_s": 28.73,
+ "recuperacao_inicio_s": 23.73,
+ "recuperacao_s_estrita_50pct_mediana": 28.73,
+ "janela_recuperacao_s": 479.857,
+ "pico_lag_fundo_apos_commit_ms": 26504.3,
+ "pico_lag_fundo_apos_commit_s": 161.2,
+ "mediana_eventos_por_balde": 5458,
+ "eventos_fundo": 599777,
+ "metodo_recuperacao": "primeiro balde de 5 s inteiro apos o commit, regime ativo e completo, rajada inteira aplicada, lag maximo <= patamar e p95 <= 5000 ms; tempo = fim do balde - commit"
+}

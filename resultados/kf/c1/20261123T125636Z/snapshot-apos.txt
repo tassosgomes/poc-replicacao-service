@@ -1,0 +1,1 @@
+snapshot apos-carga: 1700000 linhas, sha256=1aca218c9139a12bc4aba8b24e91269a9c0aa35dbe1a7464e4c01c1bd4e1bffd, uuids duplicados=0 (fonograma=1000000,obra_musical=500000,titular=200000)

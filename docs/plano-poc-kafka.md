@@ -1,7 +1,9 @@
 # Plano: PoC parte 3, alternativa A (CDC + Kafka + worker)
 
-Status (2026-11-21): Fases 0, 1 e 2 **concluidas** (Debezium 3.7.1 captura o Oracle Free 23ai; worker aplicando ponta a ponta; ambiente
-reprodutivel com massa completa; gerador calibrado). Proxima: Fase 3 (C1 a C10). Detalhes em `docs/spike-kafka-notas.md`.
+Status (2026-11-23): Fases 0, 1 e 2 **concluidas**; Fase 3 **parte 1 concluida** (C1 a C5 medidos com os mesmos numeros e criterios dos labs Java/GG): C1 APROVADO,
+C2 **REPROVADO** (p95 6,43 s; a latencia vem do Debezium/LogMiner), C3 APROVADO na repeticao (teto 2.000 ev/s; a 1a execucao ficou INVALIDA por 97,96% do alvo em 2.000, ambas registradas),
+C4 APROVADO (rajada recuperada em 28,7 s), C5 **REPROVADO** (p95 5,59 s). Extras do C4: queda do Connect (normaliza em 179 s, 4,4% de duplicatas) e do broker (captura parada 5 min por
+`scheduled.rebalance.max.delay.ms`). Proxima: Fase 3 parte 2 (C6 a C10). Detalhes em `docs/spike-kafka-notas.md`, secao "Fase 3, parte 1".
 
 ## Objetivo
 
@@ -107,6 +109,10 @@ esparso depois de inserts), não do LogMiner nem do host. `scripts/kf/calibrar-g
 
 ### Fase 3: cenários C1–C10 com o modo atual do worker
 Mesmos números e critérios. C4/C6/C7 incluem também queda do broker e do Connect.
+
+**Parte 1 (C1–C5) concluída em 2026-11-23:** `scripts/kf/cenario.sh` + `meta_kf.py` (mesmo contrato do GG/Java), resultados em `resultados/kf/c1..c5/` e extras em `resultados/kf/c4/extras/`.
+Resumo: C1 APROVADO (173,7 s de `CargaInicial`, 203,5 s até drenado), C2 REPROVADO (p95 6.429 ms), C3 APROVADO (teto 2.000 ev/s; 4.000 GERADOR_SATURADO; 1ª execução INVALIDA por 1.959 ev/s),
+C4 APROVADO (28,7 s), C5 REPROVADO (p95 5.587 ms; após o commit 4,1 s). Parte 2 (C6–C10) pendente; ver "O que fica para C6 a C10" nas notas.
 
 ### Fase 4: variante transacional
 Novo processador em `application` (ao lado do `ProcessadorParticao`, sem alterá-lo), usado só

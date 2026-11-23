@@ -1,0 +1,13 @@
+{
+  "snapshots": {
+    "apos": {
+      "linhas": 1973369,
+      "bytes": 99766279,
+      "sha256": "151fcb62bae64d0245e50f60f7e8762663ae0f8fd639a356198cdd67d1d6c1e4",
+      "uuids_duplicados": 0,
+      "por_tabela": "fonograma=1108417,obra_musical=610526,titular=254426",
+      "gerado_em": "2026-11-23T15:13:40Z",
+      "arquivo": "resultados/kf/c4/extras/20261123T145840Z-connect/snapshots/apos.csv (ignorado pelo git)"
+    }
+  }
+}

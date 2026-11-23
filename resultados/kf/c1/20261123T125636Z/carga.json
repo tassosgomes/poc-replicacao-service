@@ -1,0 +1,54 @@
+{
+  "carga_inicial": {
+    "tabelas": {
+      "TITULAR": {
+        "linhas": 200000,
+        "linhas_s": 8693.05
+      },
+      "OBRA_MUSICAL": {
+        "linhas": 500000,
+        "linhas_s": 14710.66
+      },
+      "FONOGRAMA": {
+        "linhas": 1000000,
+        "linhas_s": 8570.29
+      }
+    },
+    "tempo_total_s": 173.682,
+    "log": "carga-inicial.log",
+    "tempo_s_relogio_desenv": 289.5
+  },
+  "contagens_legado": {
+    "TITULAR": 200000,
+    "OBRA_MUSICAL": 500000,
+    "FONOGRAMA": 1000000
+  },
+  "contagens_novo": {
+    "TITULAR": 200000,
+    "OBRA_MUSICAL": 500000,
+    "FONOGRAMA": 1000000
+  },
+  "contagens_as_of_scn": {
+    "TITULAR": 200000,
+    "OBRA_MUSICAL": 500000,
+    "FONOGRAMA": 1000000
+  },
+  "drenado": true,
+  "scn": 2323561,
+  "scn_inicial_conector": 2323453,
+  "tempo_ate_drenado_s": 203.482,
+  "tempos_s": {
+    "bancos_saudaveis": 100.9,
+    "legado_esquema_e_massa": 110.2,
+    "destino": 3.7,
+    "topicos_e_conector": 43.2,
+    "carga_inicial": 289.5,
+    "espera_gerador_concorrente": 0.4,
+    "workers_e_drenagem": 493.9,
+    "reconciliacao": 9.1,
+    "total": 1050.9,
+    "derrubar": 9.7,
+    "total_com_derrubar": 1092.4
+  },
+  "drenagem_s": 29.8
+}

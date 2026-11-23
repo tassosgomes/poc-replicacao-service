@@ -1,0 +1,472 @@
+{
+  "extra": "c4",
+  "alvo": "connect",
+  "execucao": "20261123T145840Z-connect",
+  "inicio": "2026-11-23T14:58:45Z",
+  "fim": "2026-11-23T15:14:08Z",
+  "descritivo": true,
+  "regime": {
+    "taxa": 1000,
+    "duracao_s": 600,
+    "queda_apos_s": 180,
+    "reinicio_apos_s": 240
+  },
+  "gerador_linhas": 599975,
+  "eventos_no_topico_durante_o_regime_e_drenagem": 626447,
+  "diferenca_topico_menos_linhas": 26472,
+  "drenagem_apos_fim_da_carga_s": 47.0,
+  "lag_consumer_final": 0,
+  "eventos_worker_csv_bruto": {
+    "arquivos": 1,
+    "lidos": 626447,
+    "na_janela": 626447,
+    "duplicados_descartados": 0,
+    "escritos": 626447
+  },
+  "eventos_worker_csv_dedup": {
+    "arquivos": 1,
+    "lidos": 626447,
+    "na_janela": 626447,
+    "duplicados_descartados": 26472,
+    "escritos": 599975
+  },
+  "queda": {
+    "nome": "queda_connect_e_start",
+    "t_queda": 1795446220.555146,
+    "t_reinicio": 1795446290.9118752,
+    "t_rest": 1795446335.6728911,
+    "t_ext": 1795446335.6728911,
+    "t_rep": null,
+    "t_kill_ret": 1795446230.7009692,
+    "t_start_cmd0": 1795446290.709474,
+    "ultima_aplicacao_antes_s": 0.243,
+    "primeira_aplicacao_apos_queda_apos_reinicio_s": 60.566,
+    "balde_normalizado": {
+      "inicio_s": 174.4,
+      "n": 4064,
+      "lag_max_s": 4.394
+    },
+    "t_normalizado": 1795446400,
+    "desde_queda_s": 179.44,
+    "desde_reinicio_s": 109.09,
+    "rest_desde_reinicio_s": 44.76,
+    "rest_desde_queda_s": 115.12,
+    "extract_running_desde_reinicio_s": 44.76,
+    "extract_running_desde_queda_s": 115.12,
+    "replicat_running_desde_reinicio_s": null,
+    "replicat_running_desde_queda_s": null,
+    "estavel_apos_normalizar": false,
+    "baldes_violando_apos": [
+      {
+        "inicio_s": 194.4,
+        "n": 2854,
+        "lag_max_s": 6.029,
+        "completo": true
+      },
+      {
+        "inicio_s": 209.4,
+        "n": 6012,
+        "lag_max_s": 5.254,
+        "completo": true
+      },
+      {
+        "inicio_s": 214.4,
+        "n": 4787,
+        "lag_max_s": 6.234,
+        "completo": true
+      },
+      {
+        "inicio_s": 219.4,
+        "n": 3961,
+        "lag_max_s": 6.148,
+        "completo": true
+      },
+      {
+        "inicio_s": 224.4,
+        "n": 7065,
+        "lag_max_s": 5.154,
+        "completo": true
+      }
+    ],
+    "pico_lag_s": 137.06
+  },
+  "estado_conector_final": {
+    "conector": "RUNNING",
+    "tarefa": "RUNNING",
+    "trace": null
+  },
+  "estados_da_tarefa": [
+    {
+      "t": 1795446290.924362117,
+      "estado": "-"
+    },
+    {
+      "t": 1795446292.960083680,
+      "estado": "-"
+    },
+    {
+      "t": 1795446294.993760251,
+      "estado": "-"
+    },
+    {
+      "t": 1795446297.032891991,
+      "estado": "-"
+    },
+    {
+      "t": 1795446299.065048612,
+      "estado": "-"
+    },
+    {
+      "t": 1795446301.092238507,
+      "estado": "-"
+    },
+    {
+      "t": 1795446303.133338161,
+      "estado": "-"
+    },
+    {
+      "t": 1795446305.174288267,
+      "estado": "-"
+    },
+    {
+      "t": 1795446307.203502122,
+      "estado": "-"
+    },
+    {
+      "t": 1795446309.237852720,
+      "estado": "-"
+    },
+    {
+      "t": 1795446311.275459187,
+      "estado": "-"
+    },
+    {
+      "t": 1795446313.304845404,
+      "estado": "-"
+    },
+    {
+      "t": 1795446315.340695875,
+      "estado": "-"
+    },
+    {
+      "t": 1795446317.371615079,
+      "estado": "-"
+    },
+    {
+      "t": 1795446319.399867998,
+      "estado": "-"
+    },
+    {
+      "t": 1795446321.443970515,
+      "estado": "-"
+    },
+    {
+      "t": 1795446323.471373768,
+      "estado": "-"
+    },
+    {
+      "t": 1795446325.499995106,
+      "estado": "-"
+    },
+    {
+      "t": 1795446327.542371902,
+      "estado": "-"
+    },
+    {
+      "t": 1795446329.574287008,
+      "estado": "-"
+    },
+    {
+      "t": 1795446331.607511099,
+      "estado": "-"
+    },
+    {
+      "t": 1795446333.644540354,
+      "estado": "-"
+    },
+    {
+      "t": 1795446335.672891138,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446338.057922017,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446340.084567043,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446342.115584182,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446344.150721225,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446346.224083367,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446348.250491649,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446350.304332795,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446352.340310304,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446354.386253724,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446356.416908170,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446358.458262695,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446360.487288756,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446362.518348122,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446364.550422296,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446366.596037389,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446368.652757445,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446370.696065122,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446372.721265022,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446374.756140731,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446376.785433368,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446378.807476553,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446380.835794575,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446382.888432581,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446384.912623284,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446386.938885636,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446388.977502295,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446390.999874732,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446393.021066808,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446395.048030266,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446397.073007879,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446399.102017086,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446401.126988641,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446403.152524509,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446405.177120032,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446407.205077234,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446409.231436468,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446411.255128136,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446413.283299266,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446415.311857640,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446417.339191212,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446419.363835875,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446421.391523355,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446423.418679439,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446425.445942732,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446427.475053892,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446429.498174707,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446431.523694271,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446433.549629183,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446435.576617432,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446437.605517555,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446439.630875554,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446441.657555700,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446443.684854886,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446445.713884486,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446447.737486769,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446449.762504285,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446451.785617061,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446453.813207763,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446455.840259130,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446457.870572784,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446459.905155647,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446461.931820895,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446463.958878770,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446465.998126783,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446468.023551306,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446470.050831318,
+      "estado": "RUNNING"
+    },
+    {
+      "t": 1795446472.078850213,
+      "estado": "RUNNING"
+    }
+  ],
+  "uuids": {
+    "preexistentes_comparados": 1700000,
+    "uuids_alterados": 0
+  },
+  "reconciliacao": "reconciliacao SQL: 0 divergencias (contagem e hash iguais em todas as faixas); deletes fisicos convertidos: 0",
+  "latencia_regime_s": {
+    "n": 599975,
+    "p50_s": 4.041,
+    "p95_s": 115.043,
+    "p99_s": 128.823,
+    "max_s": 137.065
+  }
+}

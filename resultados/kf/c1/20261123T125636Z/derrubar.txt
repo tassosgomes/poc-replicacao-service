@@ -1,0 +1,3 @@
+poc-* e gg-*: containers e volumes iguais ao inventario inicial.
+Inventario completo igual ao inicial.
+Lab Kafka removido.

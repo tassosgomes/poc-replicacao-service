@@ -1,0 +1,1 @@
+{"eventos": [{"nome": "queda_connect_e_start", "desde_queda_s": 179.44, "desde_reinicio_s": 109.09, "rest_desde_reinicio_s": 44.76, "extract_running_desde_reinicio_s": 44.76, "replicat_running_desde_reinicio_s": null, "estavel_apos_normalizar": false, "pico_lag_s": 137.06}]}

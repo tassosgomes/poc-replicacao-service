@@ -372,3 +372,115 @@ nem medir com `KF_MASSA_REDUZIDA=1` depois de uma rodada de inserts; reconstruir
 Nenhum parametro do gerador ou do conector precisou ser mudado para a calibracao; o ambiente nao foi alterado (Oracles 2 CPU / 3 GiB). Mudancas de
 configuracao feitas na Fase 1: `heartbeat.interval.ms=10000` no conector (offset avanca sem DML). `log.mining.sleep.time.*` ficou em 100/300/500 ms
 (Fase 0) e `batch.size` no padrao.
+
+---
+
+## Fase 3, parte 1: cenarios C1 a C5 (2026-11-23)
+
+Mesmos numeros e criterios dos labs Java e GG; contrato de `meta.json` identico (`scripts/relatorio.sh --resultados resultados/kf` consolida C1-C5 sem alteracao;
+C6-C10 aparecem como NAO_EXECUTADO em `resultados/kf/relatorio.md`). Evidencias em `resultados/kf/c1..c5/<execucao>/`, resumo curto em `resultados/kf/cN/relatorio.md`,
+medicoes extras em `resultados/kf/c4/extras/`. CSV/logs/snapshots grandes ficam locais (ignorados pelo git).
+
+### Runner (`scripts/kf/`)
+
+| Arquivo | Funcao |
+|---|---|
+| `cenario.sh c1..c5 [rotulo]` (+ atalhos `c2-regime.sh`, `c3-teto.sh`, `c4-rajada.sh`, `c5-transacao-longa.sh`) | Runner no formato do `scripts/gg/cenario.sh`; mesmas variaveis (`TAXA`, `DURACAO_SEG`, `DEGRAU_SEG`, `C3_TAXAS`, `RAJADA_*`, `TX_*`, `PATAMAR_JANELA_SEG`...) e `KF_WORKERS` (1) |
+| `c1-carga.sh` | C1: derruba e recria o lab (`derrubar.sh` + `subir.sh` com `KF_SNAPSHOT_ANTES=1`), mede e monta `meta.json`; o snapshot apos a drenagem vira a referencia de C2-C5 |
+| `meta_kf.py` | Monta `meta.json` (criterios, degraus, validade TAXA/RELOGIO/DISCO/EVIDENCIA, veredito) no contrato do GG/Java; divergencias = so a reconciliacao SQL |
+| `worker-fresco.sh`, `coletar-eventos.sh`, `eventos_kf.py` | Workers novos com `EVENTOS_CSV=true`, coleta dos CSV por evento, conversao para o formato dos analisadores do GG (reutilizados: `scripts/gg/analisar-latencia.py`, `analisar-especial.py`, `analisar-queda.py`) |
+| `extra-queda.sh connect\|broker`, `infra-evento.sh` | Medicoes extras de queda do Connect e do broker |
+| `relatorio-cenario.py cN`, `comum-cenario.sh`, `sql/kf/testes/tx_longa.sql` | Relatorio curto por cenario, funcoes comuns, transacao longa do C5 |
+| `subir.sh` (alterado) | Novo gancho opcional `KF_SNAPSHOT_ANTES=1`: snapshot de UUIDs com a carga feita e os workers parados |
+
+**Medicao de latencia.** Workers novos por cenario (`EVENTOS_CSV` e CREATE_NEW: nao reaproveita arquivo de container anterior; offsets e leases ficam no Kafka e no kf-novo).
+Latencia por evento = `confirmado_em` (commit no kf-novo, relogio do infra-server) - `criado_em` (= `updated_at` da origem, relogio do legado) - offset de relogios
+(`scripts/medir-relogios.py` no inicio e no fim de cada degrau; `|skew|` <= 1,3 ms, incerteza <= 5,5 ms, bem abaixo do limite de 100 ms), so eventos com `criado_em` na janela de geracao
+(`inicio_carga`..`fim_carga` do gerador). Tendencia = a mesma regra do Java/GG (maximo da latencia por balde de 5 s de `confirmado_em`, regressao nos ultimos 180 s, tres blocos crescentes),
+pois o `lag_ms` do worker Kafka e 0 (ele nao enxerga o legado). Drenado = lag do consumer group 0 e soma dos end offsets estavel por 15 s com o conector RUNNING (`drenar.sh`),
+conferido contra `pendentes` do worker. Reconciliacao SQL por faixa e comparacao de UUIDs contra `resultados/kf/c1/snapshots/apos-carga.csv` (1,7 M linhas) em todo cenario.
+
+**Parametros** (iguais aos dos labs anteriores): C2 1.000 ev/s por 600 s; C3 degraus 500/1.000/2.000/4.000 ev/s de 300 s; C4 regime 1.000 ev/s por 600 s e, aos 120 s, UPDATE unico de 50.000
+linhas de TITULAR (`RAJADA_LINHAS=50000`), observacao de 125 s apos o commit; C5 regime 1.000 ev/s por 600 s e, aos 5 s, UPDATE de TITULAR 1 com 30 s de transacao aberta; gerador 8 threads, semente 1,
+5% insert, 1% delete, 10% hot, 2 CPU/1 GiB; **1 worker** (2 CPU/1 GiB, `-Xmx512m`, `LEASE_SEG=12`), como o lab Java em C2-C5. Nenhum limite de recurso, parametro do conector ou do worker foi
+alterado; o conector e o da Fase 1/2 (`snapshot.mode=no_data`, heartbeat 10 s).
+
+### Resultados
+
+| Cenario | Medido | Criterio / limiar | Veredito | Java | GG |
+|---|---|---|---|---|---|
+| C1 carga inicial | `CargaInicial` 173,7 s (TITULAR 8.693, OBRA 14.711, FONOGRAMA 8.570 linhas/s) para 1,7 M linhas; 203,5 s ate drenado; 0 divergencias; 0 de 1.700.000 UUIDs alterados; contagens iguais | 0 divergencias, 0 UUID, contagens iguais, tempo registrado | **APROVADO** | 109,9 s (1,85 M linhas), APROVADO | 565,9 s (2,01 M linhas), APROVADO |
+| C2 regime | taxa 999,99 ev/s (VALIDO); **p95 6.429 ms** (p50 3.903, p99 11.368, max 21.292); tendencia +16,1 ms/s, sem crescimento sustentado | p95 <= 5.000 ms e sem tendencia de alta | **REPROVADO** (p95) | INVALIDO (TAXA) | p95 2.819 ms, APROVADO |
+| C3 teto | execucao 2 (repeticao): 500 (VALIDO), 1.000 (VALIDO), 2.000 (1.998,6 ev/s, VALIDO), **4.000: GERADOR_SATURADO (3.459 ev/s, 86,5%)**; teto = 2.000 ev/s; p95 por degrau 5.399 / 5.586 / 10.182 ms | teto >= 2.000 ev/s em degrau valido | **APROVADO** (execucao 2); execucao 1 **INVALIDO** | INVALIDO (TAXA) | teto 2.000 (4.000 saturado em 3.858), APROVADO |
+| C4 rajada | 50.000 linhas aplicadas 2,2 a 18,8 s apos o commit; recuperacao **28,7 s** (patamar 5.629 ms); 0 divergencias, 0 UUIDs | recuperacao <= 120 s | **APROVADO** | INVALIDO (TAXA) | 17,9 s, APROVADO |
+| C5 transacao longa | taxa valida; **p95 das demais durante a aberta 5.587 ms**; aplicacao apos commit 4.133 ms; latencia da longa 34.145 ms (SEM_CRITERIO) | p95 das demais <= 5.000 ms; aplicacao <= 5.000 ms apos commit | **REPROVADO** (p95) | INVALIDO (TAXA) | p95 2.884 ms; 1.837 ms apos commit, APROVADO |
+
+Todos os cinco com validade VALIDA (taxa >= 98%, relogios, archive sem alarme), reconciliacao SQL = 0 e 0 UUIDs alterados (C1 a C5, e tambem nas duas execucoes de C3).
+
+**C3 teve duas execucoes e as duas ficam registradas.** Execucao 1 (`20261123T133610Z`): 500 e 1.000 ev/s validos (p95 4.586 / 6.101 ms), 2.000 ev/s com **1.959,11 ev/s = 97,96% do alvo** (limite
+98% = 1.960): GERADOR_SATURADO, escada interrompida, teto 1.000, veredito INVALIDO. A causa e o legado: duas janelas de 5 s do gerador a 776 e 1.103 ev/s no meio do degrau
+(kf-legado a 153% de CPU media; troca de redo log/archive, como os dips do GG), e a calibracao da Fase 2 (120 s) tinha dado 100%. Nada foi alterado; o cenario foi **repetido com os mesmos parametros**
+(execucao 2, `20261123T135846Z-repeticao`), que e a que alimenta `resultados/kf/c3/meta.json` (regra do contrato: ultima execucao). O degrau de 500 ev/s da execucao 2 sai com
+`crescimento_sustentado = true` (inclinacao +3,0 ms/s sobre um sinal de ~5 s): nao altera o teto (maior alvo valido sem crescimento = 2.000), mas mostra que a regra de tendencia e ruidosa nessa escala.
+Em 2.000 ev/s o p95 e 10,2 s (max 23,3 s) e em 4.000 o pipeline acumula lag (inclinacao +111 ms/s, p95 30,4 s), embora drene em ~30 s apos o fim da carga.
+
+### Diagnostico: a latencia vem do Debezium/LogMiner, nao do worker
+
+- Amostra de 1.500 mensagens do topico `kf.BDAD.TITULAR` apos o C2 (`resultados/kf/c2/20261123T131717Z/decomposicao-latencia.json`): `updated_at` da origem ate o `ts_ms` do Debezium
+  p50 3,36 s / p95 5,26 s / max 6,36 s; ate o `CreateTime` do record no Kafka p50 3,65 s / p95 5,40 s. O worker soma ~0,3 a 1 s (p50 total do C2: 3,90 s). Ou seja, o p95 acima de 5 s ja nasce na captura.
+  E o patamar de 4 a 5 s do LogMiner anotado na Fase 0 (`log.mining.sleep.time.*` em 100/300/500 ms; nenhum parametro de mineracao foi ajustado neste lab).
+- **Paradas de LogMiner na troca de redo log:** o log do Connect tem 12 episodios de `No logs available yet (attempt 1..4)` desde o C1 (9 ate o fim do C4; os demais incluem C5 e os extras). No C4, um deles (14:34:19Z) coincide com um pico de **26,5 s** de latencia,
+  161 s apos o commit da rajada (19.944 eventos acumulados em 5 s), sem relacao com a rajada. Explica o `max_s` de 21 a 23 s e parte do p95 do C2, C3 e C5. Hipotese (nao testada): `log.mining.*`/tamanho do redo
+  poderiam encurtar; fica fora das medicoes oficiais, que seguem a configuracao da Fase 1.
+- Recursos medios por cenario (docker stats; 100% = 1 CPU, limite de cada um = 200%): C2 kf-legado 120%, kf-kafka 43%, kf-novo 38%, worker 31%, kf-connect 20%; C3 a 2.000 ev/s kf-legado 153%, kf-novo 65%, kf-kafka 44%;
+  a 4.000 kf-legado 187% (saturado), kf-novo 98%. O kf-kafka em ~35 a 55% mesmo ocioso reflete os 48 consumers com `assign()` (achado da Fase 2).
+
+### C4: rajada e a classificacao dos eventos
+
+O worker nao ve o `commit_ts` da origem, entao os eventos da rajada sao os de TITULAR com codigo <= 50.000 e `criado_em` em [commit - (duracao da transacao + 1 s), commit + 0,5 s]
+(`eventos_kf.py`; a duracao da UPDATE foi 2,37 s). O analisador do GG recebe esse proxy no campo `cts`. Classificadas 50.206 linhas (206 de excesso ambiguo = eventos de fundo da mesma janela, mesma ordem dos 161 do GG).
+O patamar (maximo do lag de fundo por balde de 5 s nos 60 s antes do commit) foi 5.629 ms, ja acima do p95 de 5 s do regime; a recuperacao foi medida contra ele e contra p95 <= 5.000 ms do balde: **28,7 s**.
+Nao ha criterio de latencia da propria rajada (p50 14,2 s, p95 17,1 s, max 19,0 s, sem criterio no PRD).
+
+### C5: transacao longa
+
+O Debezium so emite a transacao longa no commit: a linha tem `updated_at` 30 s antes e chega 4,1 s depois do commit (34,1 s de latencia, SEM_CRITERIO). A transacao aberta **nao atrasa as demais**
+(max 6,46 s durante a abertura, p50 4,1 s; 30.012 eventos de fundo medidos), mas o p95 delas (5.587 ms) fica acima do limite pela mesma latencia de captura do C2: reprovou pelo p95, nao pela transacao longa.
+
+### Medicoes extras do C4 (descritivas, sem criterio): queda do Connect e do broker
+
+Regime de 1.000 ev/s por 600 s, `docker kill -s KILL` aos 180 s e `docker start` aos 240 s (os parametros do C6 dos outros labs; `scripts/kf/extra-queda.sh`; `resultados/kf/c4/extras/`). Eventos dos workers
+deduplicados por `(tabela, codigo, criado_em)` na analise (o primeiro commit vale); re-entregas contadas a parte. Em ambos: 0 divergencias, 0 UUIDs alterados, lag final 0, conector RUNNING no fim.
+
+| Evento | REST/porta de volta | Tarefa RUNNING | Normaliza (balde de 5 s completo com lag <= 5 s) | Efeitos |
+|---|---|---|---|---|
+| kill do kf-connect (SIGKILL, `docker kill` levou 10 s), start 60 s depois | 44,8 s apos o start | 44,8 s apos o start | **179,4 s da queda / 109,1 s do start**; pico de lag 137 s; nao estavel logo depois (baldes de 5,2 a 6,2 s) | **26.472 eventos duplicados no topico (4,4%)**: o Connect reemite desde o ultimo offset gravado (flush ~60 s); o guard de versao do worker os descarta. Drenagem 47 s apos o fim da carga |
+| kill do kf-kafka (SIGKILL), start 60 s depois | porta 9092 em 34,0 s apos o start | a REST mostrou RUNNING o tempo todo (**estado enganoso**) | **NAO normalizou durante a carga**: primeira aplicacao 346 s apos o start; p50 de latencia do regime 176 s, max 412 s | 0 duplicados. Ver abaixo. Drenagem 72 s apos o fim da carga |
+
+**Achado do broker (importante para C6/C7 e para producao):** com o broker fora por 3 s o Connect perdeu o coordenador do grupo, "revogou a atribuicao anterior" e **parou a tarefa** (`Connector 'kf-oracle' failed to
+properly shut down, has become unresponsive`; Debezium `LogMiner session stopped due to an error / Producer failure`). Depois do broker voltar o worker do Connect reentrou no grupo (15:21:20Z), mas a tarefa so foi
+reiniciada em **15:26:20Z, exatamente 5 min depois**: com um unico worker o lider espera `scheduled.rebalance.max.delay.ms` (padrao 300.000 ms) antes de reatribuir. Nao houve alteracao de configuracao; o remedio
+provavel (`scheduled.rebalance.max.delay.ms=0` num Connect de um no, ou tarefa reiniciada pela REST) nao foi medido. Nada se perdeu: o LogMiner retomou do offset e o redo ficou disponivel (archive limpo pelo
+offset do conector). No mesmo intervalo os consumers do worker registraram `UnknownHostException: kf-kafka` (DNS da rede Docker sem o container) e `lag measurement failed`, e `pendentes` ficou 0 (lag nao medido,
+nao "zero real"): em producao o monitoramento nao pode confiar em `pendentes = 0` nem no estado da tarefa na REST durante queda do broker; usar o instante do ultimo evento publicado/aplicado.
+
+### Armadilhas desta parte
+
+1. `EVENTOS_CSV` do worker usa `CREATE_NEW`: reiniciar o mesmo container (ou `docker start` apos kill) falha; por isso `worker-fresco.sh` recria o container, e uma queda de worker no C6 deve subir **outro id** (ex.: `kf-worker-2`).
+2. `derrubar.sh` remove as imagens `kf-worker`/`kf-poc`; recriar leva minutos (`docker cp` do jar de 31 MB e de 7,9 MB por ssh: ~4 min e ~1,5 min). Por isso o `carga_inicial` por relogio (289,5 s) difere do `tempo_total_s` do jar (173,7 s) e o C1 reporta o do jar,
+   como o Java; o preparo de imagem, o snapshot de UUIDs (~1,5 min) e a subida do container ficam em `tempos_s` do `carga.json` e nao entram no tempo ate drenado (203,5 s = jar + drenagem de 29,8 s).
+3. **O UUID do C1 e verificado sem replay**: com o conector em streaming antes da carga e sem DML, o topico fica com 0 eventos (end offsets 0), entao "antes x depois dos workers" compara 1,7 M iguais sem que o worker aplique nada.
+   A estabilidade do UUID sob replay/update/delete esta nos testes da Fase 0 e, em carga real, em todo C2-C5 (1,7 M ids da base comparados depois de 600 mil a 1,6 M de eventos por cenario). Diferente do GG, que reaplica o trail inteiro.
+4. O subcomando Java `reconciliacao` nao foi rodado (conta delete fisico convertido como divergencia); o `meta.json` marca `divergencias_java: null` e a reconciliacao SQL e a oficial.
+5. `medir-relogios.py` estourou por timeout uma vez no handshake ssh com o infra-server (transitorio); `rel()` em `comum-cenario.sh` tenta ate 4 vezes.
+6. `drenar.sh` leva ~30 s no minimo (15 s de estabilidade + 2 JVMs de `kafka-get-offsets`/`consumer-groups` por iteracao); o tempo de drenagem reportado tem esse piso.
+7. Ha um processo antigo (pid 1619488, `scripts/gg/cenario.sh c4 teste`, de uma sessao anterior, ~1 dia e 8 h) preso no laptop; nao foi tocado e nao interfere (lab GG parado).
+8. Disco do desenv-server: 51 GB livres antes, 49 GB depois; archive de 1,0 a 1,5 GB (limpeza pelo offset do conector funcionando); nenhum alarme.
+
+### O que fica para C6 a C10
+
+- C6/C7: queda do worker (id novo, `LEASE_SEG=12`, takeover ~13 s da Fase 0) e failover com 2 workers; **incluir queda do Connect e do broker** com os achados acima (5 min de `scheduled.rebalance.max.delay.ms`, duplicatas no Connect, `pendentes` enganoso); decidir se se mede tambem com a variacao de configuracao.
+- C8: conector parado (analogo ao Extract parado do GG): confirmar que o offset do conector e o archive necessario sao preservados (`verificar-archive-necessario.sh`); o worker nao participa.
+- C9: modos do worker Kafka (lote, partitions) em vez de threads do Java; o p95 de 5 s ja nasce no Debezium, entao o teste util e o ajuste de `log.mining.*`, a registrar como variante e nao como cenario oficial.
+- C10: custo no legado = LogMiner + supplemental ALL COLUMNS (como o GG; repetir o protocolo do GG: aquecimento descartado, 4 pares em ordem balanceada, supplemental isolado).
+- Extras opcionais pendentes: `snapshot.mode=initial` do Debezium no C1 (nao medido); execucao com `log.mining.*` ajustado e com `scheduled.rebalance.max.delay.ms=0` (variantes descritivas, fora do oficial).
