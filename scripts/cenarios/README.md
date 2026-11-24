@@ -182,22 +182,23 @@ A execução completa e sua consolidação pertencem à task 16.0.
 
 Os nomes de containers, hosts, portas, usuários, serviço, rede e prefixo vêm de variáveis `LAB_*`
 (padrões em `scripts/comum.sh` e `scripts/cenarios/lab.py`); sem nenhuma definida o alvo é o lab
-Java. Para mirar o lab GoldenGate:
+Java. Para mirar o lab GoldenGate ou o lab Kafka:
 
 ```bash
-set -a; source scripts/lab-gg.env; set +a
+set -a; source scripts/lab-gg.env; set +a   # GoldenGate
+set -a; source scripts/lab-kf.env; set +a   # Kafka (kf-legado 1525, kf-novo 1526; sem rede comum com o legado)
 ```
 
 | Variável | Padrão (lab Java) | `lab-gg.env` |
 |---|---|---|
 | `LAB_HOST_LEGADO` / `LAB_HOST_NOVO` | desenv-server / infra-server | iguais |
-| `LAB_CONTAINER_LEGADO` / `LAB_CONTAINER_NOVO` | poc-legado / poc-novo | gg-legado / gg-novo |
-| `LAB_PORTA_LEGADO` / `LAB_PORTA_NOVO` | 1521 / 1522 (publicadas no host) | 1523 / 1524 |
+| `LAB_CONTAINER_LEGADO` / `LAB_CONTAINER_NOVO` | poc-legado / poc-novo | gg-legado / gg-novo (`lab-kf.env`: kf-legado / kf-novo) |
+| `LAB_PORTA_LEGADO` / `LAB_PORTA_NOVO` | 1521 / 1522 (publicadas no host) | 1523 / 1524 (`lab-kf.env`: 1525 / 1526) |
 | `LAB_PORTA_INTERNA` / `LAB_SERVICO` | 1521 / FREEPDB1 (listener no container) | iguais |
 | `LAB_USUARIO_LEGADO` / `LAB_USUARIO_NOVO` | bdad / replica (senha = usuário) | iguais |
-| `LAB_REDE` | poc-rede | gg-rede |
-| `LAB_PREFIXO` | poc- | gg- (containers temporários, filtros e nomes de resultado) |
+| `LAB_REDE` | poc-rede | gg-rede (`lab-kf.env`: kf-rede) |
+| `LAB_PREFIXO` | poc- | gg- (`lab-kf.env`: kf-; containers temporários, filtros e nomes de resultado) |
 
-`lab-gg.env` também define `RESULTADOS_BASE=resultados/gg`. Só a parametrização foi feita: os cenários
+`lab-gg.env` também define `RESULTADOS_BASE=resultados/gg` (`lab-kf.env`: `resultados/kf`). Só a parametrização foi feita: os cenários
 continuam dependendo de `evento_replicacao`, dos triggers `*_captura` e do worker Java, que só
 existem no lab Java.

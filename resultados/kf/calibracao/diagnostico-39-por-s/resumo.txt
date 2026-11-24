@@ -1,0 +1,10 @@
+=== gerador em desenv-server, 500 ev/s, 60 s, conector ligado
+INFO: log_linhas=gerador-linhas-20261121T005553Z-1-75840525730f.csv
+INFO: janela_linhas=2514 taxa=502.80
+INFO: janela_linhas=2497 taxa=499.40
+INFO: linhas=30009 transacoes=9911 taxa=500.15 alvo=500 transacao_media_ms=6.087 VALIDO
+=== gerador em infra-server, 500 ev/s, 60 s, conector ligado
+INFO: log_linhas=gerador-linhas-20261121T005717Z-1-7597643c97c3.csv
+INFO: janela_linhas=2513 taxa=502.60
+INFO: janela_linhas=2496 taxa=499.20
+INFO: linhas=30005 transacoes=9911 taxa=500.08 alvo=500 transacao_media_ms=5.762 VALIDO

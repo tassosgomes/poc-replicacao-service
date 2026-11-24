@@ -1,0 +1,50 @@
+## delete fisico no legado (3 titulares, 2 fonogramas)
+
+3 rows deleted.
+
+
+2 rows deleted.
+
+
+Commit complete.
+
+drenado em 28.3 s (lag=0, end offsets=72015, conector=RUNNING)
+faixas comparadas: legado=20 novo=20
+linhas fonograma=1001390
+linhas obra_musical=501394
+linhas titular=200695
+reconciliacao SQL: 0 divergencias; deletes fisicos convertidos (ausentes no legado, excluido=1 no destino): 5 (fonograma=2,titular=3)
+exit=0
+## destino: linhas convertidas
+titular 	   1	      1
+titular 	   2	      1
+titular 	   3	      1
+fonograma	  10	      1
+fonograma	  11	      1
+## teste negativo: altera nome de um titular no destino (restaurado em seguida)
+nome original: Titular 500
+
+1 row updated.
+
+
+Commit complete.
+
+faixas comparadas: legado=20 novo=20
+linhas fonograma=1001390
+linhas obra_musical=501394
+linhas titular=200695
+reconciliacao SQL: 1 DIVERGENCIAS REAIS (deletes fisicos convertidos, nao divergentes: 5)
+hash-diferente|titular|500
+exit=1
+
+1 row updated.
+
+
+Commit complete.
+
+faixas comparadas: legado=20 novo=20
+linhas fonograma=1001390
+linhas obra_musical=501394
+linhas titular=200695
+reconciliacao SQL: 0 divergencias; deletes fisicos convertidos (ausentes no legado, excluido=1 no destino): 5 (fonograma=2,titular=3)
+exit=0 (apos restaurar)

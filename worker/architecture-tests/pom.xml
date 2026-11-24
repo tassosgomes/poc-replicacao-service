@@ -13,6 +13,12 @@
       <artifactId>replicacao-worker</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Kafka alternative: brings infra-kafka transitively, so the same layer rules cover it. -->
+    <dependency>
+      <groupId>br.org.ecad</groupId>
+      <artifactId>replicacao-worker-kafka</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>com.tngtech.archunit</groupId>
       <artifactId>archunit-junit5</artifactId>

@@ -1,0 +1,57 @@
+{
+  "key": {
+    "CODIGO": "900001"
+  },
+  "offset": 2,
+  "partition": 9,
+  "timestamp": 1795208787562,
+  "topic": "kf.BDAD.OBRA_MUSICAL",
+  "value": {
+    "after": null,
+    "before": {
+      "CODIGO": "900001",
+      "EXCLUIDO": "0",
+      "GENERO": "POP",
+      "ISWC": "T-123",
+      "SITUACAO": "ATIVO",
+      "TITULO": "Obra KF 2",
+      "UPDATED_AT": 1795208784634724
+    },
+    "op": "d",
+    "source": {
+      "commit_scn": "2301134",
+      "commit_ts_ms": 1795208784000,
+      "connector": "oracle",
+      "db": "FREEPDB1",
+      "lcr_position": null,
+      "name": "kf",
+      "redo_sql": null,
+      "redo_thread": 1,
+      "row_id": "AAAR6DAAYAAAABZABG",
+      "rs_id": "0x00000e.0000469d.0010",
+      "schema": "BDAD",
+      "scn": "2301133",
+      "sequence": null,
+      "snapshot": "false",
+      "ssn": 0,
+      "start_scn": "2301133",
+      "start_ts_ms": 1795208784000,
+      "table": "OBRA_MUSICAL",
+      "ts_ms": 1795208784000,
+      "ts_ns": 1795208784000000000,
+      "ts_us": 1795208784000000,
+      "txId": "06001f0061020000",
+      "txSeq": 1,
+      "user_name": "BDAD",
+      "version": "3.7.1.Final"
+    },
+    "transaction": {
+      "data_collection_order": 1,
+      "id": "06001f0061020000",
+      "total_order": 1
+    },
+    "ts_ms": 1795208787196,
+    "ts_ns": 1795208787196486648,
+    "ts_us": 1795208787196486
+  }
+}

@@ -1,0 +1,40 @@
+container=kf-gerador-1795223825 exit=0
+INFO: log_linhas=gerador-linhas-20261121T011706Z-1-76ac50966836.csv
+INFO: inicio_carga=2026-11-21T01:17:08.866063134Z
+INFO: janela_linhas=5011 taxa=1002.20
+INFO: janela_linhas=4996 taxa=999.20
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=5003 taxa=1000.60
+INFO: janela_linhas=4992 taxa=998.40
+INFO: janela_linhas=5006 taxa=1001.20
+INFO: janela_linhas=5001 taxa=1000.20
+INFO: janela_linhas=4998 taxa=999.60
+INFO: janela_linhas=5000 taxa=1000.00
+INFO: janela_linhas=5004 taxa=1000.80
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=4995 taxa=999.00
+INFO: janela_linhas=4991 taxa=998.20
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=4993 taxa=998.60
+INFO: janela_linhas=5012 taxa=1002.40
+INFO: janela_linhas=4993 taxa=998.60
+INFO: janela_linhas=5002 taxa=1000.40
+INFO: janela_linhas=5003 taxa=1000.60
+INFO: janela_linhas=4998 taxa=999.60
+INFO: janela_linhas=4993 taxa=998.60
+INFO: janela_linhas=5009 taxa=1001.80
+INFO: janela_linhas=4994 taxa=998.80
+INFO: janela_linhas=4999 taxa=999.80
+INFO: fim_carga=2026-11-21T01:19:08.866883255Z
+INFO: linhas=119999 transacoes=39928 taxa=999.99 alvo=1000 transacao_media_ms=4.623 VALIDO
+recursos (CPU% de docker stats; 100% = 1 CPU; limites: legado/novo/kafka/connect 200%, gerador 200%):
+gerador media=26.6 max=192.9 amostras=29
+kf-connect media=20.3 max=60.1 amostras=28
+kf-kafka media=136.5 max=206.6 amostras=28
+kf-legado media=113.2 max=152.6 amostras=29
+kf-novo media=40.1 max=82.7 amostras=28
+kf-worker-1 media=10.0 max=24.8 amostras=28
+kf-worker-2 media=14.5 max=30.7 amostras=28
+lag do consumidor a cada ~6 s (primeiro, maximo, ultimo):
+-1840  -362
+drenado em 27.8 s (lag=0, end offsets=1176964, conector=RUNNING)

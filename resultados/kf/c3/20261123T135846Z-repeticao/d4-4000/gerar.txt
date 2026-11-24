@@ -1,0 +1,65 @@
+container=kf-gerador-1795443534 exit=0
+INFO: log_linhas=gerador-linhas-20261123T141857Z-1-13e7fd10a5791.csv
+INFO: inicio_carga=2026-11-23T14:18:59.941119967Z
+INFO: janela_linhas=13740 taxa=2748.00
+INFO: janela_linhas=17747 taxa=3549.40
+INFO: janela_linhas=17560 taxa=3512.00
+INFO: janela_linhas=13191 taxa=2638.20
+INFO: janela_linhas=18732 taxa=3746.40
+INFO: janela_linhas=18964 taxa=3792.80
+INFO: janela_linhas=19089 taxa=3817.80
+INFO: janela_linhas=19959 taxa=3991.80
+INFO: janela_linhas=19312 taxa=3862.40
+INFO: janela_linhas=19476 taxa=3895.20
+INFO: janela_linhas=19448 taxa=3889.60
+INFO: janela_linhas=20295 taxa=4059.00
+INFO: janela_linhas=18046 taxa=3609.20
+INFO: janela_linhas=18413 taxa=3682.60
+INFO: janela_linhas=19599 taxa=3919.80
+INFO: janela_linhas=19750 taxa=3950.00
+INFO: janela_linhas=17835 taxa=3567.00
+INFO: janela_linhas=19713 taxa=3942.60
+INFO: janela_linhas=17979 taxa=3595.80
+INFO: janela_linhas=16138 taxa=3227.60
+INFO: janela_linhas=15623 taxa=3124.60
+INFO: janela_linhas=17443 taxa=3488.60
+INFO: janela_linhas=20314 taxa=4062.80
+INFO: janela_linhas=18844 taxa=3768.80
+INFO: janela_linhas=19929 taxa=3985.80
+INFO: janela_linhas=20093 taxa=4018.60
+INFO: janela_linhas=20121 taxa=4024.20
+INFO: janela_linhas=20119 taxa=4023.80
+INFO: janela_linhas=18893 taxa=3778.60
+INFO: janela_linhas=19775 taxa=3955.00
+INFO: janela_linhas=18565 taxa=3713.00
+INFO: janela_linhas=21820 taxa=4364.00
+INFO: janela_linhas=18824 taxa=3764.80
+INFO: janela_linhas=19416 taxa=3883.20
+INFO: janela_linhas=18522 taxa=3704.40
+INFO: janela_linhas=19651 taxa=3930.20
+INFO: janela_linhas=11334 taxa=2266.80
+INFO: janela_linhas=18679 taxa=3735.80
+INFO: janela_linhas=20316 taxa=4063.20
+INFO: janela_linhas=17639 taxa=3527.80
+INFO: janela_linhas=22297 taxa=4459.40
+INFO: janela_linhas=20569 taxa=4113.80
+INFO: janela_linhas=19573 taxa=3914.60
+INFO: janela_linhas=18842 taxa=3768.40
+INFO: janela_linhas=20853 taxa=4170.60
+INFO: janela_linhas=18734 taxa=3746.80
+INFO: janela_linhas=19564 taxa=3912.80
+INFO: janela_linhas=12225 taxa=2445.00
+INFO: janela_linhas=10731 taxa=2146.20
+INFO: janela_linhas=15268 taxa=3053.60
+INFO: janela_linhas=14138 taxa=2827.60
+INFO: janela_linhas=9166 taxa=1833.20
+INFO: janela_linhas=14985 taxa=2997.00
+INFO: janela_linhas=14175 taxa=2835.00
+INFO: janela_linhas=12600 taxa=2520.00
+INFO: janela_linhas=14081 taxa=2816.20
+INFO: janela_linhas=11239 taxa=2247.80
+INFO: janela_linhas=12951 taxa=2590.20
+INFO: janela_linhas=11937 taxa=2387.40
+INFO: janela_linhas=2925 taxa=585.00
+INFO: fim_carga=2026-11-23T14:23:59.948123586Z
+INFO: linhas=1037765 transacoes=346500 taxa=3459.15 alvo=4000 transacao_media_ms=6.863 INVALIDO

@@ -1,0 +1,15 @@
+{
+ "amostra": "kf.BDAD.TITULAR particao 0, offsets 3000..4499, apos o C2 (1.500 eventos)",
+ "n": 1500,
+ "origem_ate_ts_ms_do_conector_s": {
+  "p50": 3.36364501953125,
+  "p95": 5.2633759765625,
+  "max": 6.360742919921875
+ },
+ "origem_ate_create_time_no_kafka_s": {
+  "p50": 3.651407958984375,
+  "p95": 5.4007548828125,
+  "max": 6.438742919921875
+ },
+ "nota": "UPDATED_AT (origem) -> ts_ms (Debezium leu o evento no LogMiner) -> CreateTime (producer) ; o restante da latencia (ate ~p95 do C2) e do worker (poll+commit no kf-novo). Relogios: legado e infra, skew ~1 ms"
+}

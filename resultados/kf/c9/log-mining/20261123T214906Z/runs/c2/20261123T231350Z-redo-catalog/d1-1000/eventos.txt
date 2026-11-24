@@ -1,0 +1,1 @@
+{"arquivos": 1, "lidos": 299767, "na_janela": 299767, "duplicados_descartados": 0, "escritos": 299767}

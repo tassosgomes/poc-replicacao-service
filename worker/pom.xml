@@ -8,11 +8,50 @@
   </parent>
   <artifactId>replicacao-worker-parent</artifactId>
   <packaging>pom</packaging>
+  <properties>
+    <!-- Exact versions, only for the Kafka alternative (infra-kafka, bootstrap-kafka). They live here,
+         not in the repository root POM, so the lab Java and the poc module are untouched. -->
+    <kafka-clients.version>4.1.2</kafka-clients.version>
+    <jackson3.version>3.2.1</jackson3.version>
+    <slf4j.version>1.7.36</slf4j.version>
+  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>br.org.ecad</groupId>
+        <artifactId>replicacao-infra-kafka</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>br.org.ecad</groupId>
+        <artifactId>replicacao-worker-kafka</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>${kafka-clients.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>tools.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${slf4j.version}</version>
+        <scope>runtime</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <modules>
     <module>domain</module>
     <module>application</module>
     <module>infra-oracle</module>
+    <module>infra-kafka</module>
     <module>bootstrap</module>
+    <module>bootstrap-kafka</module>
     <module>architecture-tests</module>
   </modules>
   <build>

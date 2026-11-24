@@ -1,0 +1,1 @@
+{"eventos": [{"nome": "queda_broker_e_start", "desde_queda_s": 301.64, "desde_reinicio_s": 239.55, "rest_desde_reinicio_s": 96.88, "extract_running_desde_reinicio_s": 96.88, "replicat_running_desde_reinicio_s": null, "estavel_apos_normalizar": false, "pico_lag_s": 204.78}]}

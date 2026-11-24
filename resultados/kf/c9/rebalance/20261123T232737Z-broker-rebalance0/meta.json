@@ -1,0 +1,13 @@
+{
+  "snapshots": {
+    "apos": {
+      "linhas": 2478175,
+      "bytes": 125617862,
+      "sha256": "3fc0fe9c43fe03c2145f381b4180ed8a090e4722e22df80bc3d5e4407b8d0b5c",
+      "uuids_duplicados": 0,
+      "por_tabela": "fonograma=1308477,obra_musical=814669,titular=355029",
+      "gerado_em": "2026-11-23T23:44:30Z",
+      "arquivo": "resultados/kf/c9/rebalance/20261123T232737Z-broker-rebalance0/snapshots/apos.csv (ignorado pelo git)"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+snapshot apos: 1884563 linhas, sha256=8916b0880a56528777dbe3af7b9e1db7fc0dfe3ce26a713dd98b60508ecbfaef, uuids duplicados=0 (fonograma=1073126,obra_musical=574584,titular=236853)

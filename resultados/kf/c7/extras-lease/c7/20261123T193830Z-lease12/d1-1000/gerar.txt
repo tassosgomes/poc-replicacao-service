@@ -1,0 +1,26 @@
+container=kf-gerador-1795462854 exit=0
+INFO: log_linhas=gerador-linhas-20261123T194058Z-1-150123c8ba0d1.csv
+INFO: inicio_carga=2026-11-23T19:41:00.487132177Z
+INFO: janela_linhas=5008 taxa=1001.60
+INFO: janela_linhas=5000 taxa=1000.00
+INFO: janela_linhas=4996 taxa=999.20
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=4994 taxa=998.80
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=4998 taxa=999.60
+INFO: janela_linhas=4998 taxa=999.60
+INFO: janela_linhas=5000 taxa=1000.00
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=4994 taxa=998.80
+INFO: janela_linhas=4993 taxa=998.60
+INFO: janela_linhas=4994 taxa=998.80
+INFO: janela_linhas=4999 taxa=999.80
+INFO: janela_linhas=5001 taxa=1000.20
+INFO: janela_linhas=4988 taxa=997.60
+INFO: janela_linhas=4997 taxa=999.40
+INFO: janela_linhas=5001 taxa=1000.20
+INFO: janela_linhas=4996 taxa=999.20
+INFO: janela_linhas=4991 taxa=998.20
+INFO: fim_carga=2026-11-23T19:42:45.488031937Z
+INFO: linhas=104938 transacoes=34914 taxa=999.41 alvo=1000 transacao_media_ms=4.975 VALIDO

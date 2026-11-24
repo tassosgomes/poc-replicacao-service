@@ -1,0 +1,125 @@
+{
+  "cenario": "c10",
+  "execucao": "20261123T172049Z",
+  "inicio": "2026-11-23T17:20:55Z",
+  "fim": "2026-11-23T19:13:23Z",
+  "pipeline": "worker Kafka x1 (kf-worker, 2 CPU/1 GiB, -Xmx512m, LEASE_SEG 12, EVENTOS_CSV); Debezium 3.7.1 LogMiner; Kafka 4.3.1",
+  "workers": 1,
+  "dur_s": 600,
+  "taxa": 1000,
+  "taxas": [
+    1000
+  ],
+  "repeticoes": 4,
+  "aquecimento": {
+    "duracao_s": 300,
+    "captura": true,
+    "descartado": true,
+    "inicio": "2026-11-23T17:23:43Z",
+    "dir": "aquecimento"
+  },
+  "ordem": "LD,DL,LD,DL",
+  "params_sha256": {
+    "conector-oracle.json": "1fa06ebcc7e0fa63"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "worker_jar_sha256": "7a76e8c7fd9597dced02cd84b4e290c6b6e715756b4e31c8ce357d6047b6a381",
+  "degraus": [
+    {
+      "dir": "p01-ligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-23T17:30:57.891035668Z",
+      "fim_iso": "2026-11-23T17:40:57.891523172Z",
+      "drenagem_s": null,
+      "captura": true,
+      "repeticao": 1,
+      "modo": "ligada",
+      "supplemental": true,
+      "posicao": 1
+    },
+    {
+      "dir": "p02-desligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-23T17:42:34.779369356Z",
+      "fim_iso": "2026-11-23T17:52:34.786551420Z",
+      "drenagem_s": null,
+      "captura": false,
+      "repeticao": 1,
+      "modo": "desligada",
+      "supplemental": true,
+      "posicao": 2
+    },
+    {
+      "dir": "p03-desligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-23T17:55:56.111931185Z",
+      "fim_iso": "2026-11-23T18:05:56.112690969Z",
+      "drenagem_s": null,
+      "captura": false,
+      "repeticao": 2,
+      "modo": "desligada",
+      "supplemental": true,
+      "posicao": 3
+    },
+    {
+      "dir": "p04-ligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-23T18:09:01.233545236Z",
+      "fim_iso": "2026-11-23T18:19:01.234100403Z",
+      "drenagem_s": null,
+      "captura": true,
+      "repeticao": 2,
+      "modo": "ligada",
+      "supplemental": true,
+      "posicao": 4
+    },
+    {
+      "dir": "p05-ligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-23T18:20:48.265698452Z",
+      "fim_iso": "2026-11-23T18:30:48.266774531Z",
+      "drenagem_s": null,
+      "captura": true,
+      "repeticao": 3,
+      "modo": "ligada",
+      "supplemental": true,
+      "posicao": 5
+    },
+    {
+      "dir": "p06-desligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-23T18:32:38.170735150Z",
+      "fim_iso": "2026-11-23T18:42:38.176342052Z",
+      "drenagem_s": null,
+      "captura": false,
+      "repeticao": 3,
+      "modo": "desligada",
+      "supplemental": true,
+      "posicao": 6
+    },
+    {
+      "dir": "p07-desligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-23T18:46:00.272087963Z",
+      "fim_iso": "2026-11-23T18:56:00.275955412Z",
+      "drenagem_s": null,
+      "captura": false,
+      "repeticao": 4,
+      "modo": "desligada",
+      "supplemental": true,
+      "posicao": 7
+    },
+    {
+      "dir": "p08-ligada",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-23T18:59:25.590249174Z",
+      "fim_iso": "2026-11-23T19:09:25.590738223Z",
+      "drenagem_s": null,
+      "captura": true,
+      "repeticao": 4,
+      "modo": "ligada",
+      "supplemental": true,
+      "posicao": 8
+    }
+  ]
+}

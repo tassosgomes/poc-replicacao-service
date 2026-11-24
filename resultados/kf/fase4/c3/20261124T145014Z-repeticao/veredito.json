@@ -1,0 +1,1 @@
+{"veredito": "INVALIDO", "validade": {"estado": "INVALIDO", "motivos": ["TAXA"]}, "criterios": {"divergencias": ["APROVADO", 0], "uuids_alterados": ["APROVADO", 0], "pendentes_final": ["APROVADO", 0], "teto_ev_s": ["INVALIDO", null]}, "degraus": [[2000, 1935.34, "GERADOR_SATURADO", 8733, false]]}

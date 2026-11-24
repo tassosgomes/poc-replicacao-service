@@ -1,0 +1,1 @@
+{"eventos": [{"nome": "kill_worker_1", "desde_queda_s": 27.73, "desde_reinicio_s": 27.47, "rest_desde_reinicio_s": null, "extract_running_desde_reinicio_s": null, "replicat_running_desde_reinicio_s": 15.85, "estavel_apos_normalizar": false, "pico_lag_s": 20.93}]}

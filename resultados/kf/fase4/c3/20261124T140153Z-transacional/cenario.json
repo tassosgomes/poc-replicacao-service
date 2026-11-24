@@ -1,0 +1,47 @@
+{
+  "cenario": "c3",
+  "execucao": "20261124T140153Z-transacional",
+  "inicio": "2026-11-24T14:01:57Z",
+  "fim": "2026-11-24T14:30:34Z",
+  "pipeline": "worker Kafka x1 (kf-worker, 2 CPU/1 GiB, -Xmx512m, LEASE_SEG 12, EVENTOS_CSV); Debezium 3.7.1 LogMiner; Kafka 4.3.1 (1 broker, 16 particoes/topico)",
+  "workers": 1,
+  "dur_s": 300,
+  "taxa": 1000,
+  "taxas": [
+    500,
+    1000,
+    2000,
+    4000
+  ],
+  "params_sha256": {
+    "conector-oracle.json": "1fa06ebcc7e0fa63"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "worker_jar_sha256": "2743d669e7be023226d9973d803cdf6127ddd1a93ca47cec91042f977668999d",
+  "degraus": [
+    {
+      "dir": "d1-500",
+      "alvo": 500,
+      "inicio_iso": "2026-11-24T14:04:35.976222924Z",
+      "fim_iso": "2026-11-24T14:09:35.977007857Z",
+      "drenagem_s": 28.8
+    },
+    {
+      "dir": "d2-1000",
+      "alvo": 1000,
+      "inicio_iso": "2026-11-24T14:12:06.056894932Z",
+      "fim_iso": "2026-11-24T14:17:06.064663248Z",
+      "drenagem_s": 29.6
+    },
+    {
+      "dir": "d3-2000",
+      "alvo": 2000,
+      "inicio_iso": "2026-11-24T14:19:32.050970956Z",
+      "fim_iso": "2026-11-24T14:24:32.060338071Z",
+      "drenagem_s": 30.1
+    }
+  ],
+  "delay_s": null,
+  "hold_s": null,
+  "rajada_linhas_param": null
+}

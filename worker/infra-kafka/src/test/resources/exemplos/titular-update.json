@@ -1,0 +1,47 @@
+{
+  "before": {
+    "CODIGO": 42,
+    "NOME": "Ana",
+    "TIPO": "PF",
+    "DOCUMENTO": "12345678901",
+    "SITUACAO": "ATIVO",
+    "EXCLUIDO": 0,
+    "UPDATED_AT": 1795176000123456
+  },
+  "after": {
+    "CODIGO": 42,
+    "NOME": "Ana Maria",
+    "TIPO": "PF",
+    "DOCUMENTO": "12345678901",
+    "SITUACAO": "ATIVO",
+    "EXCLUIDO": 0,
+    "UPDATED_AT": 1795176005500000
+  },
+  "source": {
+    "version": "3.2.0.Final",
+    "connector": "oracle",
+    "name": "kf",
+    "ts_ms": 1795176006000,
+    "snapshot": "false",
+    "db": "FREEPDB1",
+    "sequence": null,
+    "ts_us": 1795176006000000,
+    "ts_ns": 1795176006000000000,
+    "schema": "BDAD",
+    "table": "TITULAR",
+    "txId": "0a001b00e1020000",
+    "scn": "200",
+    "commit_scn": "203",
+    "lcr_position": null,
+    "rs_id": "0x000012.00000a2b.0010",
+    "ssn": 0,
+    "redo_thread": 1,
+    "user_name": "BDAD",
+    "redo_sql": null
+  },
+  "transaction": null,
+  "op": "u",
+  "ts_ms": 1795176006040,
+  "ts_us": 1795176006040000,
+  "ts_ns": 1795176006040000000
+}

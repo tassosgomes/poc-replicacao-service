@@ -1,0 +1,74 @@
+{"name":"kf-oracle","type":"source","tasks":[]}
+conector RUNNING e em streaming; SCN_INICIAL=2322429
+[21:47:28] conector em streaming (S0=2322429) em 35.3 s (inclui topicos)
+[21:47:28] gerador concorrente a 300 ev/s durante a carga
+[21:51:00] carga inicial: {"scn_inicial_conector":2322429,"scn_carga":2322567,"threads":4,"tempo_s_relogio_desenv":192.7,"tempo_total_s_jar":185.909}
+container=kf-gerador-1795222093 exit=0
+INFO: log_linhas=gerador-linhas-20261121T004814Z-1-75190edbb1c6.csv
+INFO: inicio_carga=2026-11-21T00:48:16.985008468Z
+INFO: janela_linhas=1515 taxa=303.00
+INFO: janela_linhas=1493 taxa=298.60
+INFO: janela_linhas=1510 taxa=302.00
+INFO: janela_linhas=1497 taxa=299.40
+INFO: janela_linhas=1499 taxa=299.80
+INFO: janela_linhas=1494 taxa=298.80
+INFO: janela_linhas=1504 taxa=300.80
+INFO: janela_linhas=1506 taxa=301.20
+INFO: janela_linhas=1493 taxa=298.60
+INFO: janela_linhas=1498 taxa=299.60
+INFO: janela_linhas=1504 taxa=300.80
+INFO: janela_linhas=1500 taxa=300.00
+INFO: janela_linhas=1502 taxa=300.40
+INFO: janela_linhas=1499 taxa=299.80
+INFO: janela_linhas=1496 taxa=299.20
+INFO: janela_linhas=1495 taxa=299.00
+INFO: janela_linhas=1502 taxa=300.40
+INFO: janela_linhas=1507 taxa=301.40
+INFO: janela_linhas=1502 taxa=300.40
+INFO: janela_linhas=1494 taxa=298.80
+INFO: janela_linhas=1505 taxa=301.00
+INFO: janela_linhas=1493 taxa=298.60
+INFO: janela_linhas=1510 taxa=302.00
+INFO: janela_linhas=1505 taxa=301.00
+INFO: janela_linhas=1493 taxa=298.60
+INFO: janela_linhas=1498 taxa=299.60
+INFO: janela_linhas=1497 taxa=299.40
+INFO: janela_linhas=1501 taxa=300.20
+INFO: janela_linhas=1502 taxa=300.40
+INFO: janela_linhas=1496 taxa=299.20
+INFO: janela_linhas=1508 taxa=301.60
+INFO: janela_linhas=1494 taxa=298.80
+INFO: janela_linhas=1501 taxa=300.20
+INFO: janela_linhas=1504 taxa=300.80
+INFO: janela_linhas=1497 taxa=299.40
+INFO: janela_linhas=1499 taxa=299.80
+INFO: janela_linhas=1501 taxa=300.20
+INFO: janela_linhas=1497 taxa=299.40
+INFO: janela_linhas=1503 taxa=300.60
+INFO: janela_linhas=1500 taxa=300.00
+INFO: janela_linhas=1505 taxa=301.00
+INFO: janela_linhas=1491 taxa=298.20
+INFO: janela_linhas=1501 taxa=300.20
+INFO: janela_linhas=1503 taxa=300.60
+INFO: janela_linhas=1503 taxa=300.60
+INFO: janela_linhas=1493 taxa=298.60
+INFO: janela_linhas=1500 taxa=300.00
+INFO: janela_linhas=1500 taxa=300.00
+INFO: fim_carga=2026-11-21T00:52:16.985832040Z
+INFO: linhas=72010 transacoes=23946 taxa=300.04 alvo=300 transacao_media_ms=6.295 VALIDO
+[21:52:46] 2 worker(s) no ar; drenando
+drenado em 34.0 s (lag=0, end offsets=72010, conector=RUNNING)
+faixas comparadas: legado=20 novo=20
+linhas fonograma=1001392
+linhas obra_musical=501394
+linhas titular=200698
+reconciliacao SQL: 0 divergencias (contagem e hash iguais em todas as faixas); deletes fisicos convertidos: 0
+[21:53:30] total 590.0 s; tempos em /home/tsgomes/github-tassosgomes/poc-replicacao-service/resultados/kf/c1/subir-tempos.json
+/kf-legado NanoCpus=2000000000 Memory=3221225472
+/kf-novo NanoCpus=2000000000 Memory=3221225472
+/kf-kafka NanoCpus=2000000000 Memory=2147483648
+/kf-connect NanoCpus=2000000000 Memory=2147483648
+
+real	10m6.941s
+user	0m17.679s
+sys	0m1.794s

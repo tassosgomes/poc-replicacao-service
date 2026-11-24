@@ -1,0 +1,5 @@
+faixas comparadas: legado=63 novo=63
+linhas fonograma=1390160
+linhas obra_musical=875130
+linhas titular=386368
+reconciliacao SQL: 0 divergencias (contagem e hash iguais em todas as faixas); deletes fisicos convertidos: 0

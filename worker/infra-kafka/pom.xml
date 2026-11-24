@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!--
+  Kafka source for the worker (alternative A of the PoC): consumes Debezium envelopes (JSON without
+  schema) and translates them into ChangeEvent carrying the state. Implements the ChangeSource port;
+  depends on application only, never on bootstrap.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>br.org.ecad</groupId>
+    <artifactId>replicacao-worker-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>replicacao-infra-kafka</artifactId>
+  <dependencies>
+    <dependency>
+      <groupId>br.org.ecad</groupId>
+      <artifactId>replicacao-application</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+  </dependencies>
+</project>
