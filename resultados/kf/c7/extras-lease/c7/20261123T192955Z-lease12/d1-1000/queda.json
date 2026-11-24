@@ -1,0 +1,90 @@
+{
+ "mediana_eventos_por_balde_regime": 5105,
+ "lag_max_regime_antes_s": 10.336,
+ "baldes_regime": 8,
+ "metodo": "balde de 5 s de aplicado_em; lag = maximo da latencia (aplicado_em - origem_updated_at, corrigida pelo offset de relogios); completo >= 50% da mediana do regime; normalizado = primeiro balde completo com inicio >= reinicio, fim <= fim da carga, lag <= 5 s",
+ "eventos": [
+  {
+   "nome": "kill_worker_1",
+   "t_queda": 1795462402.9524784,
+   "t_reinicio": 1795462403.152008,
+   "t_rest": null,
+   "t_ext": null,
+   "t_rep": 1795462417.0793848,
+   "t_kill_ret": 1795462403.152008,
+   "ultima_aplicacao_antes_s": 0.061,
+   "primeira_aplicacao_apos_queda_apos_reinicio_s": 2.925,
+   "t_normalizado": null,
+   "desde_queda_s": null,
+   "desde_reinicio_s": null,
+   "rest_desde_reinicio_s": null,
+   "rest_desde_queda_s": null,
+   "extract_running_desde_reinicio_s": null,
+   "extract_running_desde_queda_s": null,
+   "replicat_running_desde_reinicio_s": 13.93,
+   "replicat_running_desde_queda_s": 14.13,
+   "baldes": [
+    {
+     "inicio_s": -3.0,
+     "n": 5305,
+     "lag_max_s": 5.959,
+     "completo": true
+    },
+    {
+     "inicio_s": 2.0,
+     "n": 3002,
+     "lag_max_s": 6.098,
+     "completo": true
+    },
+    {
+     "inicio_s": 7.0,
+     "n": 2127,
+     "lag_max_s": 5.871,
+     "completo": false
+    },
+    {
+     "inicio_s": 12.0,
+     "n": 11088,
+     "lag_max_s": 18.125,
+     "completo": true
+    },
+    {
+     "inicio_s": 17.0,
+     "n": 4800,
+     "lag_max_s": 5.81,
+     "completo": true
+    },
+    {
+     "inicio_s": 22.0,
+     "n": 5998,
+     "lag_max_s": 5.318,
+     "completo": true
+    },
+    {
+     "inicio_s": 27.0,
+     "n": 3011,
+     "lag_max_s": 6.182,
+     "completo": true
+    },
+    {
+     "inicio_s": 32.0,
+     "n": 6001,
+     "lag_max_s": 5.474,
+     "completo": true
+    },
+    {
+     "inicio_s": 37.0,
+     "n": 3764,
+     "lag_max_s": 6.509,
+     "completo": true
+    },
+    {
+     "inicio_s": 42.0,
+     "n": 5237,
+     "lag_max_s": 5.907,
+     "completo": true
+    }
+   ]
+  }
+ ]
+}

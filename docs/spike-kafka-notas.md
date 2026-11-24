@@ -484,3 +484,93 @@ nao "zero real"): em producao o monitoramento nao pode confiar em `pendentes = 0
 - C9: modos do worker Kafka (lote, partitions) em vez de threads do Java; o p95 de 5 s ja nasce no Debezium, entao o teste util e o ajuste de `log.mining.*`, a registrar como variante e nao como cenario oficial.
 - C10: custo no legado = LogMiner + supplemental ALL COLUMNS (como o GG; repetir o protocolo do GG: aquecimento descartado, 4 pares em ordem balanceada, supplemental isolado).
 - Extras opcionais pendentes: `snapshot.mode=initial` do Debezium no C1 (nao medido); execucao com `log.mining.*` ajustado e com `scheduled.rebalance.max.delay.ms=0` (variantes descritivas, fora do oficial).
+
+---
+
+## Fase 3, parte 2: cenarios C6 a C10, variantes e consolidacao (2026-11-23/24)
+
+Mesmo runner e contrato da parte 1 (`scripts/kf/falhas.sh c6|c7|c8`, `c9-comparacao.sh`, `c10-custo.sh`; `cenario.sh c6..c10` delega). `bash scripts/relatorio.sh --resultados resultados/kf` consolida C1-C10:
+C1, C3, C4, C6, C7, C8, C10 APROVADOS; C2 e C5 REPROVADOS (p95); C9 sai INVALIDO/ESCOPO_REDUZIDO no relatorio porque o C2 de cada modo foi de 300 s (o gerador do relatorio exige 600 s; o C9
+e descritivo, SEM_CRITERIO, e isso tambem faz a linha "Estabilidade de identidade" do relatorio sair INVALIDO, embora os 0 UUIDs alterados estejam em todos os `meta.json`). Tudo com validade VALIDA (taxa, relogios, archive).
+Comparacao dos tres labs: `resultados/comparativo-java-gg-kafka.md`.
+
+### Resultados oficiais
+
+| Cenario | Medido | Criterio | Veredito | Java | GG |
+|---|---|---|---|---|---|
+| C6 queda do worker | `kill -9` do kf-worker-1 aos 180 s, kf-worker-2 aos 240 s; primeiro balde com lag <= 5 s a **147,8 s da queda (87,6 s do start)**; pico de lag 79,9 s; 0 divergencias, 0 UUIDs | normalizar (so exige medir) + integridade | **APROVADO** | 111,8 s (INVALIDO, TAXA) | 112,7 s / 52,6 s, APROVADO |
+| C7 failover (2 workers, como o Java) | divisao 24/24 confirmada; kill do kf-worker-1; **failover 14,4 s** (48 leases validos + nova marca no sobrevivente; `LEASE_SEG=12`) | <= 20 s | **APROVADO** | 30,0 s (INVALIDO, TAXA) | 25,8 s REPROVADO (adaptado: reinicio do hub) |
+| C8 conector parado | conector `STOPPED` (PUT /stop) por 210 s; 60 s de updates so em OBRA_MUSICAL; **55.697 chaves afetadas = 55.697 divergentes antes**; **55.697 corrigidas** so pelo redo, sem reconciliacao/reparo; 4 archives necessarios (3 trocas de redo forcadas), 0 faltando antes/depois da limpeza; drenado 49,9 s apos o resume | 100% corrigido, archive preservado | **APROVADO** | 55.629/55.629 (por delta), APROVADO | 55.904/55.904 (pelo redo), APROVADO |
+| C9 modos do worker | descritivo: ver tabela abaixo | SEM_CRITERIO | INVALIDO no relatorio (escopo 300 s) | INVALIDO (TAXA) | SEM_CRITERIO, APROVADO |
+| C10 custo no legado | ligada 6,538 ms x desligada 5,927 ms (4 pares, 600 s/fase, aquecimento de 300 s descartado, ordem L D D L L D D L) = **+0,611 ms, +10,3%** | <= 15% E <= 5 ms | **APROVADO** (folga curta) | +0,958 ms / +19,99% REPROVADO | +0,102 ms / +1,74% APROVADO |
+
+**C6/C7 detalhes.** O worker substituto tem id novo (`EVENTOS_CSV` e CREATE_NEW). O `docker kill` do worker devolveu 137. Em C6 o worker novo ficou com as 48 particoes 6,2 s depois do `docker run`; nenhuma redelivery
+(0 duplicatas entregues); o CSV de eventos ficou 17 eventos abaixo das linhas do gerador (o worker morto nao chegou a escrever o CSV daquele lote): e artefato da evidencia, nao perda (reconciliacao SQL 0; topico = gerador). A
+normalizacao pela regra do lab (balde de 5 s com lag <= 5 s) e sensivel ao p95 de captura de ~5-6 s (o "lag maximo do regime" antes da queda foi 7,7 s); a leitura relativa (lag <= maior lag do regime) deu 92,8 s da queda (C6) e 8,8 s (C7),
+registrada como extra `tempo_normalizar_relativo_ao_regime_s`. **Failover por lease (extras, runs curtos de 105 s: 2o worker aos 20 s, queda aos 60 s, `resultados/kf/c7/extras-lease/`):** `LEASE_SEG=6` -> 5,6 s; `12` -> 14,1 e 14,6 s
+(oficial 14,4 s; 3 medidas); `15` -> 16,1 s. O failover e o resto do lease (uniforme em [0, LEASE]) mais o ciclo de claim e a ativacao das 48 particoes (~2 s): fica **abaixo de LEASE+4 s** e a 12 s o limite de 20 s e cumprido com folga de ~5 s (o
+GG levou 25,8 s porque reinicia o hub inteiro). Com `LEASE_SEG` >= 17 o limite de 20 s deixaria de ser garantido. O conector e o broker nao participam do failover do worker (assign manual + lease no banco).
+
+**C8 detalhes.** Antes de religar, as 55.697 divergencias (comparacao por hash por chave dos dois lados, `scripts/kf/divergentes-obra.sh`) coincidem exatamente com as chaves do CSV do gerador; depois da drenagem sao 0. O conector parado
+mantem o offset no Connect (`PUT /connectors/kf-oracle/stop`; o `limpar-archive.sh` guiado pelo offset nao apagou os 4 archives necessarios). `verificar-archive-necessario.sh` depois de religar mostra 0 necessarios (o offset avancou). Mais forte que o GG
+(1 necessario) porque se forcaram 3 trocas de redo durante a parada. O resume leva 2,5 s ate RUNNING; 59.968 eventos entraram no topico e foram aplicados.
+
+**C9 (worker, C2 de 300 s a 1.000 ev/s + degrau de 2.000 ev/s de 300 s; `resultados/kf/c9/<exec>/comparacao.csv`).** Tudo VALIDO, 0 divergencias, 0 UUIDs. Os modos nao se separam do ruido:
+
+| Modo | 1.000 ev/s p50 / p95 / max (s) | 2.000 ev/s p50 / p95 / max (s) |
+|---|---|---|
+| oficial (virtual threads, LOTE_MAX 500, POLL_MS 200) | 3,60 / 5,24 / 6,75 | 4,58 / 7,72 / 22,2 |
+| plataforma (VIRTUAL_THREADS=false) | 3,65 / 5,55 / 9,9 | 4,32 / 7,66 / 10,5 |
+| lote-100 (LOTE_MAX=100) | 3,67 / 5,52 / 6,86 | 4,07 / 6,16 / 8,9 |
+| lote-2000 (LOTE_MAX=2000) | 3,82 / 6,19 / 11,9 | 4,43 / 10,39 / 21,2 |
+| poll-rapido (POLL_MS=20, KAFKA_POLL_MS=10) | 3,61 / 5,59 / 8,2 | 4,40 / 8,75 / 12,8 |
+
+O oficial a 300 s deu p95 5,24 s contra 6,43 s no C2 oficial de 600 s: a variacao entre execucoes do mesmo modo (~1 s) e maior que a diferenca entre modos; a latencia nasce no Debezium (parte 1). Nenhum modo mudou taxa nem teto. Particoes (16 por topico) nao variam
+no worker. O worker foi restaurado ao oficial no fim.
+
+**C10 detalhes (`resultados/kf/c10/<exec>/`).** Pares: LD +1,469 ms (+27,1%), DL -0,691 ms (-11,7%), LD +2,158 ms (+38,9%), DL -0,492 ms (-7,2%). A ordem importa: nas duas LD a ligada saiu pior, nas duas DL a ligada saiu melhor (a segunda fase de
+cada par parece mais favoravel; metade desse padrao pode ser deriva do legado, que sobe 0,06 ms/fase e 6,6 ms na 2a metade contra 5,8 ms na 1a). A media dos pares (+0,611 ms, +10,3%) passa o criterio, mas o desvio entre fases (1,05 ms ligada, 0,66 ms
+desligada) e do tamanho do efeito: conclusao correta = custo da ordem de 0 a 1 ms, nao separado do ruido (como no GG, com resultado numericamente pior). **CPU media por container (docker stats, 100% = 1 CPU, limite 200%) ligada x desligada:** kf-legado
+**112,5% x 94,7% (+17,8 pontos de 200%)**, contra +13,7 no GG; kf-novo 35,8 x 6,3; kf-connect 16,4 x 0,9; kf-worker-1 21,8 x 10,9; kf-kafka 41,8 x 37,2. **Repouso (60 s sem DML, conector RUNNING, 1 worker):** kf-kafka **42,4%** (48 consumers `assign()` fazendo poll,
+mesmo com 1 worker; 2,3% sem workers na Fase 2), kf-worker-1 15,5%, kf-connect 2,7%, kf-legado 8,3%, kf-novo 4,5%. Memoria media: kf-legado 2.080 MiB, kf-novo 2.728, kf-kafka 1.131, kf-connect 836, kf-worker-1 564. **Custo de infraestrutura fixo da alternativa A**
+(broker + Connect + workers, em repouso): ~42% + 3% + 16% = ~0,6 CPU e ~2,5 GiB de RAM, alem dos dois Oracles. **Supplemental logging:** `supplemental_log_data_min=YES`, `FORCE LOGGING=YES` e grupos `ALL COLUMN LOGGING` nas 3 tabelas ficam ativos em ligada e
+desligada: o custo do supplemental NAO e isolado aqui (ligada - desligada = custo do LogMiner/conector sobre o legado). **Variante sem supplemental nao executada:** sem ele o redo traz so as colunas alteradas; ao religar, o Debezium emitiria `after` incompletos e o worker
+(consistencia sobre disponibilidade) travaria na particao ou gravaria nulos; no GG a variante precisou de reposicionamento e "toque" das chaves e foi inconclusiva. Fica como pendencia se o time quiser o numero (exige reposicionar o offset do conector via `PATCH /connectors/kf-oracle/offsets` e tocar as chaves da janela).
+
+### Variantes extras (fora dos numeros oficiais; C2 encurtado a 300 s, `resultados/kf/c9/log-mining/20261123T214906Z/`)
+
+**Achado de configuracao:** no Debezium 3.7.1 `log.mining.sleep.time.*` e `log.mining.batch.size.*` **nao existem** (o `validate` do Connect nao os lista; so `poll.interval.ms`, `max.batch.size`, `log.mining.log.count.min`, `log.mining.query.filter.mode`, `log.mining.strategy`,
+`log.mining.session.max.ms`, `log.mining.restart.connection`, `log.mining.buffer.type`...). Os 100/300/500 ms de `conector-oracle.json` (Fase 0) eram **ignorados**; permanecem no JSON oficial para que C1-C8 continuem reproduziveis.
+
+| Variante (overrides) | p50 (s) | p95 (ms) | p99 / max (s) | CPU kf-legado / kf-connect / kf-kafka / worker (%) |
+|---|---|---|---|---|
+| controle (oficial) | 3,62 | 5.375 | 6,08 / 6,94 | 134,9 / 13,0 / 42,4 / 29,6 |
+| `poll.interval.ms=100` | 3,87 | 6.154 | 7,78 / 9,43 | 114,1 / 17,5 / 41,5 / 25,6 |
+| `log.mining.query.filter.mode=in` | 3,70 | 5.347 | 6,03 / 6,94 | 109,2 / 18,4 / 44,6 / 32,7 |
+| `log.mining.log.count.min=1` | 3,79 | 5.332 | 5,89 / 6,45 | 116,0 / 16,3 / 45,3 / 34,2 |
+| `provide.transaction.metadata=false` | 3,61 | 5.771 | 6,97 / 8,53 | 116,2 / 13,6 / 36,3 / 29,8 |
+| combinado (as 4 anteriores) | 3,47 | 5.295 | 6,01 / 6,79 | 115,9 / 16,4 / 39,7 / 28,1 |
+| `log.mining.strategy=redo_log_catalog` | **142,9** | **214.844** | 219 / 221 | 130,3 / 8,5 / 34,4 / 23,1 |
+
+Conclusao: **nenhuma variante legitima derruba o p50 de ~3,6 s nem leva o p95 de forma estavel a <= 5 s**; ficam todas entre 5,3 e 6,2 s, dentro da variacao entre execucoes (o oficial de 300 s deu 5,24 e 5,38 s, o de 600 s 6,43 s). O piso de ~3,5 s e a cadencia de
+iteracao do LogMiner do Debezium 3.x (eventos chegam em rajadas a cada ~3 s: baldes de 3.000/6.000 eventos), nao um parametro do conector; `redo_log_catalog` e pior em duas ordens de grandeza (cada sessao reconstroi o dicionario no redo). A CPU do kf-legado (109-135%) nao
+distingue as variantes (o 134,9% do controle fica fora da faixa das demais, 109-130%: ruido do host; hipotese nao investigada). O p95 <= 5 s do C2 so e alcancavel por acaso de execucao; o criterio, com esta captura, esta no limite. Alternativas fora do escopo (nao testadas): reduzir o trabalho do mining
+com `log.mining.archive.log.only.mode` (piora), conector XStream (licenca GoldenGate, que a casa tem) em vez de LogMiner. A configuracao oficial foi restaurada e conferida (`config-final-confere.txt`: igual a `conector-oracle.json`). O `controle` espera 5 min por "streaming" porque nao ha mudanca de config (a variacao nao e erro).
+
+**`scheduled.rebalance.max.delay.ms=0` na queda do broker** (`resultados/kf/c9/rebalance/20261123T232737Z-broker-rebalance0/`; worker do Connect confirmado em `config-do-worker-connect.txt`): mesma queda aos 180 s e start aos 240 s do extra da parte 1. A primeira aplicacao no destino veio **111 s** apos o `docker start` do broker
+(contra **346 s** com o padrao de 300 s) e o balde normalizou a **301,6 s da queda (239,6 s do start)**, contra "nunca durante a carga" antes: a espera de 5 min some. Ainda sobram ~110 s (broker + Connect + LogMiner reiniciando, mais o backlog); o broker (porta) so aceitou conexao 97 s depois do start. Efeito colateral medido:
+**54.280 eventos duplicados no topico (9%)** (o produtor do Connect reenviou desde o ultimo offset gravado; o guard de versao do worker descarta), 0 divergencias, 0 UUIDs alterados. O log do Connect da variante se perdeu (restaurar recria o container); a atribuicao da melhora ao parametro vem do
+contraste 346 s x 111 s com o mesmo roteiro e do mecanismo observado na parte 1 (`Broker coordinator was unreachable... Revoking previous assignment`, tarefa so recriada 5 min depois). Um Connect de varios workers tem outro comportamento (a tarefa migraria para outro worker). `kf-connect` restaurado ao oficial (sem a variavel; conferido) e conector RUNNING.
+
+### Armadilhas desta parte
+
+1. `rel()` agora retenta se a incerteza do relogio passar de 20 ms (uma amostra com RTT de 200 ms deu offset -96 ms e invalidaria o cenario).
+2. O `tr -d ' \r\n'` do poll de leases deixava a tabulacao do SQL*Plus e o loop de failover rodava para sempre (corrigido para incluir `\t`).
+3. O `meta_kf.py` de C10 precisa copiar `captura/repeticao/posicao` dos degraus (KeyError, o mesmo que no GG).
+4. O relatorio consolidado exige `trigger_desligado_inicio/fim` no C8 e C2 de 600 s no C9; a primeira consolidacao marcou C8 invalido por falta desses campos (corrigido: o `meta.json` do C8 foi regerado dos dados existentes, sem repetir a medicao).
+5. `scripts/kf/cenario.sh` com `KF_SAIDA` diferente do padrao grava snapshots no mesmo prefixo (`integridade_final` usa o caminho relativo); cada execucao guarda um snapshot de 85 MB (ignorado pelo git). Pasta `resultados/kf` ~5,3 GB em disco local.
+6. Atomicidade multi-tabela continua **nao medida** (Fase 4). Em C6 a queda do worker e entre tabelas e particoes: nada indica atomicidade preservada no modo atual.
+
+### Pendencias
+
+Fase 4 (variante transacional, atomicidade multi-tabela e custo em vazao); variante sem supplemental (C10) com reposicionamento do offset; C9 com C2 de 600 s se for preciso o relatorio aceitar o escopo; `snapshot.mode=initial` do Debezium no C1; Connect com varios workers; Confluent Cloud (etapa 2); XStream em lugar de LogMiner.

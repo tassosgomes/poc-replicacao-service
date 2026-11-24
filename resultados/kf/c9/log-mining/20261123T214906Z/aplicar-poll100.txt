@@ -1,0 +1,2 @@
+{"name":"kf-oracle","type":"source","tasks":[{"connector":"kf-oracle","task":0}]}
+variante aplicada ({"poll.interval.ms":"100"}); conector em streaming

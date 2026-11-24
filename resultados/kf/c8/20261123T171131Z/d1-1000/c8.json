@@ -1,0 +1,17 @@
+{
+  "linhas_afetadas": 55697,
+  "divergentes_antes": 55697,
+  "afetadas_conferem_antes": true,
+  "divergentes_depois": 0,
+  "linhas_corrigidas": 55697,
+  "log_cobre_afetadas": true,
+  "eventos_no_topico_pos_parada": 59968,
+  "trocas_de_redo_forcadas": 3,
+  "captura_parada_inicio": "2026-11-23T17:13:35Z",
+  "captura_parada_fim": "2026-11-23T17:17:03Z",
+  "parada_s": 209.5791540145874,
+  "religar_conector_s": 2.473508358001709,
+  "tempo_ate_drenado_s": 49.907108783721924,
+  "ultima_aplicacao_apos_religar_s": 11.62418818473816,
+  "reparo_ou_reconciliacao_antes_de_drenar": false
+}

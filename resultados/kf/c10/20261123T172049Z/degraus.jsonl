@@ -1,0 +1,8 @@
+{"dir":"p01-ligada","alvo":1000,"inicio_iso":"2026-11-23T17:30:57.891035668Z","fim_iso":"2026-11-23T17:40:57.891523172Z","drenagem_s":null,"captura":true,"repeticao":1,"modo":"ligada","supplemental":true,"posicao":1}
+{"dir":"p02-desligada","alvo":1000,"inicio_iso":"2026-11-23T17:42:34.779369356Z","fim_iso":"2026-11-23T17:52:34.786551420Z","drenagem_s":null,"captura":false,"repeticao":1,"modo":"desligada","supplemental":true,"posicao":2}
+{"dir":"p03-desligada","alvo":1000,"inicio_iso":"2026-11-23T17:55:56.111931185Z","fim_iso":"2026-11-23T18:05:56.112690969Z","drenagem_s":null,"captura":false,"repeticao":2,"modo":"desligada","supplemental":true,"posicao":3}
+{"dir":"p04-ligada","alvo":1000,"inicio_iso":"2026-11-23T18:09:01.233545236Z","fim_iso":"2026-11-23T18:19:01.234100403Z","drenagem_s":null,"captura":true,"repeticao":2,"modo":"ligada","supplemental":true,"posicao":4}
+{"dir":"p05-ligada","alvo":1000,"inicio_iso":"2026-11-23T18:20:48.265698452Z","fim_iso":"2026-11-23T18:30:48.266774531Z","drenagem_s":null,"captura":true,"repeticao":3,"modo":"ligada","supplemental":true,"posicao":5}
+{"dir":"p06-desligada","alvo":1000,"inicio_iso":"2026-11-23T18:32:38.170735150Z","fim_iso":"2026-11-23T18:42:38.176342052Z","drenagem_s":null,"captura":false,"repeticao":3,"modo":"desligada","supplemental":true,"posicao":6}
+{"dir":"p07-desligada","alvo":1000,"inicio_iso":"2026-11-23T18:46:00.272087963Z","fim_iso":"2026-11-23T18:56:00.275955412Z","drenagem_s":null,"captura":false,"repeticao":4,"modo":"desligada","supplemental":true,"posicao":7}
+{"dir":"p08-ligada","alvo":1000,"inicio_iso":"2026-11-23T18:59:25.590249174Z","fim_iso":"2026-11-23T19:09:25.590738223Z","drenagem_s":null,"captura":true,"repeticao":4,"modo":"ligada","supplemental":true,"posicao":8}

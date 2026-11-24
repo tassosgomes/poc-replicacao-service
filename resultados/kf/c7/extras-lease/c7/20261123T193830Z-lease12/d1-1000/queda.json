@@ -1,0 +1,98 @@
+{
+ "mediana_eventos_por_balde_regime": 5546,
+ "lag_max_regime_antes_s": 8.553,
+ "baldes_regime": 8,
+ "metodo": "balde de 5 s de aplicado_em; lag = maximo da latencia (aplicado_em - origem_updated_at, corrigida pelo offset de relogios); completo >= 50% da mediana do regime; normalizado = primeiro balde completo com inicio >= reinicio, fim <= fim da carga, lag <= 5 s",
+ "eventos": [
+  {
+   "nome": "kill_worker_1",
+   "t_queda": 1795462920.5185218,
+   "t_reinicio": 1795462920.7606823,
+   "t_rest": null,
+   "t_ext": null,
+   "t_rep": 1795462935.0718148,
+   "t_kill_ret": 1795462920.7606823,
+   "ultima_aplicacao_antes_s": 0.948,
+   "primeira_aplicacao_apos_queda_apos_reinicio_s": 0.065,
+   "balde_normalizado": {
+    "inicio_s": 34.5,
+    "n": 7097,
+    "lag_max_s": 4.527
+   },
+   "t_normalizado": 1795462960,
+   "desde_queda_s": 39.48,
+   "desde_reinicio_s": 39.24,
+   "rest_desde_reinicio_s": null,
+   "rest_desde_queda_s": null,
+   "extract_running_desde_reinicio_s": null,
+   "extract_running_desde_queda_s": null,
+   "replicat_running_desde_reinicio_s": 14.31,
+   "replicat_running_desde_queda_s": 14.55,
+   "estavel_apos_normalizar": true,
+   "baldes_violando_apos": [],
+   "pico_lag_s": 21.18,
+   "baldes": [
+    {
+     "inicio_s": -0.5,
+     "n": 2989,
+     "lag_max_s": 5.165,
+     "completo": true
+    },
+    {
+     "inicio_s": 4.5,
+     "n": 1464,
+     "lag_max_s": 6.149,
+     "completo": false
+    },
+    {
+     "inicio_s": 9.5,
+     "n": 3740,
+     "lag_max_s": 19.013,
+     "completo": true
+    },
+    {
+     "inicio_s": 14.5,
+     "n": 12258,
+     "lag_max_s": 21.18,
+     "completo": true
+    },
+    {
+     "inicio_s": 19.5,
+     "n": 4602,
+     "lag_max_s": 5.295,
+     "completo": true
+    },
+    {
+     "inicio_s": 24.5,
+     "n": 4685,
+     "lag_max_s": 6.234,
+     "completo": true
+    },
+    {
+     "inicio_s": 29.5,
+     "n": 5263,
+     "lag_max_s": 6.165,
+     "completo": true
+    },
+    {
+     "inicio_s": 34.5,
+     "n": 7097,
+     "lag_max_s": 4.527,
+     "completo": true
+    },
+    {
+     "inicio_s": 39.5,
+     "n": 4113,
+     "lag_max_s": 4.564,
+     "completo": true
+    },
+    {
+     "inicio_s": 44.5,
+     "n": 3549,
+     "lag_max_s": 4.171,
+     "completo": true
+    }
+   ]
+  }
+ ]
+}

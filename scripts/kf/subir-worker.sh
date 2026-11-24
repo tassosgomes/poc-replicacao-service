@@ -21,5 +21,9 @@ ssh_poc $HOST "docker image inspect $IMG >/dev/null 2>&1" || {
 ENVS=(-e KAFKA_BOOTSTRAP_SERVERS=kf-kafka:9092 -e NOVO_URL=jdbc:oracle:thin:@//kf-novo:1521/FREEPDB1 -e WORKER_ID=$NAME
   -e LEASE_SEG=12 -e RESULTADOS_DIR=/resultados)
 for v in "$@"; do ENVS+=(-e "$v"); done   # os ultimos -e vencem
-ssh_poc $HOST "docker run -d --name $NAME --network kf-rede --cpus=2 --memory=1g --memory-swap=1g ${ENVS[*]} $IMG java -Xmx512m -jar /app.jar worker" >/dev/null
+# KF_ESPERAR_ATE=<epoch do infra-server>: espera esse instante (relogio do proprio infra-server) antes do docker run; KF_TEMPOS_ARQ=<arquivo>: grava "t0 t1" (epochs do
+# infra-server antes e depois do docker run). Usados pelos cenarios de falha (C6/C7) para subir o worker substituto em instante agendado.
+TT=$(ssh_poc $HOST "[ -z '${KF_ESPERAR_ATE:-}' ] || while :; do n=\$(date +%s.%N); awk -v n=\$n -v t='${KF_ESPERAR_ATE:-0}' 'BEGIN{exit !(n>=t)}' && break; sleep 0.02; done
+t0=\$(date +%s.%N); docker run -d --name $NAME --network kf-rede --cpus=2 --memory=1g --memory-swap=1g ${ENVS[*]} $IMG java -Xmx512m -jar /app.jar worker >/dev/null; t1=\$(date +%s.%N); echo \$t0 \$t1")
+[[ -z ${KF_TEMPOS_ARQ:-} ]] || echo "$TT" > "$KF_TEMPOS_ARQ"
 ssh_poc $HOST "docker inspect --format '{{.Name}} NanoCpus={{.HostConfig.NanoCpus}} Memory={{.HostConfig.Memory}} Swap={{.HostConfig.MemorySwap}} imagem=$IMG' $NAME"

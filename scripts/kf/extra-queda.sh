@@ -6,7 +6,7 @@
 # latencia maxima por balde, como C2/GG; scripts/gg/analisar-queda.py), desde a queda e desde o reinicio, o estado da tarefa do conector, a diferenca
 # entre eventos no topico e linhas do gerador (duplicatas por at-least-once apos a queda do Connect), e integridade (reconciliacao SQL e UUIDs).
 # Os eventos dos workers sao deduplicados por (tabela,codigo,criado_em) para a analise (o primeiro commit vale); o numero de re-entregas e registrado.
-# Grava em resultados/kf/c4/extras/<execucao>-<alvo>/ (extra.json = resumo). Saida: 0 integro (0 divergencias, 0 UUIDs), 1 caso contrario, 2 falha.
+# Grava em ${KF_EXTRA_BASE:-resultados/kf/c4/extras}/<execucao>-<alvo>/ (extra.json = resumo). Saida: 0 integro (0 divergencias, 0 UUIDs), 1 caso contrario, 2 falha.
 set -Eeuo pipefail
 trap 'rc=$?; echo "falha operacional (linha $LINENO, rc=$rc)" >&2; exit 2' ERR
 ROOT=$(cd "$(dirname "$0")/../.." && pwd); cd "$ROOT"
@@ -17,7 +17,7 @@ source scripts/kf/comum-cenario.sh
 TAXA=${TAXA:-1000}; DUR=${DURACAO_SEG:-600}; QUEDA=${QUEDA_APOS_SEG:-180}; REINI=${REINICIO_APOS_SEG:-240}; POS=${OBSERVACAO_APOS_REINICIO_SEG:-45}
 (( DUR < REINI + POS + 30 )) && DUR=$((REINI + POS + 30))
 NW=${KF_WORKERS:-1}
-EXE=$(date -u +%Y%m%dT%H%M%SZ)-$ALVO${ROT:+-$ROT}; D=resultados/kf/c4/extras/$EXE; mkdir -p "$D"
+EXE=$(date -u +%Y%m%dT%H%M%SZ)-$ALVO${ROT:+-$ROT}; BASE_EXTRA=${KF_EXTRA_BASE:-resultados/kf/c4/extras}; D=$BASE_EXTRA/$EXE; mkdir -p "$D"
 exigir_ambiente
 INI_RUN=$(date -u +%FT%TZ)
 scripts/kf/limpar-archive.sh > "$D/archive-antes.json" || { cat "$D/archive-antes.json"; exit 2; }
@@ -54,7 +54,8 @@ jq -nc --argjson ini "$(awk -v i="$(epoch_iso "$ini")" -v o="$NOFFS" 'BEGIN{prin
   '{ini:$ini,fim_carga:$fim,eventos:[{nome:$n,t_queda:$e[0].t_cmd0,t_reinicio:$e[0].t_cmd1,t_rest:$e[0].t_rest,t_ext:$e[0].t_ext,t_rep:null,t_kill_ret:$e[0].t_kill,t_start_cmd0:$e[0].t_start0}]}' > "$SD/entrada-queda.json"
 python3 -I scripts/gg/analisar-queda.py "$SD/latencias.csv" "$SD/entrada-queda.json" "$NOFF" "$SD" | tee "$SD/queda.txt"
 gzip -f "$SD/eventos.csv" "$SD/eventos-bruto.csv" "$SD/latencias.csv"
-integridade_final "$D" "c4/extras" "$EXE"
+SREL=${BASE_EXTRA#resultados/kf/}
+integridade_final "$D" "$SREL" "$EXE"
 LIN=$(sed -n 's/.*linhas=\([0-9]*\) transacoes=.*/\1/p' "$SD/gerador.log" | tail -1)
 jq -n --arg a "$ALVO" --arg e "$EXE" --arg i "$INI_RUN" --arg f "$(date -u +%FT%TZ)" --argjson q "$QUEDA" --argjson re "$REINI" --argjson dur "$DUR" --argjson taxa "$TAXA" \
   --argjson linhas "${LIN:-null}" --argjson fim0 "$FIM0" --argjson fim1 "$FIM1" --argjson lagf "$LAGF" --argjson dren "$(awk -v a="$T_DREN0" -v b="$T_DREN1" 'BEGIN{printf "%.1f", b-a}')" \

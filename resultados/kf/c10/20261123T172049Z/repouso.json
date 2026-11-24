@@ -1,0 +1,28 @@
+{
+ "kf-legado": {
+  "media_pct": 8.3,
+  "max_pct": 17.18,
+  "amostras": 15
+ },
+ "kf-novo": {
+  "media_pct": 4.5,
+  "max_pct": 9.4,
+  "amostras": 12
+ },
+ "kf-kafka": {
+  "media_pct": 42.4,
+  "max_pct": 197.02,
+  "amostras": 12
+ },
+ "kf-connect": {
+  "media_pct": 2.7,
+  "max_pct": 16.31,
+  "amostras": 12
+ },
+ "kf-worker-1": {
+  "media_pct": 15.5,
+  "max_pct": 28.67,
+  "amostras": 12
+ },
+ "_descricao": "60 s sem DML, conector RUNNING, 1 kf-worker com 48 consumers assign() ativos"
+}

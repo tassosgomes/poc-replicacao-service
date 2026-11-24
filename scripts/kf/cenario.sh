@@ -15,12 +15,14 @@
 # c4: regime TAXA por DURACAO_SEG (>= RAJADA_APOS_SEG+OBSERVACAO_RECUPERACAO_SEG+30) e, RAJADA_APOS_SEG s apos o inicio, um segundo gerador
 #   (RAJADA_LINHAS: uma UPDATE de 50.000 linhas de TITULAR e um COMMIT). c5: TX_APOS_SEG s apos o inicio, UPDATE de TITULAR 1 em transacao
 #   aberta por TX_ABERTA_SEG s (sql/kf/testes/tx_longa.sql). c1: delega a scripts/kf/c1-carga.sh.
+# c6|c7|c8 delegam a scripts/kf/falhas.sh, c9 a c9-comparacao.sh e c10 a c10-custo.sh.
 # Saida: 0 aprovado; 1 reprovado/invalido; 2 falha operacional.
 set -Eeuo pipefail
 trap 'rc=$?; echo "falha operacional (linha $LINENO, rc=$rc)" >&2; exit 2' ERR
 ROOT=$(cd "$(dirname "$0")/../.." && pwd); cd "$ROOT"
 CEN=${1:?c1|c2|c3|c4|c5}; ROT=${2:-}
 [[ $CEN == c1 ]] && exec "$(dirname "$0")/c1-carga.sh" "${@:2}"
+case $CEN in c6|c7|c8) exec "$(dirname "$0")/falhas.sh" "$@" ;; c9) exec "$(dirname "$0")/c9-comparacao.sh" "${@:2}" ;; c10) exec "$(dirname "$0")/c10-custo.sh" "${@:2}" ;; esac
 case $CEN in c2|c3|c4|c5) ;; *) echo "cenario invalido: $CEN" >&2; exit 2 ;; esac
 set -a; source scripts/lab-kf.env; set +a
 source scripts/kf/comum-cenario.sh
@@ -98,7 +100,8 @@ while read -r linha; do
   gzip -f "$SD/eventos.csv"; [[ ! -f $SD/latencias.csv ]] || gzip -f "$SD/latencias.csv"
 done < "$D/degraus.jsonl"
 # integridade
-integridade_final "$D" "$CEN" "$EXE"
+SREL=${SAIDA#resultados/kf}; SREL=${SREL#/}
+integridade_final "$D" "${SREL:+$SREL/}$CEN" "$EXE"
 PSHA=$(jq -nc --arg h "$(sha256sum scripts/kf/conector-oracle.json | cut -c1-16)" '{"conector-oracle.json":$h}')
 WSHA=$(sha256sum "$WJAR" | cut -d' ' -f1)
 RDESC="worker Kafka x$NW (kf-worker, 2 CPU/1 GiB, -Xmx512m, LEASE_SEG 12, EVENTOS_CSV); Debezium 3.7.1 LogMiner; Kafka 4.3.1 (1 broker, 16 particoes/topico)"

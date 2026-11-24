@@ -1,0 +1,1 @@
+conector=RUNNING/RUNNING supplemental_min=YES force_logging=YES grupos_all_columns_tabelas=3

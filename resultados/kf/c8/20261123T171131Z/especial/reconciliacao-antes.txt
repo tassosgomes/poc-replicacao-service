@@ -1,0 +1,55 @@
+faixas comparadas: legado=22 novo=22
+linhas fonograma=1159775
+linhas obra_musical=662834
+linhas titular=280060
+reconciliacao SQL: 55697 DIVERGENCIAS REAIS (deletes fisicos convertidos, nao divergentes: 0)
+hash-diferente|obra_musical|311470
+hash-diferente|obra_musical|147900
+hash-diferente|obra_musical|311479
+hash-diferente|obra_musical|22059
+hash-diferente|obra_musical|147902
+hash-diferente|obra_musical|267259
+hash-diferente|obra_musical|182432
+hash-diferente|obra_musical|652344
+hash-diferente|obra_musical|474648
+hash-diferente|obra_musical|449875
+hash-diferente|obra_musical|627575
+hash-diferente|obra_musical|449877
+hash-diferente|obra_musical|404154
+hash-diferente|obra_musical|404157
+hash-diferente|obra_musical|611546
+hash-diferente|obra_musical|433847
+hash-diferente|obra_musical|389621
+hash-diferente|obra_musical|567321
+hash-diferente|obra_musical|567328
+hash-diferente|obra_musical|34831
+hash-diferente|obra_musical|166205
+hash-diferente|obra_musical|34836
+hash-diferente|obra_musical|501956
+hash-diferente|obra_musical|151394
+hash-diferente|obra_musical|166208
+hash-diferente|obra_musical|577081
+hash-diferente|obra_musical|100835
+hash-diferente|obra_musical|399389
+hash-diferente|obra_musical|220185
+hash-diferente|obra_musical|348822
+hash-diferente|obra_musical|44595
+hash-diferente|obra_musical|383356
+hash-diferente|obra_musical|590746
+hash-diferente|obra_musical|680
+hash-diferente|obra_musical|681
+hash-diferente|obra_musical|682
+hash-diferente|obra_musical|358581
+hash-diferente|obra_musical|684
+hash-diferente|obra_musical|69162
+hash-diferente|obra_musical|358583
+hash-diferente|obra_musical|685
+hash-diferente|obra_musical|686
+hash-diferente|obra_musical|688
+hash-diferente|obra_musical|358589
+hash-diferente|obra_musical|98855
+hash-diferente|obra_musical|98856
+hash-diferente|obra_musical|135164
+hash-diferente|obra_musical|520251
+hash-diferente|obra_musical|619207
+hash-diferente|obra_musical|520258

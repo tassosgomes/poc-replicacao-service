@@ -1,0 +1,1113 @@
+{
+ "cenario": "c10",
+ "execucao": "20261123T172049Z",
+ "inicio": "2026-11-23T17:20:55Z",
+ "fim": "2026-11-23T19:13:23Z",
+ "diretorio": "resultados/kf/c10/20261123T172049Z",
+ "ambiente": {
+  "lab": "kafka",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "kf-legado",
+    "id": "a02038a1e1e41190e1fbdd3c2a36ab773c9cf390d26aea11edcde43469b03a61",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "swap": 6442450944,
+    "running": true,
+    "inicio": "2026-11-23T12:57:30.82910233Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": []
+   },
+   {
+    "nome": "kf-novo",
+    "id": "8969f341323e33fe696a36a1cd26380ef62dd61b8b39823fc373bdc695bdcc32",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "swap": 6442450944,
+    "running": true,
+    "inicio": "2026-11-23T12:57:43.511264639Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": []
+   },
+   {
+    "nome": "kf-kafka",
+    "id": "fda787f876d39f71a4149fe4b705b21fcebdd288cd7a735be2be9ff4fe2a4841",
+    "imagem": "apache/kafka:4.3.1",
+    "imagem_id": "sha256:77e3df9054047a88b520d0cc46e16696d3b22022e1d580aeccd2632df6532837",
+    "cpu": 2000000000,
+    "memoria": 2147483648,
+    "swap": 4294967296,
+    "running": true,
+    "inicio": "2026-11-23T15:20:36.568625765Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": [
+     "KAFKA_ADVERTISED_LISTENERS=INTERNAL://kf-kafka:9092,EXTERNAL://192.168.0.11:19092",
+     "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT",
+     "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1",
+     "KAFKA_AUTO_CREATE_TOPICS_ENABLE=false",
+     "KAFKA_LISTENERS=INTERNAL://:9092,EXTERNAL://:19092,CONTROLLER://:9093",
+     "KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL",
+     "KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER",
+     "KAFKA_CONTROLLER_QUORUM_VOTERS=1@kf-kafka:9093",
+     "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1",
+     "KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1",
+     "KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0",
+     "KAFKA_HEAP_OPTS=-Xms1g -Xmx1g",
+     "KAFKA_NODE_ID=1",
+     "KAFKA_PROCESS_ROLES=broker,controller",
+     "JAVA_HOME=/opt/java/openjdk",
+     "JAVA_VERSION=jdk-21.0.11+10"
+    ]
+   },
+   {
+    "nome": "kf-connect",
+    "id": "7b6bfc2a7c7ddbcec9c1f138653a90be1c464380090393789fa71797db2490fe",
+    "imagem": "quay.io/debezium/connect:3.7.1.Final",
+    "imagem_id": "sha256:1589366704e1e016bad42b15fbdb364ba48780c61d0094197ca8632cb1271539",
+    "cpu": 2000000000,
+    "memoria": 2147483648,
+    "swap": 4294967296,
+    "running": true,
+    "inicio": "2026-11-23T15:04:50.73767923Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": [
+     "KAFKA_HEAP_OPTS=-Xms512m -Xmx1g",
+     "KAFKA_VERSION=4.3.1",
+     "KAFKA_HOME=/kafka",
+     "KAFKA_URL_PATH=kafka/4.3.1/kafka_2.13-4.3.1.tgz",
+     "KAFKA_DATA=/kafka/data",
+     "KAFKA_CONNECT_PLUGINS_DIR=/kafka/connect"
+    ]
+   },
+   {
+    "nome": "kf-worker-1",
+    "id": "de284c461a6dcf502c4b6f806ae06c75112f33ab43b329924e0fccfc8f51b386",
+    "imagem": "kf-worker:7a76e8c7fd9597dc",
+    "imagem_id": "sha256:3ec63411ec957c0e4d77d0b61eb9eb05f226903610473c4dc5761589185269c6",
+    "cpu": 2000000000,
+    "memoria": 1073741824,
+    "swap": 1073741824,
+    "running": true,
+    "inicio": "2026-11-23T17:22:06.077948479Z",
+    "reinicios": 0,
+    "saudavel": null,
+    "env": [
+     "EVENTOS_CSV=true",
+     "KAFKA_BOOTSTRAP_SERVERS=kf-kafka:9092",
+     "WORKER_ID=kf-worker-1",
+     "LEASE_SEG=12",
+     "JAVA_HOME=/opt/java/openjdk",
+     "JAVA_VERSION=jdk-25.0.5+8"
+    ]
+   }
+  ],
+  "pipeline": "worker Kafka x1 (kf-worker, 2 CPU/1 GiB, -Xmx512m, LEASE_SEG 12, EVENTOS_CSV); Debezium 3.7.1 LogMiner; Kafka 4.3.1",
+  "workers": 1,
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "conector-oracle.json": "1fa06ebcc7e0fa63"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "worker_jar_sha256": "7a76e8c7fd9597dced02cd84b4e290c6b6e715756b4e31c8ce357d6047b6a381",
+  "conector": {
+   "connector.class": "io.debezium.connector.oracle.OracleConnector",
+   "database.dbname": "FREE",
+   "database.hostname": "192.168.0.5",
+   "database.pdb.name": "FREEPDB1",
+   "database.port": "1525",
+   "database.user": "c##dbzuser",
+   "decimal.handling.mode": "string",
+   "heartbeat.interval.ms": "10000",
+   "include.schema.changes": "false",
+   "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+   "key.converter.schemas.enable": "false",
+   "log.mining.sleep.time.default.ms": "300",
+   "log.mining.sleep.time.increment.ms": "100",
+   "log.mining.sleep.time.max.ms": "500",
+   "log.mining.sleep.time.min.ms": "100",
+   "log.mining.strategy": "online_catalog",
+   "name": "kf-oracle",
+   "provide.transaction.metadata": "true",
+   "schema.history.internal.kafka.bootstrap.servers": "kf-kafka:9092",
+   "schema.history.internal.kafka.topic": "kf.schema-history",
+   "snapshot.mode": "no_data",
+   "table.include.list": "BDAD.TITULAR,BDAD.OBRA_MUSICAL,BDAD.FONOGRAMA",
+   "tasks.max": "1",
+   "time.precision.mode": "adaptive",
+   "tombstones.on.delete": "false",
+   "topic.prefix": "kf",
+   "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+   "value.converter.schemas.enable": "false"
+  },
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "APROVADO",
+ "skew_ms": {
+  "inicio": -1.431,
+  "fim": 1.211
+ },
+ "skew_incerteza_ms": {
+  "inicio": 4.915,
+  "fim": 5.212
+ },
+ "relogios": [
+  {
+   "etapa": "p01-ligada-inicio",
+   "ts": "2026-11-23T17:30:57.891035668Z",
+   "skew_ms": -1.431,
+   "incerteza_ms": 4.915
+  },
+  {
+   "etapa": "p08-ligada-fim",
+   "ts": "2026-11-23T19:09:25.590738223Z",
+   "skew_ms": 1.211,
+   "incerteza_ms": 5.212
+  }
+ ],
+ "carga_servidores": [],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "snapshot_antes": "../../c1/snapshots/apos-carga.csv",
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "divergencias_sql": 0,
+  "divergencias_java": null,
+  "divergencias_java_nota": "subcomando Java `reconciliacao` nao rodado no lab Kafka: conta delete fisico convertido (excluido=1) como divergencia",
+  "deletes_fisicos_convertidos": 0,
+  "reconciliacao_sql": "reconciliacao-sql.txt",
+  "snapshot_depois": "snapshots/apos.csv",
+  "uuids_alterados": 0,
+  "uuids": {
+   "preexistentes_comparados": 1700000,
+   "uuids_alterados": 0
+  },
+  "diferencas": "reconciliacao-sql.txt",
+  "lag_consumer_final": "0 13649546"
+ },
+ "criterios": [
+  {
+   "nome": "repeticoes_alternadas",
+   "valor": 8,
+   "alvo": 8,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "taxa_valida_todos_modos",
+   "valor": true,
+   "alvo": true,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "overhead_captura",
+   "valor": {
+    "absoluto_ms": 0.6109999999999998,
+    "percentual": 10.309626254956548
+   },
+   "alvo": "<=15% E <=5 ms; segundo criterio proposto (Q-T3 pendente)",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado: lag do consumer group 0, end offsets estaveis 15 s, conector RUNNING)",
+   "veredito": "APROVADO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c10",
+   "linhas": 599732,
+   "transacoes": 200327,
+   "taxa": 999.55,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-23T17:30:57.891035668Z",
+   "fim": "2026-11-23T17:40:57.891523172Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 111.1,
+     "max_pct": 209.66,
+     "amostras": 124,
+     "mem_media_mib": 2583,
+     "mem_max_mib": 2815
+    },
+    "gerador": {
+     "media_pct": 19.2,
+     "max_pct": 88.1,
+     "amostras": 124,
+     "mem_media_mib": 241,
+     "mem_max_mib": 391
+    },
+    "kf-novo": {
+     "media_pct": 34.1,
+     "max_pct": 125.32,
+     "amostras": 123,
+     "mem_media_mib": 2637,
+     "mem_max_mib": 2656
+    },
+    "kf-kafka": {
+     "media_pct": 42.9,
+     "max_pct": 201.23,
+     "amostras": 123,
+     "mem_media_mib": 1033,
+     "mem_max_mib": 1182
+    },
+    "kf-connect": {
+     "media_pct": 16.9,
+     "max_pct": 110.5,
+     "amostras": 123,
+     "mem_media_mib": 796,
+     "mem_max_mib": 886
+    },
+    "kf-worker-1": {
+     "media_pct": 23.5,
+     "max_pct": 74.46,
+     "amostras": 123,
+     "mem_media_mib": 391,
+     "mem_max_mib": 482
+    }
+   },
+   "transacao_media_ms": 6.88,
+   "dir": "p01-ligada",
+   "captura": true,
+   "repeticao": 1,
+   "modo": "ligada",
+   "supplemental": true,
+   "posicao": 1
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599732,
+   "transacoes": 200327,
+   "taxa": 999.55,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-23T17:42:34.779369356Z",
+   "fim": "2026-11-23T17:52:34.786551420Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 96.1,
+     "max_pct": 129.9,
+     "amostras": 124,
+     "mem_media_mib": 1512,
+     "mem_max_mib": 2984
+    },
+    "gerador": {
+     "media_pct": 27.2,
+     "max_pct": 211.78,
+     "amostras": 124,
+     "mem_media_mib": 236,
+     "mem_max_mib": 383
+    },
+    "kf-novo": {
+     "media_pct": 6.8,
+     "max_pct": 102.85,
+     "amostras": 123,
+     "mem_media_mib": 2655,
+     "mem_max_mib": 2778
+    },
+    "kf-kafka": {
+     "media_pct": 37.4,
+     "max_pct": 201.89,
+     "amostras": 123,
+     "mem_media_mib": 1030,
+     "mem_max_mib": 1162
+    },
+    "kf-connect": {
+     "media_pct": 0.7,
+     "max_pct": 8.12,
+     "amostras": 123,
+     "mem_media_mib": 790,
+     "mem_max_mib": 791
+    },
+    "kf-worker-1": {
+     "media_pct": 11.5,
+     "max_pct": 30.99,
+     "amostras": 123,
+     "mem_media_mib": 489,
+     "mem_max_mib": 496
+    }
+   },
+   "transacao_media_ms": 5.411,
+   "dir": "p02-desligada",
+   "captura": false,
+   "repeticao": 1,
+   "modo": "desligada",
+   "supplemental": true,
+   "posicao": 2
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599732,
+   "transacoes": 200327,
+   "taxa": 999.55,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-23T17:55:56.111931185Z",
+   "fim": "2026-11-23T18:05:56.112690969Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 95.7,
+     "max_pct": 209.68,
+     "amostras": 123,
+     "mem_media_mib": 1521,
+     "mem_max_mib": 1611
+    },
+    "gerador": {
+     "media_pct": 25.1,
+     "max_pct": 201.13,
+     "amostras": 123,
+     "mem_media_mib": 233,
+     "mem_max_mib": 379
+    },
+    "kf-novo": {
+     "media_pct": 8.8,
+     "max_pct": 194.75,
+     "amostras": 123,
+     "mem_media_mib": 2700,
+     "mem_max_mib": 2836
+    },
+    "kf-kafka": {
+     "media_pct": 41.4,
+     "max_pct": 199.93,
+     "amostras": 123,
+     "mem_media_mib": 1096,
+     "mem_max_mib": 1229
+    },
+    "kf-connect": {
+     "media_pct": 0.7,
+     "max_pct": 4.3,
+     "amostras": 123,
+     "mem_media_mib": 1142,
+     "mem_max_mib": 1144
+    },
+    "kf-worker-1": {
+     "media_pct": 11.3,
+     "max_pct": 20.07,
+     "amostras": 123,
+     "mem_media_mib": 667,
+     "mem_max_mib": 668
+    }
+   },
+   "transacao_media_ms": 5.893,
+   "dir": "p03-desligada",
+   "captura": false,
+   "repeticao": 2,
+   "modo": "desligada",
+   "supplemental": true,
+   "posicao": 3
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599732,
+   "transacoes": 200327,
+   "taxa": 999.55,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-23T18:09:01.233545236Z",
+   "fim": "2026-11-23T18:19:01.234100403Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 114.2,
+     "max_pct": 191.74,
+     "amostras": 123,
+     "mem_media_mib": 1699,
+     "mem_max_mib": 1803
+    },
+    "gerador": {
+     "media_pct": 21.5,
+     "max_pct": 81.38,
+     "amostras": 123,
+     "mem_media_mib": 236,
+     "mem_max_mib": 381
+    },
+    "kf-novo": {
+     "media_pct": 33.8,
+     "max_pct": 82.63,
+     "amostras": 123,
+     "mem_media_mib": 2777,
+     "mem_max_mib": 2940
+    },
+    "kf-kafka": {
+     "media_pct": 44.5,
+     "max_pct": 202.32,
+     "amostras": 123,
+     "mem_media_mib": 1149,
+     "mem_max_mib": 1281
+    },
+    "kf-connect": {
+     "media_pct": 15.5,
+     "max_pct": 64.06,
+     "amostras": 123,
+     "mem_media_mib": 794,
+     "mem_max_mib": 862
+    },
+    "kf-worker-1": {
+     "media_pct": 20.5,
+     "max_pct": 51.45,
+     "amostras": 123,
+     "mem_media_mib": 656,
+     "mem_max_mib": 670
+    }
+   },
+   "transacao_media_ms": 5.202,
+   "dir": "p04-ligada",
+   "captura": true,
+   "repeticao": 2,
+   "modo": "ligada",
+   "supplemental": true,
+   "posicao": 4
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599732,
+   "transacoes": 200327,
+   "taxa": 999.55,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-23T18:20:48.265698452Z",
+   "fim": "2026-11-23T18:30:48.266774531Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 112.3,
+     "max_pct": 169.52,
+     "amostras": 124,
+     "mem_media_mib": 1709,
+     "mem_max_mib": 1811
+    },
+    "gerador": {
+     "media_pct": 22.4,
+     "max_pct": 184.78,
+     "amostras": 124,
+     "mem_media_mib": 236,
+     "mem_max_mib": 382
+    },
+    "kf-novo": {
+     "media_pct": 35.2,
+     "max_pct": 116.93,
+     "amostras": 123,
+     "mem_media_mib": 2774,
+     "mem_max_mib": 2897
+    },
+    "kf-kafka": {
+     "media_pct": 41.2,
+     "max_pct": 202.82,
+     "amostras": 123,
+     "mem_media_mib": 1157,
+     "mem_max_mib": 1292
+    },
+    "kf-connect": {
+     "media_pct": 16.6,
+     "max_pct": 90.3,
+     "amostras": 123,
+     "mem_media_mib": 793,
+     "mem_max_mib": 861
+    },
+    "kf-worker-1": {
+     "media_pct": 21.1,
+     "max_pct": 63.44,
+     "amostras": 123,
+     "mem_media_mib": 651,
+     "mem_max_mib": 653
+    }
+   },
+   "transacao_media_ms": 7.699,
+   "dir": "p05-ligada",
+   "captura": true,
+   "repeticao": 3,
+   "modo": "ligada",
+   "supplemental": true,
+   "posicao": 5
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599732,
+   "transacoes": 200327,
+   "taxa": 999.55,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-23T18:32:38.170735150Z",
+   "fim": "2026-11-23T18:42:38.176342052Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 92.6,
+     "max_pct": 131.07,
+     "amostras": 124,
+     "mem_media_mib": 2089,
+     "mem_max_mib": 2302
+    },
+    "gerador": {
+     "media_pct": 26.4,
+     "max_pct": 197.2,
+     "amostras": 124,
+     "mem_media_mib": 236,
+     "mem_max_mib": 382
+    },
+    "kf-novo": {
+     "media_pct": 4.3,
+     "max_pct": 12.85,
+     "amostras": 123,
+     "mem_media_mib": 2742,
+     "mem_max_mib": 2749
+    },
+    "kf-kafka": {
+     "media_pct": 34.1,
+     "max_pct": 202.16,
+     "amostras": 123,
+     "mem_media_mib": 1162,
+     "mem_max_mib": 1293
+    },
+    "kf-connect": {
+     "media_pct": 1.4,
+     "max_pct": 6.4,
+     "amostras": 123,
+     "mem_media_mib": 791,
+     "mem_max_mib": 792
+    },
+    "kf-worker-1": {
+     "media_pct": 10.5,
+     "max_pct": 15.19,
+     "amostras": 123,
+     "mem_media_mib": 652,
+     "mem_max_mib": 653
+    }
+   },
+   "transacao_media_ms": 5.541,
+   "dir": "p06-desligada",
+   "captura": false,
+   "repeticao": 3,
+   "modo": "desligada",
+   "supplemental": true,
+   "posicao": 6
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599732,
+   "transacoes": 200327,
+   "taxa": 999.55,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-23T18:46:00.272087963Z",
+   "fim": "2026-11-23T18:56:00.275955412Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 94.3,
+     "max_pct": 157.64,
+     "amostras": 124,
+     "mem_media_mib": 2609,
+     "mem_max_mib": 2694
+    },
+    "gerador": {
+     "media_pct": 26.3,
+     "max_pct": 163.63,
+     "amostras": 124,
+     "mem_media_mib": 242,
+     "mem_max_mib": 390
+    },
+    "kf-novo": {
+     "media_pct": 5.3,
+     "max_pct": 28.46,
+     "amostras": 123,
+     "mem_media_mib": 2721,
+     "mem_max_mib": 2730
+    },
+    "kf-kafka": {
+     "media_pct": 35.9,
+     "max_pct": 200.4,
+     "amostras": 123,
+     "mem_media_mib": 1193,
+     "mem_max_mib": 1326
+    },
+    "kf-connect": {
+     "media_pct": 0.7,
+     "max_pct": 1.36,
+     "amostras": 123,
+     "mem_media_mib": 791,
+     "mem_max_mib": 792
+    },
+    "kf-worker-1": {
+     "media_pct": 10.4,
+     "max_pct": 14.46,
+     "amostras": 123,
+     "mem_media_mib": 562,
+     "mem_max_mib": 563
+    }
+   },
+   "transacao_media_ms": 6.861,
+   "dir": "p07-desligada",
+   "captura": false,
+   "repeticao": 4,
+   "modo": "desligada",
+   "supplemental": true,
+   "posicao": 7
+  },
+  {
+   "grupo": "c10",
+   "linhas": 599732,
+   "transacoes": 200327,
+   "taxa": 999.55,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-23T18:59:25.590249174Z",
+   "fim": "2026-11-23T19:09:25.590738223Z",
+   "validade": "VALIDO",
+   "p95_ms": null,
+   "eventos_medidos": 0,
+   "tendencia_lag": {
+    "inclinacao_ms_s": null,
+    "crescimento_sustentado": null,
+    "janela_s": 0,
+    "amostras": 0
+   },
+   "drenagem_s": null,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 112.3,
+     "max_pct": 207.92,
+     "amostras": 124,
+     "mem_media_mib": 2915,
+     "mem_max_mib": 3072
+    },
+    "gerador": {
+     "media_pct": 20.3,
+     "max_pct": 100.85,
+     "amostras": 124,
+     "mem_media_mib": 234,
+     "mem_max_mib": 381
+    },
+    "kf-novo": {
+     "media_pct": 40.0,
+     "max_pct": 164.15,
+     "amostras": 123,
+     "mem_media_mib": 2819,
+     "mem_max_mib": 2908
+    },
+    "kf-kafka": {
+     "media_pct": 38.7,
+     "max_pct": 198.55,
+     "amostras": 123,
+     "mem_media_mib": 1226,
+     "mem_max_mib": 1376
+    },
+    "kf-connect": {
+     "media_pct": 16.8,
+     "max_pct": 124.17,
+     "amostras": 123,
+     "mem_media_mib": 792,
+     "mem_max_mib": 793
+    },
+    "kf-worker-1": {
+     "media_pct": 21.9,
+     "max_pct": 89.45,
+     "amostras": 123,
+     "mem_media_mib": 440,
+     "mem_max_mib": 451
+    }
+   },
+   "transacao_media_ms": 6.369,
+   "dir": "p08-ligada",
+   "captura": true,
+   "repeticao": 4,
+   "modo": "ligada",
+   "supplemental": true,
+   "posicao": 8
+  }
+ ],
+ "medidas": {
+  "eventos_medidos": 0,
+  "relogios_validos": true,
+  "custo_legado": {
+   "sem_metricas": {
+    "captura_ligada": {
+     "repeticoes": 4,
+     "media_ms": 6.5375,
+     "desvio_padrao_ms": 1.0453613410363582,
+     "min_ms": 5.202,
+     "max_ms": 7.699,
+     "amostras_ms": [
+      6.88,
+      5.202,
+      7.699,
+      6.369
+     ]
+    },
+    "captura_desligada": {
+     "repeticoes": 4,
+     "media_ms": 5.9265,
+     "desvio_padrao_ms": 0.6554293758038822,
+     "min_ms": 5.411,
+     "max_ms": 6.861,
+     "amostras_ms": [
+      5.411,
+      5.893,
+      5.541,
+      6.861
+     ]
+    },
+    "overhead_captura": {
+     "absoluto_ms": 0.6109999999999998,
+     "percentual": 10.309626254956548
+    }
+   },
+   "com_metricas": "nao aplicavel (nao ha evento_replicacao nem consulta de metricas no legado do lab Kafka)",
+   "pares": [
+    {
+     "repeticao": 1,
+     "ligada_ms": 6.88,
+     "desligada_ms": 5.411,
+     "diferenca_ms": 1.4690000000000003,
+     "diferenca_pct": 27.148401404546302,
+     "ordem": "LD"
+    },
+    {
+     "repeticao": 2,
+     "ligada_ms": 5.202,
+     "desligada_ms": 5.893,
+     "diferenca_ms": -0.6909999999999998,
+     "diferenca_pct": -11.72577634481588,
+     "ordem": "DL"
+    },
+    {
+     "repeticao": 3,
+     "ligada_ms": 7.699,
+     "desligada_ms": 5.541,
+     "diferenca_ms": 2.1579999999999995,
+     "diferenca_pct": 38.9460386211875,
+     "ordem": "LD"
+    },
+    {
+     "repeticao": 4,
+     "ligada_ms": 6.369,
+     "desligada_ms": 6.861,
+     "diferenca_ms": -0.492,
+     "diferenca_pct": -7.170966331438566,
+     "ordem": "DL"
+    }
+   ],
+   "diferenca_media_dos_pares_ms": 0.611,
+   "tendencia_temporal": {
+    "sequencia": [
+     [
+      1,
+      "L",
+      6.88
+     ],
+     [
+      2,
+      "D",
+      5.411
+     ],
+     [
+      3,
+      "D",
+      5.893
+     ],
+     [
+      4,
+      "L",
+      5.202
+     ],
+     [
+      5,
+      "L",
+      7.699
+     ],
+     [
+      6,
+      "D",
+      5.541
+     ],
+     [
+      7,
+      "D",
+      6.861
+     ],
+     [
+      8,
+      "L",
+      6.369
+     ]
+    ],
+    "media_primeira_metade_ms": 5.8465,
+    "media_segunda_metade_ms": 6.6175,
+    "inclinacao_ms_por_fase_todas": 0.060880952380952404
+   }
+  },
+  "cpu_media_por_container_pct": {
+   "kf-legado": {
+    "ligada": 112.5,
+    "desligada": 94.7
+   },
+   "kf-novo": {
+    "ligada": 35.8,
+    "desligada": 6.3
+   },
+   "kf-kafka": {
+    "ligada": 41.8,
+    "desligada": 37.2
+   },
+   "kf-connect": {
+    "ligada": 16.4,
+    "desligada": 0.9
+   },
+   "kf-worker-1": {
+    "ligada": 21.8,
+    "desligada": 10.9
+   }
+  },
+  "memoria_media_mib": {
+   "kf-legado": 2080,
+   "kf-novo": 2728,
+   "kf-kafka": 1131,
+   "kf-connect": 836,
+   "kf-worker-1": 564
+  },
+  "repouso": {
+   "kf-legado": {
+    "media_pct": 8.3,
+    "max_pct": 17.18,
+    "amostras": 15
+   },
+   "kf-novo": {
+    "media_pct": 4.5,
+    "max_pct": 9.4,
+    "amostras": 12
+   },
+   "kf-kafka": {
+    "media_pct": 42.4,
+    "max_pct": 197.02,
+    "amostras": 12
+   },
+   "kf-connect": {
+    "media_pct": 2.7,
+    "max_pct": 16.31,
+    "amostras": 12
+   },
+   "kf-worker-1": {
+    "media_pct": 15.5,
+    "max_pct": 28.67,
+    "amostras": 12
+   },
+   "_descricao": "60 s sem DML, conector RUNNING, 1 kf-worker com 48 consumers assign() ativos"
+  },
+  "ordem_das_fases": [
+   [
+    "p01-ligada",
+    true,
+    6.88
+   ],
+   [
+    "p02-desligada",
+    false,
+    5.411
+   ],
+   [
+    "p03-desligada",
+    false,
+    5.893
+   ],
+   [
+    "p04-ligada",
+    true,
+    5.202
+   ],
+   [
+    "p05-ligada",
+    true,
+    7.699
+   ],
+   [
+    "p06-desligada",
+    false,
+    5.541
+   ],
+   [
+    "p07-desligada",
+    false,
+    6.861
+   ],
+   [
+    "p08-ligada",
+    true,
+    6.369
+   ]
+  ],
+  "comparacao_java": {
+   "overhead_percentual": 19.998608792431824,
+   "overhead_absoluto_ms": 0.958333333333333,
+   "observacao": "triggers de captura no legado Java (resultados/c10): captura ligada 5,750 ms x desligada 4,792 ms"
+  },
+  "comparacao_gg": {
+   "overhead_percentual": 1.742621620467252,
+   "overhead_absoluto_ms": 0.10199999999999942,
+   "observacao": "Extract GG (resultados/gg/c10): ligada 5,955 ms x desligada 5,853 ms; gg-legado 108,7% x 95,0% de CPU"
+  }
+ },
+ "operacao_especial": {
+  "aquecimento": {
+   "duracao_s": 300,
+   "captura": true,
+   "descartado": true,
+   "inicio": "2026-11-23T17:23:43Z",
+   "dir": "aquecimento"
+  },
+  "ordem": "LD,DL,LD,DL",
+  "carga": {
+   "taxa": 1000,
+   "duracao_seg_por_fase": 600,
+   "semente": 1,
+   "threads": 8,
+   "pct_insert": 0,
+   "pct_delete": 0,
+   "hot_pct": 10,
+   "tx_max": 5,
+   "mix": "40,40,20 (padrao do gerador)"
+  },
+  "criterio": "segundo criterio proposto; Q-T3 pendente",
+  "limite_pct": 15,
+  "limite_ms": 5,
+  "repeticoes": 4,
+  "captura_desligada": "conector Debezium STOPPED (PUT /stop) com workers, broker e Connect no ar; FORCE LOGGING e supplemental logging ALL COLUMNS continuam ativos nas duas: o custo do supplemental NAO e isolado (nao foi feita variante sem supplemental: ver notas)",
+  "integridade": "aplicavel: o conector retoma pelo redo (offset no Connect); nada fica sem replicacao; drenado com o conector ligado e reconciliado",
+  "archive_antes": {
+   "modo": "limpar",
+   "apagados": 0,
+   "scn_necessario_conector": 10128887,
+   "livre_gb_antes": 51,
+   "livre_gb_depois": 51,
+   "archive_bytes_antes": 416256,
+   "archive_bytes_depois": 416256,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  },
+  "archive_depois": {
+   "modo": "limpar",
+   "apagados": 0,
+   "scn_necessario_conector": 14890117,
+   "livre_gb_antes": 49,
+   "livre_gb_depois": 49,
+   "archive_bytes_antes": 1429835264,
+   "archive_bytes_depois": 1429835264,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  }
+ },
+ "parametros": {
+  "taxa": 1000,
+  "duracao_seg": 600,
+  "pipeline": "worker Kafka x1 (kf-worker, 2 CPU/1 GiB, -Xmx512m, LEASE_SEG 12, EVENTOS_CSV); Debezium 3.7.1 LogMiner; Kafka 4.3.1",
+  "workers": 1,
+  "repeticoes": 4,
+  "aquecimento": {
+   "duracao_s": 300,
+   "captura": true,
+   "descartado": true,
+   "inicio": "2026-11-23T17:23:43Z",
+   "dir": "aquecimento"
+  },
+  "ordem": "LD,DL,LD,DL"
+ }
+}
