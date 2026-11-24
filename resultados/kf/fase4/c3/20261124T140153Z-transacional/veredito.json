@@ -1,0 +1,1 @@
+{"veredito": "INVALIDO", "validade": {"estado": "VALIDO", "motivos": []}, "criterios": {"divergencias": ["APROVADO", 0], "uuids_alterados": ["APROVADO", 0], "pendentes_final": ["APROVADO", 0], "teto_ev_s": ["INVALIDO", 1000]}, "degraus": [[500, 499.5, "VALIDO", 5546, false], [1000, 998.91, "VALIDO", 5497, false], [2000, 1823.0, "GERADOR_SATURADO", 7928, false]]}

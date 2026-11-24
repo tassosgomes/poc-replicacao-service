@@ -77,4 +77,23 @@ class ConfigTest {
                 .isInstanceOf(ConfigException.class);
         assertThatThrownBy(() -> carregar(Map.of("LOTE_MAX", "0"))).isInstanceOf(ConfigException.class);
     }
+
+    @Test
+    void load_modoPadraoEAtual_eTransacionalPorConfiguracao() {
+        assertThat(carregar(Map.of()).modo()).isEqualTo(Config.Modo.ATUAL);
+
+        Config c = carregar(Map.of("MODO", "transacional", "TX_GRUPO_MAX", "7", "KAFKA_INICIO", "inicio"));
+
+        assertThat(c.modo()).isEqualTo(Config.Modo.TRANSACIONAL);
+        assertThat(c.txTransacoesPorCommit()).isEqualTo(7);
+        assertThat(c.inicioNoFim()).isFalse();
+        assertThat(c.topicoTransacoes()).isEqualTo("kf.transaction");
+    }
+
+    @Test
+    void load_modoInvalido_falhaComUmaLinha() {
+        assertThatThrownBy(() -> carregar(Map.of("MODO", "paralelo")))
+                .isInstanceOf(ConfigException.class)
+                .hasMessageContaining("MODO");
+    }
 }

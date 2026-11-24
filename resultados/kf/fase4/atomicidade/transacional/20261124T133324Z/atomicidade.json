@@ -1,0 +1,35 @@
+{
+ "transacoes_geradas": 1500,
+ "transacoes_vistas_pela_sonda": 1500,
+ "transacoes_nunca_completas": 0,
+ "amostras": 2992,
+ "duracao_sonda_s": 307.7,
+ "intervalo_medio_amostra_ms": 102.8,
+ "transacoes_com_estado_parcial": 0,
+ "pct_transacoes_com_estado_parcial": 0.0,
+ "amostras_parciais_total": 0,
+ "duracao_parcial_ms": {
+  "n": 0,
+  "p50": null,
+  "p95": null,
+  "max": null
+ },
+ "transacoes_parciais_por_tipo": {
+  "fonograma_sem_obra": 0,
+  "obra_com_menos_fonogramas_que_N": 0,
+  "obra_sem_titular_atualizado": 0,
+  "titular_atualizado_sem_obra": 0,
+  "outro": 0
+ },
+ "transacoes_grandes_N100": {
+  "geradas": 30,
+  "com_estado_parcial": 0
+ },
+ "latencia_ate_transacao_inteira_visivel_s": {
+  "n": 1500,
+  "p50": 3.95,
+  "p95": 5.59,
+  "max": 8.17
+ },
+ "nota": "parcial = amostra em que a transacao (obra + N fonogramas + titular) esta visivel em parte; duracao = primeira a ultima amostra parcial + 1 intervalo; leitura consistente (uma consulta, um SCN)"
+}

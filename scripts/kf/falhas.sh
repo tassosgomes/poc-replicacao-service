@@ -19,6 +19,15 @@ CEN=${1:?c6|c7|c8}; ROT=${2:-}
 case $CEN in c6|c7|c8) ;; *) echo "cenario invalido: $CEN" >&2; exit 2 ;; esac
 set -a; source scripts/lab-kf.env; set +a
 source scripts/kf/comum-cenario.sh
+# Fase 4: no modo transacional (KF_WORKER_ENV="MODO=transacional") ha um unico lease global; o segundo worker fica em espera e o failover e a tomada desse lease
+# (em vez de 24/24 e 48 leases por particao). A marca `all 48 owned partitions active` e a mesma nos dois modos.
+TXMODE=0; [[ ${KF_WORKER_ENV:-} == *MODO=transacional* ]] && TXMODE=1
+if (( TXMODE )); then
+  leases() { printf "set heading off feedback off pagesize 0\nselect dono||','||count(*) from lease_global where dono is not null and expira_em>sys_extract_utc(systimestamp) group by dono;\nexit\n" | kfq novo | tr -d '\r' | grep -E '^[^,]+,[0-9]+$' || true; }
+  DIVISAO_ESPERADA="kf-worker-1,1 "
+else
+  DIVISAO_ESPERADA="kf-worker-1,24 kf-worker-2,24 "
+fi
 TAXA=${TAXA:-1000}; DUR=${DURACAO_SEG:-600}; NW=1
 case $CEN in
   c6) QUEDA=${QUEDA_APOS_SEG:-180}; REINI=${REINICIO_APOS_SEG:-240}; POS=${OBSERVACAO_APOS_REINICIO_SEG:-45}; (( DUR < REINI + POS + 30 )) && DUR=$((REINI + POS + 30)) ;;
@@ -95,19 +104,20 @@ else
   else
     KF_ESPERAR_ATE=$(alvo "$SEG") scripts/kf/subir-worker.sh 2 EVENTOS_CSV=true ${KF_WORKER_ENV:-} > /dev/null
     for _ in $(seq 1 180); do
-      L=$(leases | sort | tr '\n' ' '); [[ $L == "kf-worker-1,24 kf-worker-2,24 " ]] && break; sleep 1; done
-    [[ $L == "kf-worker-1,24 kf-worker-2,24 " ]] || { echo "workers nao dividiram 24/24 ($L)" >&2; kill $BG 2>/dev/null || true; exit 2; }
+      L=$(leases | sort | tr '\n' ' '); [[ $L == "$DIVISAO_ESPERADA" ]] && break; sleep 1; done
+    [[ $L == "$DIVISAO_ESPERADA" ]] || { echo "workers nao dividiram 24/24 ($L)" >&2; kill $BG 2>/dev/null || true; exit 2; }
     echo "divisao: $L" | tee "$D/especial/divisao.txt"
     PREV=$(marca kf-worker-2)
     # queda do kf-worker-1 e polling da tomada (leases do kf-worker-2 = 48 validos e nova marca), no relogio do infra-server
-    { printf 'ALVO=%q\nPREV=%q\n' "$(alvo "$QUEDA")" "$PREV"; cat <<'REMOTO'
+    { printf 'ALVO=%q\nPREV=%q\nTXMODE=%q\n' "$(alvo "$QUEDA")" "$PREV" "$TXMODE"; cat <<'REMOTO'
 agora() { date +%s.%N; }
 while :; do n=$(agora); awk -v n="$n" -v t="$ALVO" 'BEGIN{exit !(n>=t)}' && break; sleep 0.02; done
 t0=$(agora); docker kill -s KILL kf-worker-1 >/dev/null; t1=$(agora)
 tt=null; for i in $(seq 1 600); do
-  c=$(printf "set heading off feedback off pagesize 0\nselect count(*) from lease_particao where dono='kf-worker-2' and expira_em>sys_extract_utc(systimestamp);\nexit\n" | docker exec -i kf-novo sqlplus -s replica/replica@localhost:1521/FREEPDB1 | tr -d ' \t\r\n')
+  TAB=lease_particao; NEED=48; [ "$TXMODE" = 1 ] && { TAB=lease_global; NEED=1; }
+  c=$(printf "set heading off feedback off pagesize 0\nselect count(*) from $TAB where dono='kf-worker-2' and expira_em>sys_extract_utc(systimestamp);\nexit\n" | docker exec -i kf-novo sqlplus -s replica/replica@localhost:1521/FREEPDB1 | tr -d ' \t\r\n')
   m=$(docker logs kf-worker-2 2>&1 | grep -c 'owned partitions active')
-  if [ "$c" = 48 ] && [ "$m" -gt "$PREV" ]; then tt=$(agora); break; fi
+  if [ "$c" = "$NEED" ] && [ "$m" -gt "$PREV" ]; then tt=$(agora); break; fi
   sleep 0.2
 done
 printf '{"t0":%s,"t1":%s,"t_tomada":%s,"leases":%s,"marcas":%s}\n' "$t0" "$t1" "$tt" "${c:-null}" "${m:-null}"

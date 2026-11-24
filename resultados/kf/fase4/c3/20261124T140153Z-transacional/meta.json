@@ -1,0 +1,575 @@
+{
+ "cenario": "c3",
+ "execucao": "20261124T140153Z-transacional",
+ "inicio": "2026-11-24T14:01:57Z",
+ "fim": "2026-11-24T14:30:34Z",
+ "diretorio": "resultados/kf/fase4/c3/20261124T140153Z-transacional",
+ "ambiente": {
+  "lab": "kafka",
+  "hosts": [
+   "desenv-server",
+   "infra-server"
+  ],
+  "containers": [
+   {
+    "nome": "kf-legado",
+    "id": "a02038a1e1e41190e1fbdd3c2a36ab773c9cf390d26aea11edcde43469b03a61",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "swap": 6442450944,
+    "running": true,
+    "inicio": "2026-11-23T12:57:30.82910233Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": []
+   },
+   {
+    "nome": "kf-novo",
+    "id": "8969f341323e33fe696a36a1cd26380ef62dd61b8b39823fc373bdc695bdcc32",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "swap": 6442450944,
+    "running": true,
+    "inicio": "2026-11-23T12:57:43.511264639Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": []
+   },
+   {
+    "nome": "kf-kafka",
+    "id": "fda787f876d39f71a4149fe4b705b21fcebdd288cd7a735be2be9ff4fe2a4841",
+    "imagem": "apache/kafka:4.3.1",
+    "imagem_id": "sha256:77e3df9054047a88b520d0cc46e16696d3b22022e1d580aeccd2632df6532837",
+    "cpu": 2000000000,
+    "memoria": 2147483648,
+    "swap": 4294967296,
+    "running": true,
+    "inicio": "2026-11-23T23:34:25.295816047Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": [
+     "KAFKA_ADVERTISED_LISTENERS=INTERNAL://kf-kafka:9092,EXTERNAL://192.168.0.11:19092",
+     "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT",
+     "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1",
+     "KAFKA_AUTO_CREATE_TOPICS_ENABLE=false",
+     "KAFKA_LISTENERS=INTERNAL://:9092,EXTERNAL://:19092,CONTROLLER://:9093",
+     "KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL",
+     "KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER",
+     "KAFKA_CONTROLLER_QUORUM_VOTERS=1@kf-kafka:9093",
+     "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1",
+     "KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1",
+     "KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0",
+     "KAFKA_HEAP_OPTS=-Xms1g -Xmx1g",
+     "KAFKA_NODE_ID=1",
+     "KAFKA_PROCESS_ROLES=broker,controller",
+     "JAVA_HOME=/opt/java/openjdk",
+     "JAVA_VERSION=jdk-21.0.11+10"
+    ]
+   },
+   {
+    "nome": "kf-connect",
+    "id": "cd6cd2c86b07649711b4e7a0c733bf9aae01f7d434cf6932ddb27ea8abc6affb",
+    "imagem": "quay.io/debezium/connect:3.7.1.Final",
+    "imagem_id": "sha256:1589366704e1e016bad42b15fbdb364ba48780c61d0094197ca8632cb1271539",
+    "cpu": 2000000000,
+    "memoria": 2147483648,
+    "swap": 4294967296,
+    "running": true,
+    "inicio": "2026-11-23T23:46:12.83308899Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": [
+     "KAFKA_HEAP_OPTS=-Xms512m -Xmx1g",
+     "KAFKA_VERSION=4.3.1",
+     "KAFKA_HOME=/kafka",
+     "KAFKA_URL_PATH=kafka/4.3.1/kafka_2.13-4.3.1.tgz",
+     "KAFKA_DATA=/kafka/data",
+     "KAFKA_CONNECT_PLUGINS_DIR=/kafka/connect"
+    ]
+   },
+   {
+    "nome": "kf-worker-1",
+    "id": "f8e26aeb6241ad3c202953ce1c0e42cdaf854d4ef8b848bcc23fb484f71a626b",
+    "imagem": "kf-worker:2743d669e7be0232",
+    "imagem_id": "sha256:6c902ca3462a68f86e2fe43ea2740e845724219452d973e76fed83e0f077a0c6",
+    "cpu": 2000000000,
+    "memoria": 1073741824,
+    "swap": 1073741824,
+    "running": true,
+    "inicio": "2026-11-24T14:03:54.944989537Z",
+    "reinicios": 0,
+    "saudavel": null,
+    "env": [
+     "EVENTOS_CSV=true",
+     "KAFKA_BOOTSTRAP_SERVERS=kf-kafka:9092",
+     "WORKER_ID=kf-worker-1",
+     "LEASE_SEG=12",
+     "JAVA_HOME=/opt/java/openjdk",
+     "JAVA_VERSION=jdk-25.0.5+8"
+    ]
+   }
+  ],
+  "pipeline": "worker Kafka x1 (kf-worker, 2 CPU/1 GiB, -Xmx512m, LEASE_SEG 12, EVENTOS_CSV); Debezium 3.7.1 LogMiner; Kafka 4.3.1 (1 broker, 16 particoes/topico)",
+  "workers": 1,
+  "limites_gerador": {
+   "cpu": 2,
+   "memoria": 1073741824
+  },
+  "params_sha256": {
+   "conector-oracle.json": "1fa06ebcc7e0fa63"
+  },
+  "jar_sha256": "d97b0854be6726bc8af74e14a03ddb75078b64422bb39d47a399fea865b939eb",
+  "worker_jar_sha256": "2743d669e7be023226d9973d803cdf6127ddd1a93ca47cec91042f977668999d",
+  "conector": {
+   "connector.class": "io.debezium.connector.oracle.OracleConnector",
+   "database.dbname": "FREE",
+   "database.hostname": "192.168.0.5",
+   "database.pdb.name": "FREEPDB1",
+   "database.port": "1525",
+   "database.user": "c##dbzuser",
+   "decimal.handling.mode": "string",
+   "heartbeat.interval.ms": "10000",
+   "include.schema.changes": "false",
+   "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+   "key.converter.schemas.enable": "false",
+   "log.mining.sleep.time.default.ms": "300",
+   "log.mining.sleep.time.increment.ms": "100",
+   "log.mining.sleep.time.max.ms": "500",
+   "log.mining.sleep.time.min.ms": "100",
+   "log.mining.strategy": "online_catalog",
+   "name": "kf-oracle",
+   "provide.transaction.metadata": "true",
+   "schema.history.internal.kafka.bootstrap.servers": "kf-kafka:9092",
+   "schema.history.internal.kafka.topic": "kf.schema-history",
+   "snapshot.mode": "no_data",
+   "table.include.list": "BDAD.TITULAR,BDAD.OBRA_MUSICAL,BDAD.FONOGRAMA",
+   "tasks.max": "1",
+   "time.precision.mode": "adaptive",
+   "tombstones.on.delete": "false",
+   "topic.prefix": "kf",
+   "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+   "value.converter.schemas.enable": "false"
+  },
+  "processos": []
+ },
+ "validade": {
+  "estado": "VALIDO",
+  "motivos": []
+ },
+ "veredito": "INVALIDO",
+ "skew_ms": {
+  "inicio": 2.928,
+  "fim": 2.074
+ },
+ "skew_incerteza_ms": {
+  "inicio": 4.87,
+  "fim": 5.587
+ },
+ "relogios": [
+  {
+   "etapa": "d1-500-inicio",
+   "ts": "2026-11-24T14:04:35.976222924Z",
+   "skew_ms": 2.928,
+   "incerteza_ms": 4.87
+  },
+  {
+   "etapa": "d1-500-fim",
+   "ts": "2026-11-24T14:09:35.977007857Z",
+   "skew_ms": 3.454,
+   "incerteza_ms": 5.461
+  },
+  {
+   "etapa": "d2-1000-inicio",
+   "ts": "2026-11-24T14:12:06.056894932Z",
+   "skew_ms": 3.273,
+   "incerteza_ms": 5.579
+  },
+  {
+   "etapa": "d2-1000-fim",
+   "ts": "2026-11-24T14:17:06.064663248Z",
+   "skew_ms": 3.477,
+   "incerteza_ms": 4.963
+  },
+  {
+   "etapa": "d3-2000-inicio",
+   "ts": "2026-11-24T14:19:32.050970956Z",
+   "skew_ms": 3.094,
+   "incerteza_ms": 4.99
+  },
+  {
+   "etapa": "d3-2000-fim",
+   "ts": "2026-11-24T14:24:32.060338071Z",
+   "skew_ms": 2.074,
+   "incerteza_ms": 5.587
+  }
+ ],
+ "carga_servidores": [],
+ "integridade": {
+  "pendentes_inicial": 0,
+  "snapshot_antes": "../../c1/snapshots/apos-carga.csv",
+  "pendentes_final": 0,
+  "divergencias": 0,
+  "divergencias_sql": 0,
+  "divergencias_java": null,
+  "divergencias_java_nota": "subcomando Java `reconciliacao` nao rodado no lab Kafka: conta delete fisico convertido (excluido=1) como divergencia",
+  "deletes_fisicos_convertidos": 0,
+  "reconciliacao_sql": "reconciliacao-sql.txt",
+  "snapshot_depois": "snapshots/apos.csv",
+  "uuids_alterados": 0,
+  "uuids": {
+   "preexistentes_comparados": 1700000,
+   "uuids_alterados": 0
+  },
+  "diferencas": "reconciliacao-sql.txt",
+  "lag_consumer_final": "0 23588553"
+ },
+ "criterios": [
+  {
+   "nome": "divergencias",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "uuids_alterados",
+   "valor": 0,
+   "alvo": 0,
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "pendentes_final",
+   "valor": 0,
+   "alvo": "0 (drenado: lag do consumer group 0, end offsets estaveis 15 s, conector RUNNING)",
+   "veredito": "APROVADO"
+  },
+  {
+   "nome": "teto_ev_s",
+   "valor": 1000,
+   "alvo": ">=2000 em degrau valido",
+   "veredito": "INVALIDO"
+  }
+ ],
+ "degraus": [
+  {
+   "grupo": "c3",
+   "linhas": 149850,
+   "transacoes": 49984,
+   "taxa": 499.5,
+   "alvo": 500,
+   "valido": true,
+   "inicio": "2026-11-24T14:04:35.976222924Z",
+   "fim": "2026-11-24T14:09:35.977007857Z",
+   "validade": "VALIDO",
+   "p95_ms": 5546,
+   "eventos_medidos": 149850,
+   "tendencia_lag": {
+    "inclinacao_ms_s": -11.678897606177605,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 36
+   },
+   "drenagem_s": 28.8,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 81.2,
+     "max_pct": 138.53,
+     "amostras": 64,
+     "mem_media_mib": 1462,
+     "mem_max_mib": 1568
+    },
+    "gerador": {
+     "media_pct": 13.9,
+     "max_pct": 81.04,
+     "amostras": 64,
+     "mem_media_mib": 136,
+     "mem_max_mib": 183
+    },
+    "kf-novo": {
+     "media_pct": 16.4,
+     "max_pct": 37.33,
+     "amostras": 64,
+     "mem_media_mib": 2159,
+     "mem_max_mib": 2169
+    },
+    "kf-kafka": {
+     "media_pct": 36.4,
+     "max_pct": 203.04,
+     "amostras": 64,
+     "mem_media_mib": 1315,
+     "mem_max_mib": 1447
+    },
+    "kf-connect": {
+     "media_pct": 8.6,
+     "max_pct": 36.64,
+     "amostras": 64,
+     "mem_media_mib": 768,
+     "mem_max_mib": 769
+    },
+    "kf-worker-1": {
+     "media_pct": 12.9,
+     "max_pct": 78.31,
+     "amostras": 64,
+     "mem_media_mib": 384,
+     "mem_max_mib": 620
+    }
+   },
+   "transacao_media_ms": 5.621,
+   "dir": "d1-500",
+   "latencia_s": {
+    "min_s": 1.068,
+    "p50_s": 3.653,
+    "p95_s": 5.546,
+    "p99_s": 6.821,
+    "max_s": 8.749,
+    "media_s": 3.714
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -9.710030856952962,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 36
+   },
+   "lag_final_s": 4.717,
+   "eventos_worker_csv": {
+    "arquivos": 1,
+    "lidos": 996438,
+    "na_janela": 149850,
+    "duplicados_descartados": 0,
+    "escritos": 149850
+   }
+  },
+  {
+   "grupo": "c3",
+   "linhas": 299675,
+   "transacoes": 100137,
+   "taxa": 998.91,
+   "alvo": 1000,
+   "valido": true,
+   "inicio": "2026-11-24T14:12:06.056894932Z",
+   "fim": "2026-11-24T14:17:06.064663248Z",
+   "validade": "VALIDO",
+   "p95_ms": 5497,
+   "eventos_medidos": 299675,
+   "tendencia_lag": {
+    "inclinacao_ms_s": -4.859125456885458,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 36
+   },
+   "drenagem_s": 29.6,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 121.3,
+     "max_pct": 167.19,
+     "amostras": 64,
+     "mem_media_mib": 1489,
+     "mem_max_mib": 1632
+    },
+    "gerador": {
+     "media_pct": 22.8,
+     "max_pct": 75.52,
+     "amostras": 64,
+     "mem_media_mib": 164,
+     "mem_max_mib": 249
+    },
+    "kf-novo": {
+     "media_pct": 18.8,
+     "max_pct": 71.19,
+     "amostras": 64,
+     "mem_media_mib": 2165,
+     "mem_max_mib": 2271
+    },
+    "kf-kafka": {
+     "media_pct": 35.4,
+     "max_pct": 197.77,
+     "amostras": 64,
+     "mem_media_mib": 1395,
+     "mem_max_mib": 1610
+    },
+    "kf-connect": {
+     "media_pct": 16.4,
+     "max_pct": 67.34,
+     "amostras": 64,
+     "mem_media_mib": 768,
+     "mem_max_mib": 769
+    },
+    "kf-worker-1": {
+     "media_pct": 8.2,
+     "max_pct": 31.36,
+     "amostras": 64,
+     "mem_media_mib": 620,
+     "mem_max_mib": 622
+    }
+   },
+   "transacao_media_ms": 5.596,
+   "dir": "d2-1000",
+   "latencia_s": {
+    "min_s": 1.864,
+    "p50_s": 3.983,
+    "p95_s": 5.497,
+    "p99_s": 6.396,
+    "max_s": 7.028,
+    "media_s": 4.017
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": -4.235034466416235,
+    "crescimento_sustentado": false,
+    "janela_s": 178.5,
+    "amostras": 36
+   },
+   "lag_final_s": 3.911,
+   "eventos_worker_csv": {
+    "arquivos": 1,
+    "lidos": 996438,
+    "na_janela": 299675,
+    "duplicados_descartados": 0,
+    "escritos": 299675
+   }
+  },
+  {
+   "grupo": "c3",
+   "linhas": 546913,
+   "transacoes": 182784,
+   "taxa": 1823.0,
+   "alvo": 2000,
+   "valido": false,
+   "inicio": "2026-11-24T14:19:32.050970956Z",
+   "fim": "2026-11-24T14:24:32.060338071Z",
+   "validade": "GERADOR_SATURADO",
+   "p95_ms": 7928,
+   "eventos_medidos": 546913,
+   "tendencia_lag": {
+    "inclinacao_ms_s": 6.896019719276835,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 28
+   },
+   "drenagem_s": 30.1,
+   "cpu_docker_stats": {
+    "kf-legado": {
+     "media_pct": 148.2,
+     "max_pct": 210.77,
+     "amostras": 64,
+     "mem_media_mib": 1595,
+     "mem_max_mib": 1705
+    },
+    "gerador": {
+     "media_pct": 30.6,
+     "max_pct": 194.11,
+     "amostras": 64,
+     "mem_media_mib": 229,
+     "mem_max_mib": 370
+    },
+    "kf-novo": {
+     "media_pct": 26.9,
+     "max_pct": 47.76,
+     "amostras": 64,
+     "mem_media_mib": 2162,
+     "mem_max_mib": 2170
+    },
+    "kf-kafka": {
+     "media_pct": 33.0,
+     "max_pct": 197.45,
+     "amostras": 64,
+     "mem_media_mib": 1720,
+     "mem_max_mib": 1916
+    },
+    "kf-connect": {
+     "media_pct": 22.1,
+     "max_pct": 90.24,
+     "amostras": 64,
+     "mem_media_mib": 768,
+     "mem_max_mib": 769
+    },
+    "kf-worker-1": {
+     "media_pct": 12.6,
+     "max_pct": 31.86,
+     "amostras": 64,
+     "mem_media_mib": 632,
+     "mem_max_mib": 634
+    }
+   },
+   "transacao_media_ms": 8.609,
+   "dir": "d3-2000",
+   "latencia_s": {
+    "min_s": 2.668,
+    "p50_s": 5.48,
+    "p95_s": 7.928,
+    "p99_s": 11.178,
+    "max_s": 11.459,
+    "media_s": 5.762
+   },
+   "tendencia_lag_media": {
+    "inclinacao_ms_s": 4.415635424108631,
+    "crescimento_sustentado": false,
+    "janela_s": 180,
+    "amostras": 28
+   },
+   "lag_final_s": 8.029,
+   "eventos_worker_csv": {
+    "arquivos": 1,
+    "lidos": 996438,
+    "na_janela": 546913,
+    "duplicados_descartados": 0,
+    "escritos": 546913
+   }
+  }
+ ],
+ "medidas": {
+  "eventos_medidos": 996438,
+  "relogios_validos": true,
+  "teto_ev_s": 1000,
+  "degraus_validos": [
+   500,
+   1000
+  ],
+  "p95_ms": 5546,
+  "eventos_da_janela_por_s": {
+   "500": 499.5,
+   "1000": 998.9,
+   "2000": 1823.0
+  }
+ },
+ "operacao_especial": {
+  "archive_antes": {
+   "modo": "limpar",
+   "apagados": 0,
+   "scn_necessario_conector": 24073369,
+   "livre_gb_antes": 48,
+   "livre_gb_depois": 48,
+   "archive_bytes_antes": 1430948352,
+   "archive_bytes_depois": 1430948352,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  },
+  "archive_depois": {
+   "modo": "limpar",
+   "apagados": 0,
+   "scn_necessario_conector": 24996769,
+   "livre_gb_antes": 48,
+   "livre_gb_depois": 48,
+   "archive_bytes_antes": 1439282688,
+   "archive_bytes_depois": 1439282688,
+   "min_livre_gb": 10,
+   "max_archive_gb": 20,
+   "alarme": false
+  }
+ },
+ "parametros": {
+  "taxa": 1000,
+  "degrau_seg": 300,
+  "c3_taxas": [
+   500,
+   1000,
+   2000,
+   4000
+  ],
+  "pipeline": "worker Kafka x1 (kf-worker, 2 CPU/1 GiB, -Xmx512m, LEASE_SEG 12, EVENTOS_CSV); Debezium 3.7.1 LogMiner; Kafka 4.3.1 (1 broker, 16 particoes/topico)",
+  "workers": 1
+ }
+}

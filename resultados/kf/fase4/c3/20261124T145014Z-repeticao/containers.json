@@ -1,0 +1,103 @@
+[
+  {
+    "nome": "kf-legado",
+    "id": "a02038a1e1e41190e1fbdd3c2a36ab773c9cf390d26aea11edcde43469b03a61",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "swap": 6442450944,
+    "running": true,
+    "inicio": "2026-11-23T12:57:30.82910233Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": []
+  },
+  {
+    "nome": "kf-novo",
+    "id": "8969f341323e33fe696a36a1cd26380ef62dd61b8b39823fc373bdc695bdcc32",
+    "imagem": "gvenzl/oracle-free:23-slim-faststart",
+    "imagem_id": "sha256:f5ff19033860d662c821cb04eb10483fa94f14f78eae252d054291ea07028093",
+    "cpu": 2000000000,
+    "memoria": 3221225472,
+    "swap": 6442450944,
+    "running": true,
+    "inicio": "2026-11-23T12:57:43.511264639Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": []
+  },
+  {
+    "nome": "kf-kafka",
+    "id": "fda787f876d39f71a4149fe4b705b21fcebdd288cd7a735be2be9ff4fe2a4841",
+    "imagem": "apache/kafka:4.3.1",
+    "imagem_id": "sha256:77e3df9054047a88b520d0cc46e16696d3b22022e1d580aeccd2632df6532837",
+    "cpu": 2000000000,
+    "memoria": 2147483648,
+    "swap": 4294967296,
+    "running": true,
+    "inicio": "2026-11-23T23:34:25.295816047Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": [
+      "KAFKA_ADVERTISED_LISTENERS=INTERNAL://kf-kafka:9092,EXTERNAL://192.168.0.11:19092",
+      "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT",
+      "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1",
+      "KAFKA_AUTO_CREATE_TOPICS_ENABLE=false",
+      "KAFKA_LISTENERS=INTERNAL://:9092,EXTERNAL://:19092,CONTROLLER://:9093",
+      "KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL",
+      "KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER",
+      "KAFKA_CONTROLLER_QUORUM_VOTERS=1@kf-kafka:9093",
+      "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1",
+      "KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1",
+      "KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0",
+      "KAFKA_HEAP_OPTS=-Xms1g -Xmx1g",
+      "KAFKA_NODE_ID=1",
+      "KAFKA_PROCESS_ROLES=broker,controller",
+      "JAVA_HOME=/opt/java/openjdk",
+      "JAVA_VERSION=jdk-21.0.11+10"
+    ]
+  },
+  {
+    "nome": "kf-connect",
+    "id": "cd6cd2c86b07649711b4e7a0c733bf9aae01f7d434cf6932ddb27ea8abc6affb",
+    "imagem": "quay.io/debezium/connect:3.7.1.Final",
+    "imagem_id": "sha256:1589366704e1e016bad42b15fbdb364ba48780c61d0094197ca8632cb1271539",
+    "cpu": 2000000000,
+    "memoria": 2147483648,
+    "swap": 4294967296,
+    "running": true,
+    "inicio": "2026-11-23T23:46:12.83308899Z",
+    "reinicios": 0,
+    "saudavel": "healthy",
+    "env": [
+      "KAFKA_HEAP_OPTS=-Xms512m -Xmx1g",
+      "KAFKA_VERSION=4.3.1",
+      "KAFKA_HOME=/kafka",
+      "KAFKA_URL_PATH=kafka/4.3.1/kafka_2.13-4.3.1.tgz",
+      "KAFKA_DATA=/kafka/data",
+      "KAFKA_CONNECT_PLUGINS_DIR=/kafka/connect"
+    ]
+  },
+  {
+    "nome": "kf-worker-1",
+    "id": "aa32c8f21cc18ec971095ead3344a20185b057ff22ff77e1662475ca494bf247",
+    "imagem": "kf-worker:2743d669e7be0232",
+    "imagem_id": "sha256:6c902ca3462a68f86e2fe43ea2740e845724219452d973e76fed83e0f077a0c6",
+    "cpu": 2000000000,
+    "memoria": 1073741824,
+    "swap": 1073741824,
+    "running": true,
+    "inicio": "2026-11-24T14:52:27.539924729Z",
+    "reinicios": 0,
+    "saudavel": null,
+    "env": [
+      "KAFKA_BOOTSTRAP_SERVERS=kf-kafka:9092",
+      "WORKER_ID=kf-worker-1",
+      "LEASE_SEG=12",
+      "EVENTOS_CSV=true",
+      "JAVA_HOME=/opt/java/openjdk",
+      "JAVA_VERSION=jdk-25.0.5+8"
+    ]
+  }
+]

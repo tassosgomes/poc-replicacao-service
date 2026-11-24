@@ -52,6 +52,19 @@ public final class Config {
     private final int kafkaPollMs;
     private final FormatoDebezium formato;
     private final Map<String, String> propriedadesKafka;
+    private final Modo modo;
+    private final String topicoTransacoes;
+    private final int txTransacoesPorCommit;
+    private final int txEventosPorCommit;
+    private final int txBufferMax;
+    private final int txOrfaSeg;
+    private final boolean inicioNoFim;
+
+    /** How the worker applies what it reads: per table partition (default) or whole origin transactions. */
+    public enum Modo {
+        ATUAL,
+        TRANSACIONAL
+    }
 
     private Config(Builder b) {
         this.novoUrl = b.novoUrl;
@@ -70,6 +83,13 @@ public final class Config {
         this.kafkaPollMs = b.kafkaPollMs;
         this.formato = b.formato;
         this.propriedadesKafka = Map.copyOf(b.propriedadesKafka);
+        this.modo = b.modo;
+        this.topicoTransacoes = b.topicoTransacoes;
+        this.txTransacoesPorCommit = b.txTransacoesPorCommit;
+        this.txEventosPorCommit = b.txEventosPorCommit;
+        this.txBufferMax = b.txBufferMax;
+        this.txOrfaSeg = b.txOrfaSeg;
+        this.inicioNoFim = b.inicioNoFim;
     }
 
     private static final class Builder {
@@ -89,6 +109,13 @@ public final class Config {
         int kafkaPollMs;
         FormatoDebezium formato;
         Map<String, String> propriedadesKafka;
+        Modo modo;
+        String topicoTransacoes;
+        int txTransacoesPorCommit;
+        int txEventosPorCommit;
+        int txBufferMax;
+        int txOrfaSeg;
+        boolean inicioNoFim;
     }
 
     public static Config load(Function<String, String> lookup, Map<String, String> ambiente, Clock clock) {
@@ -112,7 +139,38 @@ public final class Config {
         b.topicos = topicos(lookup);
         b.formato = formato(lookup);
         b.propriedadesKafka = propriedades(lookup, ambiente);
+        b.modo = modo(lookup);
+        b.topicoTransacoes = text(lookup, "KAFKA_TX_TOPIC", "kf.transaction");
+        b.txTransacoesPorCommit = positiveInt(lookup, "TX_GRUPO_MAX", 50);
+        b.txEventosPorCommit = positiveInt(lookup, "TX_EVENTOS_COMMIT_MAX", 5_000);
+        b.txBufferMax = positiveInt(lookup, "TX_BUFFER_MAX", 100_000);
+        b.txOrfaSeg = positiveInt(lookup, "TX_ORFA_SEG", 120);
+        b.inicioNoFim = inicio(lookup);
         return new Config(b);
+    }
+
+    private static Modo modo(Function<String, String> lookup) {
+        String texto = lookup.apply("MODO");
+        if (texto == null) {
+            return Modo.ATUAL;
+        }
+        try {
+            return Modo.valueOf(texto.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new ConfigException("MODO must be 'atual' or 'transacional', got '" + texto + "'");
+        }
+    }
+
+    /** Where the transactional mode starts a stream with no stored position: {@code fim} (default) or {@code inicio}. */
+    private static boolean inicio(Function<String, String> lookup) {
+        String texto = lookup.apply("KAFKA_INICIO");
+        if (texto == null || texto.trim().equalsIgnoreCase("fim")) {
+            return true;
+        }
+        if (texto.trim().equalsIgnoreCase("inicio")) {
+            return false;
+        }
+        throw new ConfigException("KAFKA_INICIO must be 'fim' or 'inicio', got '" + texto + "'");
     }
 
     private static MapaTopicos topicos(Function<String, String> lookup) {
@@ -250,6 +308,35 @@ public final class Config {
 
     public FormatoDebezium formato() {
         return formato;
+    }
+
+    public Modo modo() {
+        return modo;
+    }
+
+    /** Transaction topic of Debezium ({@code provide.transaction.metadata}); transactional mode only. */
+    public String topicoTransacoes() {
+        return topicoTransacoes;
+    }
+
+    public int txTransacoesPorCommit() {
+        return txTransacoesPorCommit;
+    }
+
+    public int txEventosPorCommit() {
+        return txEventosPorCommit;
+    }
+
+    public int txBufferMax() {
+        return txBufferMax;
+    }
+
+    public int txOrfaSeg() {
+        return txOrfaSeg;
+    }
+
+    public boolean inicioNoFim() {
+        return inicioNoFim;
     }
 
     /** Extra consumer properties (security). Sensitive: never print. */

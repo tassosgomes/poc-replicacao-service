@@ -2,7 +2,7 @@
 
 Status (2026-11-24): Fases 0, 1 e 2 **concluidas**; **Fase 3 concluida (C1 a C10)** com os mesmos numeros e criterios dos labs Java/GG: C1, C3, C4, C6, C7 (failover 14,4 s), C8 e C10 (+0,61 ms, +10,3%)
 APROVADOS; C2 (p95 6,43 s) e C5 (p95 5,59 s) **REPROVADOS** pela latencia de captura do Debezium/LogMiner (nenhuma variante de configuracao a corrige, ver notas); C9 descritivo. Extras: queda do Connect e do broker
-(com `scheduled.rebalance.max.delay.ms=0` a captura volta em 111 s em vez de 346 s). Comparativo: `resultados/comparativo-java-gg-kafka.md`. Proxima: Fase 4 (variante transacional), depois Fase 5. Detalhes em `docs/spike-kafka-notas.md`.
+(com `scheduled.rebalance.max.delay.ms=0` a captura volta em 111 s em vez de 346 s). Comparativo: `resultados/comparativo-java-gg-kafka.md`. **Fase 4 (variante transacional) concluida em 2026-11-24**: modo atual mostra estado parcial em 86% das transacoes multi-tabela, o transacional em 0 de 1.500; C2 p95 5,85 s (REPROVADO, como o atual), C3 teto 2.000 ev/s e C7 11,1 s APROVADOS, com menos CPU. Proxima: Fase 5 (consolidacao). Detalhes em `docs/spike-kafka-notas.md`.
 
 ## Objetivo
 
@@ -115,8 +115,12 @@ C4 APROVADO (28,7 s), C5 REPROVADO (p95 5.587 ms; após o commit 4,1 s).
 **Parte 2 (C6–C10) concluída em 2026-11-24:** C6 APROVADO (147,8 s da queda), C7 APROVADO (14,4 s), C8 APROVADO (55.697/55.697 pelo redo), C9 descritivo (modos do worker não separam do ruído), C10 APROVADO (+0,611 ms, +10,3%); variantes de `log.mining.*` e do rebalance do Connect nas notas. Configuração oficial do conector e do Connect restaurada.
 
 ### Fase 4: variante transacional
-Novo processador em `application` (ao lado do `ProcessadorParticao`, sem alterá-lo), usado só
-pelo `bootstrap-kafka`. Medir atomicidade (cadastro multi-tabela) e custo em vazão (C3).
+**Status (2026-11-24): concluída.** `MODO=transacional` no `bootstrap-kafka` (padrão continua `atual`): `ProcessadorTransacional` em `application` (ao lado do
+`ProcessadorParticao`, intocado), um processador ativo com lease global, um consumer sobre as 48 partições de tabela + `kf.transaction`, transações aplicadas na
+ordem do END e agrupadas num commit, offsets gravados no MAESTRO (`kafka_offset`) na mesma transação dos dados. Resultados em `resultados/kf/fase4/` e seção Fase 4 de
+`docs/spike-kafka-notas.md` (desenho, alternativas, limites): estados parciais **86,3% das transações (modo atual) x 0 (transacional)**; C2 p95 5,85 s (atual 6,43 s,
+ambos REPROVADOS pela captura), C3 teto 2.000 ev/s (3ª execução válida), C7 11,1 s (atual 14,4 s); CPU do worker, broker e destino menor no transacional. Pendências: C4/C5
+no modo transacional, partida a quente, a mesma sonda no lab GG.
 
 ### Fase 5: consolidação
 Comparativo Java × GG × Kafka; rascunho de recomendação (decisão humana).
@@ -159,8 +163,8 @@ resultados na seção "Worker ponta a ponta" de `docs/spike-kafka-notas.md`.
   `pendentes` = lag do consumidor, `lag_ms` = 0, skew medido contra o destino. Config:
   `KAFKA_BOOTSTRAP_SERVERS`, `KAFKA_TOPIC_PREFIX` (padrão `kf.BDAD`), `KAFKA_TOPICS`,
   `KAFKA_GROUP_ID`, `KAFKA_PROPERTIES_FILE` e `KAFKA_PROP_*` (SASL_SSL da etapa 2).
-- Fase 4 (variante transacional) entraria como outro processador em `application`, trocado em
-  `ExecutorParticao` do `bootstrap-kafka`; nada feito ainda.
+- Fase 4 (variante transacional): feita como outro processador em `application` (`ProcessadorTransacional`), escolhido por `MODO` em `Worker` do `bootstrap-kafka`
+  (`ExecutorTransacional`); ver a Fase 4 acima.
 
 ## 5. Em aberto
 

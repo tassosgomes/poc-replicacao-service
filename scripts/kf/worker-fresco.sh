@@ -8,6 +8,11 @@ set -euo pipefail
 source "$(dirname "$0")/comum-kf.sh"
 N=${1:-1}; shift || true
 ssh_poc infra-server 'ids=$(docker ps -aq --filter name=^/kf-worker); [ -z "$ids" ] || { docker stop $ids >/dev/null; docker rm $ids >/dev/null; }'
+# Modo transacional: as posicoes ficam no kf-novo (kafka_offset) e o lab esta drenado e parado aqui; recomecar do fim dos topicos (KAFKA_INICIO=fim)
+# exige apagar as posicoes antigas (de uma execucao anterior ou de outro modo) e soltar o lease global.
+if [[ ${KF_WORKER_ENV:-} == *MODO=transacional* ]]; then
+  printf "truncate table kafka_offset;\nupdate lease_global set dono=null, expira_em=null, versao=versao+1;\ncommit;\nexit\n" | kfq novo > /dev/null
+fi
 for ((w=1; w<=N; w++)); do "$(dirname "$0")/subir-worker.sh" "$w" EVENTOS_CSV=true ${KF_WORKER_ENV:-} "$@" > /dev/null; done
 ini=$(agora)
 for ((i=0;i<180;i++)); do

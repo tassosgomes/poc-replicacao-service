@@ -208,10 +208,17 @@ if cen in ("c6", "c7"):
         fo = load("especial/evento-failover.json", {}) or {}
         fs = round(fo["t_tomada"] - fo["t0"], 2) if fo.get("t_tomada") else None
         div_txt = (D / "especial/divisao.txt").read_text().strip() if (D / "especial/divisao.txt").exists() else ""
-        divisao = div_txt.endswith("kf-worker-1,24 kf-worker-2,24")
-        criterios.append(crit("divisao_24_24", div_txt or None, "kf-worker-1 e kf-worker-2 com 24 leases cada antes da queda", divisao))
-        criterios.append(crit("failover_s", fs, "<=20 (queda do kf-worker-1 ate o kf-worker-2 ter 48 leases validos e nova marca all 48 owned partitions active; relogio do host do banco)", fs is not None and fs <= 20))
-        criterios.append(crit("sobrevivente_48", {"leases": fo.get("leases"), "marcas": fo.get("marcas")} if fo else None, "48 leases validos e marca nova no log do sobrevivente", bool(fo) and fo.get("leases") == 48))
+        # Fase 4: no modo transacional ha um unico lease global (o segundo worker fica em espera); a divisao e a tomada se medem nele.
+        tx = div_txt.endswith("kf-worker-1,1") and not div_txt.endswith("kf-worker-1,24 kf-worker-2,24")
+        if tx:
+            criterios.append(crit("lease_global_no_worker_1", div_txt, "kf-worker-1 dono do lease global e kf-worker-2 em espera antes da queda (modo transacional: sem divisao 24/24)", True))
+            criterios.append(crit("failover_s", fs, "<=20 (queda do kf-worker-1 ate o kf-worker-2 possuir o lease global valido e registrar nova marca all 48 owned partitions active; relogio do host do banco)", fs is not None and fs <= 20))
+            criterios.append(crit("sobrevivente_assumiu", {"leases_globais": fo.get("leases"), "marcas": fo.get("marcas")} if fo else None, "lease global valido do sobrevivente e marca nova no log", bool(fo) and fo.get("leases") == 1))
+        else:
+            divisao = div_txt.endswith("kf-worker-1,24 kf-worker-2,24")
+            criterios.append(crit("divisao_24_24", div_txt or None, "kf-worker-1 e kf-worker-2 com 24 leases cada antes da queda", divisao))
+            criterios.append(crit("failover_s", fs, "<=20 (queda do kf-worker-1 ate o kf-worker-2 ter 48 leases validos e nova marca all 48 owned partitions active; relogio do host do banco)", fs is not None and fs <= 20))
+            criterios.append(crit("sobrevivente_48", {"leases": fo.get("leases"), "marcas": fo.get("marcas")} if fo else None, "48 leases validos e marca nova no log do sobrevivente", bool(fo) and fo.get("leases") == 48))
         est = g("estavel_apos_normalizar")
         criterios.append({"nome": "estavel_apos_tomada", "valor": est, "alvo": "reportado (baldes completos seguintes com lag <= 5 s)", "veredito": "SEM_CRITERIO" if est is not None else "INVALIDO"})
         criterios.append({"nome": "tempo_normalizar_desde_queda_s", "valor": g("desde_queda_s"), "alvo": "reportado (primeiro balde de 5 s completo com lag <= 5 s)", "veredito": "SEM_CRITERIO" if g("desde_queda_s") is not None else "INVALIDO"})
@@ -219,7 +226,7 @@ if cen in ("c6", "c7"):
         medidas.update(p95_ms=p.get("p95_ms"), failover_s=fs, failover_metodo="queda (inicio do docker kill, relogio do infra-server) ate 48 leases validos do sobrevivente na tabela lease_particao e nova marca all 48 owned partitions active",
                        lease_seg=cfg.get("lease_seg"), tempo_normalizar_desde_queda_s=g("desde_queda_s"), tempo_normalizar_relativo_s=rel_, pico_lag_s=g("pico_lag_s"))
         special = {"queda": {k: e0.get(k) for k in ("nome", "t_queda", "t_reinicio", "t_rep")}, "failover_s": fs, "lease_seg": cfg.get("lease_seg"), "divisao": div_txt, "tomada": fo,
-                   "segunda_apos_s": cfg.get("segunda_apos_s"), "queda_apos_s": cfg.get("queda_apos_s"), "adaptado": False,
+                   "segunda_apos_s": cfg.get("segunda_apos_s"), "queda_apos_s": cfg.get("queda_apos_s"), "adaptado": tx, "modo": "transacional" if tx else "atual",
                    "evento_resultado": {k: v for k, v in e0.items() if k != "baldes"}}
     criterios.append({"nome": "eventos_log_x_gerador", "valor": {k2: cmpev.get(k2) for k2 in ("eventos_gerador", "eventos_no_topico", "eventos_worker_csv_bruto", "eventos_worker_csv_dedup", "duplicados_entregues", "eventos_faltantes_total", "eventos_a_mais_total")} if cmpev else None,
                       "alvo": "reportado (re-entregas apos a queda sao registradas; integridade = estado final)", "veredito": "SEM_CRITERIO" if cmpev else "INVALIDO"})

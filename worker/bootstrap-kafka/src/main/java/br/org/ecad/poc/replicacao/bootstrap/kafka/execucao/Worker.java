@@ -20,19 +20,20 @@ import java.util.concurrent.atomic.LongAdder;
  * Composes the Kafka service and owns its startup and ordered shutdown. Lease and fence live in the
  * destination database (as in the lab Java); there is no legacy connection.
  *
- * <p>Where the transactional variant (phase 4 of the plan) would enter: a processor of
- * {@code application} that groups the events of one origin transaction across tables (by
- * {@code source.txId}, with the Debezium transaction topic as the boundary) would replace
- * {@code ProcessadorParticao} in {@code ExecutorParticao}; the source, lease and sink stay as they are.
+ * <p>Two modes ({@code MODO}). {@code atual} (default): leases per (table, partition) and one
+ * {@code ProcessadorParticao} thread each. {@code transacional} (phase 4): one global lease and one
+ * {@code ProcessadorTransacional} over every stream, which applies whole origin transactions.
  */
 public final class Worker implements AutoCloseable {
     private final LongAdder anomalias = new LongAdder();
     private final Thread monitor;
     private final Thread coordinator;
     private final CoordenadorParticoes coordenador;
+    private final ExecutorTransacional transacional;
 
     private Worker(Config config, Clock clock, ExecutorParticoes.Falha falha) {
         AtomicInteger ativas = new AtomicInteger();
+        boolean modoTransacional = config.modo() == Config.Modo.TRANSACIONAL;
         Metricas metricas =
                 new Metricas(Path.of(config.resultadosDir()), config.workerId(), clock, config.eventosCsv());
         LeaseRepositoryAdapter leases = new LeaseRepositoryAdapter(
@@ -41,6 +42,19 @@ public final class Worker implements AutoCloseable {
                 () -> Conexoes.abrir(config.novoUrl(), config.novoUsuario(), config.novoSenha()));
         Map<String, Object> props =
                 PropriedadesConsumidor.montar(config.bootstrapServers(), config.groupId(), config.propriedadesKafka());
+        if (modoTransacional) {
+            props.put(org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1_000);
+            coordenador = null;
+            transacional = new ExecutorTransacional(
+                    config, props, new Uuid7(clock), metricas, clock, ativas, new TradutorDebezium(config.formato()));
+            monitor = Thread.ofPlatform()
+                    .name("metricas")
+                    .start(new MonitorMetricas(config, props, clock, metricas, ativas::get));
+            coordinator = transacional.thread;
+            coordinator.start();
+            return;
+        }
+        transacional = null;
         ExecutorParticao.Recursos recursos = new ExecutorParticao.Recursos(
                 config,
                 leases,
@@ -79,8 +93,12 @@ public final class Worker implements AutoCloseable {
 
     @Override
     public synchronized void close() {
-        coordenador.solicitarParada();
-        coordinator.interrupt();
+        if (transacional != null) {
+            transacional.parar();
+        } else {
+            coordenador.solicitarParada();
+            coordinator.interrupt();
+        }
         try {
             coordinator.join();
         } catch (InterruptedException e) {

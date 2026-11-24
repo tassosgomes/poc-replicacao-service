@@ -70,11 +70,29 @@ Medidos no lab Kafka (`resultados/kf/c10/meta.json`, `docker stats`, 100% = 1 CP
 - **Failover pelo lease:** 5,6 s (`LEASE_SEG=6`), 14,1–14,6 s (12, três medidas), 16,1 s (15): ~ lease + 4 s no pior caso; a 12 s o limite de 20 s do PRD é cumprido com ~5 s de folga. O conector e o broker não participam do failover do worker.
 - **`EVENTOS_CSV` do worker é CREATE_NEW:** worker substituto precisa de outro id. A queda de um worker deixa o CSV de eventos até ~17 linhas aquém do gerador (o lote em voo não é escrito) sem perda de dado (reconciliação 0).
 - **Autostart:** diferente do GG (que desfaz o STOP manual do Extract em ~6 s), `PUT /connectors/kf-oracle/stop` mantém o conector parado de fato (status `STOPPED` amostrado a cada 30 s em todas as fases desligadas do C10).
-- **Atomicidade multi-tabela: não medida.** O worker aplica por (tabela, partição); um cadastro de obra com fonogramas pode aparecer parcial por instantes, **também no Java**. O GG preserva a transação. O tópico de transações do Debezium (`provide.transaction.metadata`) está habilitado e a **variante transacional é a Fase 4**, ainda não feita.
+- **Atomicidade multi-tabela: medida na Fase 4** (seção (f)): o modo atual mostra transações parciais em 86% dos casos; o modo transacional, em nenhum.
 
 ## (e) Pendências e o que este documento não decide
 
-- Fase 4 (atomicidade e custo em vazão) e Fase 5 (consolidação e recomendação humana).
+- Fase 5 (consolidação e recomendação humana). Fase 4 feita (seção (f)); pendentes dela: C4/C5 no modo transacional, partida a quente e a mesma sonda no lab GG.
 - C9 com C2 de 600 s se for preciso o relatório do repo aceitar o escopo; variante sem supplemental do C10; `snapshot.mode=initial` do Debezium no C1; Connect com mais de um worker; XStream no lugar do LogMiner; Confluent Cloud (etapa 2).
 - O Java segue sem medição válida em C2–C7 e C9: o comparativo do worker Java x Kafka depende de repetir o lab Java com origem que feche a taxa.
 - Tudo é piso do Oracle Free (2 CPU / 2 GB de SGA, 1 broker, 1 Connect, sem HA); os números de produção (Oracle EE, vários brokers, Connect distribuído) não podem ser extrapolados daqui.
+
+## (f) Atomicidade entre tabelas (Fase 4, 2026-11-24)
+
+Pergunta: uma transação da origem (1 obra + N fonogramas + 1 titular) fica visível no destino de uma vez? Medição no lab Kafka: C2 (1.000 ev/s) + 1.500 transações multi-tabela (5/s, 300 s, N de 1 a 12, 30 com N = 100), sonda no kf-novo a ~103 ms com **uma consulta por amostra** (um SCN). Detalhes e riscos em `docs/spike-kafka-notas.md` (Fase 4); dados em `resultados/kf/fase4/`.
+
+| | Java (paralelo por tabela/partição) | Kafka, modo atual (paralelo) | Kafka, modo transacional | GoldenGate (Replicat) |
+|---|---|---|---|---|
+| Unidade de commit no destino | 1 commit por (tabela, partição) e lote | idem (mesmo modelo do Java) | 1 commit por grupo de transações completas (nunca parte uma) | transação de origem (GROUPTRANSOPS agrupa transações inteiras) |
+| Transações com estado parcial visível | **não medido; mesmo modelo do Kafka atual, logo esperado igual** | **1.294 de 1.500 (86,3%)**; N=100: 28 de 30; exposição p50 104 ms, p95 313 ms, max 2,4 s (piso: amostragem de ~100 ms) | **0 de 1.500** (0 de 30 grandes) | **não medido** com esta sonda; preserva a transação por desenho |
+| Formas de parcial observadas | n/a | fonograma sem obra, obra com menos fonogramas que N, obra sem titular atualizado, titular sem obra | nenhuma | n/a |
+| Latência até a transação inteira visível | n/a | p50 3,72 s, p95 5,74 s | p50 3,95 s, p95 5,59 s | n/a (latência por evento: p95 2,8 s no C2) |
+| C2 p95 (1.000 ev/s, 600 s) | Inválido | 6,43 s REPROVADO | **5,85 s** REPROVADO (captura) | 2,82 s APROVADO |
+| C3 teto | Inválido | 2.000 ev/s, p95 10,2 s | **2.000 ev/s**, p95 9,3 s (3ª execução válida; as duas primeiras o gerador não fechou a taxa) | 2.000 ev/s, p95 2,09 s |
+| C7 failover | 30,0 s (inválido) | 14,4 s | **11,1 s** (lease global, 2 réplicas, `LEASE_SEG=12`) | 25,8 s (adaptado, reinício do hub) |
+| CPU média a 1.000 ev/s (worker / broker / destino) | n/a | 30,9% / 43,1% / 37,8% | **14,5% / 32,7% / 20,4%** | n/a |
+| Preço | (referência) | nenhum | um único processador ativo (vazão de 1 conexão), fila de cabeça (uma transação lenta atrasa as seguintes), buffer limitado (100 mil eventos), partida só com a origem quieta ou a partir de snapshot | licença/infra do GG |
+
+Leitura: **o worker pode ser atômico entre tabelas** com os metadados de transação do Debezium, e no lab isso não custou latência nem vazão (p95 e teto iguais ou melhores, menos CPU); o que custa é o desenho (um ativo, fila de cabeça, partida controlada). O modo atual (e portanto o lab Java, que tem o mesmo modelo) deixa estados parciais visíveis por frações de segundo em quase todo cadastro multi-tabela; se o consumidor do destino não tolera isso, o paralelo por tabela não serve. Ressalvas: um único Oracle Free como destino, uma transação lenta real (C5/C4) não foi medida no modo transacional, os números do GG e do Java são de outros critérios (a sonda não foi rodada neles).

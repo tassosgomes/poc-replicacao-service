@@ -88,4 +88,30 @@ class ArchitectureTest {
             .orShould()
             .dependOnClassesThat()
             .resideInAPackage("br.org.ecad.poc.replicacao.bootstrap.execucao..");
+
+    // Phase 4: the two processors are alternatives chosen by the bootstrap; neither knows the other.
+    @ArchTest
+    static final ArchRule processors_areIndependentAlternatives = noClasses()
+            .that()
+            .haveSimpleName("ProcessadorParticao")
+            .should()
+            .dependOnClassesThat()
+            .haveSimpleName("ProcessadorTransacional")
+            .orShould()
+            .dependOnClassesThat()
+            .haveSimpleName("FonteTransacional");
+
+    @ArchTest
+    static final ArchRule transactionalProcessor_doesNotUseThePartitionPath = noClasses()
+            .that()
+            .haveSimpleName("ProcessadorTransacional")
+            .should()
+            .dependOnClassesThat()
+            .haveSimpleName("ProcessadorParticao")
+            .orShould()
+            .dependOnClassesThat()
+            .haveSimpleName("ChangeSource")
+            .orShould()
+            .dependOnClassesThat()
+            .haveSimpleName("StateProvider");
 }
